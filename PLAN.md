@@ -167,14 +167,24 @@ Attempt only after the core experiment works end to end and the first two integr
 
 ## 8. Experimental Design
 
-### 8.1 Conditions
+### 8.1 Unit of analysis and case construction
+
+The primary unit of analysis is a **transition case**: one fixed package containing prior memory state, source evidence, and one proposed update. A case may contain multiple records, but the case—not each record or claim—is the unit for paired comparisons across conditions. Record- and claim-level annotations may be used to calculate error rates, with their denominators reported separately. Assign stable case, record, claim, and evidence IDs. Freeze a manifest of case IDs before the final run.
+
+For every metric, report its numerator and denominator. At claim level, omission rate is required supported claims omitted divided by required supported claims; unsupported-addition rate is unsupported material candidate claims divided by all material candidate claims. At record level, corruption rate is valid prior records incorrectly changed or removed divided by prior records annotated as valid and expected to persist. Also report case-level rates (fraction of cases with at least one such error). Define the annotation rules for “required,” “material,” “valid,” and “expected to persist” before selecting the final set. Cases with no applicable denominator are marked not applicable, not zero.
+
+### 8.2 Candidate-update generation
+
+Use the same frozen candidate update as input to all three conditions. Prefer benchmark-provided operation-level proposals when they match the target task. Otherwise generate proposals once using a documented, pinned host update model and configuration, save the raw output, and do not regenerate per verifier condition. The unguarded condition commits this proposal; guarded conditions verify that same proposal. Record whether proposals are benchmark-provided, human-authored, or model-generated, and do not mix sources without reporting stratified results. Keep proposal-generation model calls and costs separate from verifier costs.
+
+### 8.3 Conditions
 1. **Unguarded:** Apply the host's proposed update without MemBud verification.
 2. **Non-graph verifier:** Check the transition using the three criteria from a textual representation.
 3. **Graph verifier:** Check the same transition using the canonical graph.
 
 Run all conditions on the same fixed cases. Where possible, hold the host update model constant and use the same verifier model for graph and non-graph checks. If the host architecture cannot be configured to use the same model, report that as a confound rather than implying a perfectly controlled comparison.
 
-### 8.2 Dataset
+### 8.4 Dataset
 Use a fixed, documented subset of HaluMem if its operation-level annotations support the planned measurements. Before committing to it:
 - Inspect the released data schema and license/usage conditions.
 - Confirm which labels identify omissions, corruption, and unsupported additions.
@@ -184,17 +194,17 @@ Use a fixed, documented subset of HaluMem if its operation-level annotations sup
 
 If the labels do not support one of the proposed metrics, state that limitation and use a separate, explicitly described annotation procedure or remove the unsupported metric. Do not infer ground truth from the verifier's own outputs.
 
-### 8.3 Fairness controls
+### 8.5 Fairness controls
 - Pin the exact API model identifier and record the experiment date.
 - Use deterministic settings where supported (for example, temperature 0); note that API output may still vary.
-- Give graph and non-graph verifiers equivalent evidence, prior-memory context, output schema, and retry policy.
-- Set a shared token/cost budget or report both matched-budget and natural-cost comparisons.
+- Give graph and non-graph verifiers equivalent evidence, prior-memory context, candidate update, output schema, and retry policy. Define a deterministic graph-construction and text-serialization procedure. The textual condition must contain the same facts, provenance, temporal qualifiers, and relations available to the graph condition, rendered as text; neither condition may receive extra annotations or evidence.
+- Use the same verifier prompt criteria and model for both conditions. Set a shared token/cost budget or report both matched-budget and natural-cost comparisons. Report graph construction and serialization overhead separately; token counts should include the full verifier input.
 - Cache model calls using a key that includes model, prompt version, parameters, and input hash.
 - Store raw responses and parsed outputs so results can be reanalyzed without paying for repeated calls.
 - Do not tune thresholds on final test cases.
 - Run the same cases in all conditions and report failures and missing outputs.
 
-## 9. Metrics
+## 9. Metrics and Statistical Analysis
 
 Report metrics separately by backend, condition, and error type where sample size permits.
 
@@ -206,7 +216,7 @@ Report metrics separately by backend, condition, and error type where sample siz
 - **False-rejection rate:** Fraction of valid transitions incorrectly held or rejected.
 - **Valid-update acceptance rate:** Fraction of valid transitions allowed to commit.
 
-Define denominators explicitly. A high detection rate is not sufficient if it is achieved by holding almost every update.
+Define denominators as specified in Section 8.1 and report numerators, denominators, and not-applicable cases. A high detection rate is not sufficient if it is achieved by holding almost every update. Treat each case as paired across conditions. Report paired differences with bootstrap confidence intervals resampling cases (and stratify by backend/error type where sample size allows). State the number of cases and, before final evaluation, provide a sample-size or precision rationale. If the available subset is too small for a defensible power target, characterize results as exploratory and emphasize interval estimates rather than significance claims. Report retries, invalid outputs, and missing cases by condition; do not silently exclude failures.
 
 ### Utility and cost metrics
 - Downstream QA exact match/F1 or the metric appropriate to the selected dataset.
@@ -217,6 +227,10 @@ Define denominators explicitly. A high detection rate is not sufficient if it is
 - Adapter failures and unavailable fields.
 
 Report uncertainty where feasible, such as bootstrap confidence intervals over cases. Include a small manual review of false positives and false negatives. If an LLM is used as an evaluator, disclose that dependence and validate a sample independently.
+
+### Decision policy
+
+Use a single documented mapping for all guarded conditions: `ACCEPT` only when every required check passes; `HOLD` when any check fails or is uncertain, evidence is insufficient, or a response remains invalid after the bounded retry. A bounded `RETRY` is an execution event, not a terminal decision, and must not itself authorize a commit. Record the per-check results and reason codes. If later experiments use a different policy, version it and report results separately.
 
 ## 10. Implementation Stack and Repository Layout
 
@@ -234,7 +248,7 @@ Suggested layout:
 ```text
 membud/
 ├── README.md
-├── plan.md
+├── PLAN.md
 ├── pyproject.toml
 ├── .env.example
 ├── configs/
@@ -329,7 +343,11 @@ Before a large run, execute 10–20 cases through every available condition and 
 
 For a four-week schedule, prioritize the JSON store plus one real backend, the graph/non-graph comparison, and the primary reliability metrics. Treat the second real backend, second-model robustness check, and Graphiti as stretch goals.
 
-## 14. Risks and Mitigations
+## 14. Minimum Viable Experiment and Fallbacks
+
+The committed minimum experiment is the JSON/key-value host, one fixed case manifest, and all three conditions (unguarded, graph, non-graph) using the same candidate updates. It must include hand-authored or independently annotated examples covering omissions, corruption, unsupported additions, and valid updates; report the primary reliability and false-rejection metrics plus latency and token/cost data. Add a real backend only after its pre-commit behavior is demonstrated and documented. If HaluMem annotations do not support the target metrics, do not silently substitute inferred labels: either use a separately documented annotation protocol with an independent review sample or report the unsupported metrics as out of scope. If integrations or dataset access fail, retain the controlled experiment and describe the reduced external validity.
+
+## 15. Risks and Mitigations
 
 | Risk | Mitigation |
 |---|---|
@@ -342,7 +360,7 @@ For a four-week schedule, prioritize the JSON store plus one real backend, the g
 | Dataset labels do not fit the metrics | Inspect annotations before implementation; revise metrics before freezing the test set |
 | Scope expands beyond the deadline | Make Graphiti, second-model robustness, and extensive ablations optional |
 
-## 15. Definition of Done
+## 16. Definition of Done
 
 The initial research prototype is complete when:
 1. A proposed update can be represented as a validated canonical transition package.
@@ -355,7 +373,7 @@ The initial research prototype is complete when:
 8. The report compares reliability, false rejection, downstream utility where supported, and computational cost.
 9. Conclusions distinguish measured findings from design intentions and limitations.
 
-## 16. Immediate Next Actions
+## 17. Immediate Next Actions
 
 1. Inspect the HaluMem data schema and confirm the labels, license, and subset-selection method.
 2. Create the repository and implement the JSON/key-value baseline.
@@ -365,7 +383,7 @@ The initial research prototype is complete when:
 6. Build a small hand-authored test set for omissions, corruption, unsupported additions, and valid updates.
 7. Run a 10–20-case pilot and estimate total calls, tokens, latency, and cost before scaling.
 
-## 17. Literature Positioning Notes
+## 18. Literature Positioning Notes
 
 The plan adopts coverage, preservation, and faithfulness as criteria discussed in TRUSTMEM; it does not claim these criteria as MemBud's novelty. HaluMem is the proposed source for operation-level evaluation, subject to confirming the released annotations. LoCoMo may support downstream long-term-memory QA if its tasks fit the final evaluation design.
 

@@ -1,0 +1,16 @@
+[project]
+name = "membud-mvp"
+version = "0.1.0"
+description = "Minimal local memory-update safety prototype"
+requires-python = ">=3.11"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
