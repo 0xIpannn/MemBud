@@ -11,7 +11,7 @@ python -m pip install -e .
 python -m membud.demo
 ```
 
-This runs 10 hand-authored cases through both input paths and writes isolated per-case stores plus an append-only audit log under `mvp-output/`.
+This runs 10 hand-authored cases through both input paths and writes isolated per-case stores plus an append-only audit log under `mvp-output/`. It also exports one raw Mermaid `.mmd` diagram per case in `mvp-output/` (for example, `omission.mmd`, `corruption.mmd`, and `unsupported.mmd`), plus `example-graph.md` and `example-graph.mmd` for the valid case. Open any `.mmd` file with a Mermaid preview; raw diagram source starts with `flowchart LR`.
 
 Run tests with `python -m pytest` after installing pytest (`python -m pip install pytest`).
 

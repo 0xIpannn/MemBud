@@ -82,15 +82,42 @@ def build_graph(t: Transition) -> dict[str, Any]:
     """Canonical toy graph: nodes preserve source text; edges are explicit."""
     nodes = []
     edges = []
-    for r in (*t.before, *t.candidate):
-        nodes.append({"id": f"record:{r.id}", "type": "record", "claims": list(r.claims)})
+    nodes.append({"id": "record:candidate", "type": "operation", "label": "candidate update"})
+    claims = sorted({c for r in (*t.before, *t.candidate) for c in r.claims} |
+                    {c for e in t.evidence for c in e.supports})
+    for claim in claims:
+        nodes.append({"id": f"claim:{claim}", "type": "claim", "text": claim})
+    for stage, records in (("before", t.before), ("candidate", t.candidate)):
+        for r in records:
+            record_node = f"record:{stage}:{r.id}"
+            nodes.append({"id": record_node, "type": "record", "stage": stage, "claims": list(r.claims)})
+            for claim in r.claims:
+                edges.append({"from": record_node, "to": f"claim:{claim}", "type": "CONTAINS"})
     for e in t.evidence:
         nodes.append({"id": f"evidence:{e.id}", "type": "evidence", "supports": list(e.supports)})
         for claim in e.supports:
-            edges.append({"from": f"evidence:{e.id}", "to": f"claim:{claim}", "type": "SUPPORTED_BY"})
+            edges.append({"from": f"evidence:{e.id}", "to": f"claim:{claim}", "type": "SUPPORTS"})
     for rid in t.supersedes:
-        edges.append({"from": "candidate", "to": f"record:{rid}", "type": "SUPERSEDES"})
+        edges.append({"from": "record:candidate", "to": f"record:before:{rid}", "type": "SUPERSEDES"})
     return {"nodes": nodes, "edges": edges}
+
+
+def to_mermaid(t: Transition) -> str:
+    """Render the transition graph as Mermaid flowchart source."""
+    graph = build_graph(t)
+    ids = {node["id"]: f"n{i}" for i, node in enumerate(graph["nodes"])}
+    lines = ["flowchart LR"]
+    for node in graph["nodes"]:
+        label = node["id"].replace('"', "'").replace("\\n", " ")
+        shape = "([" + label + "])" if node["type"] == "evidence" else "[\"" + label + "\"]"
+        lines.append(f"  {ids[node['id']]}{shape}")
+    for edge in graph["edges"]:
+        source = ids.get(edge["from"])
+        target = ids.get(edge["to"])
+        if source and target:
+            label = edge["type"].replace('"', "'")
+            lines.append(f"  {source} -->|{label}| {target}")
+    return "\n".join(lines) + "\n"
 
 
 def textual_representation(t: Transition) -> str:
