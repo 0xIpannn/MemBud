@@ -11,3 +11,5 @@ __pycache__/
 pilot-output/
 .review-tmp/
 .cache/
+.tmp-*/
+*.lock
