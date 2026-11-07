@@ -32,7 +32,7 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [x] Add append-only run logging for inputs, outputs, decisions, resulting state, run ID, optional code revision, timing, provider token usage, retry counts, and failure events. Provider responses do not report billed monetary cost; pin a source revision/hash for reproducible model runs.
 - [x] Add a local 3-condition development pilot runner (`python -m membud.experiment`) with an explicitly selected optional LLM verifier.
 - [x] Harden the DeepSeek client: retry bounded malformed completion envelopes, cap provider retry delays, and record attempt counts on failed verifier rows.
-- [ ] Rerun the 9 failed graph/text rows (5 graph, 4 text) using the successful-response cache.
+- [x] Rerun the 9 failed graph/text rows (5 graph, 4 text); all completed (24,407 reported tokens, 0 cache hits, no residual errors) and the combined decisions match the labels in both conditions.
 - [ ] Add checkpoint/resume support before external/model calls.
 - [x] Record/report graph preparation time and verifier time separately, plus graph node/edge counts. Successful LLM responses include token usage and retries; failed response attempts still need more complete provider-attempt metadata. The provider completion response does not report billed cost.
 
