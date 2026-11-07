@@ -1,0 +1,1997 @@
+{
+  "run_id": "llm-heldout-v2-deepseek-flash",
+  "generated_at": "2026-11-07T13:03:13.469188+00:00",
+  "code_revision": "41905266e29a4ae699655d8b66e92474a4ee8921",
+  "manifest_id": "membud-evaluation-v2",
+  "manifest_sha256": "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a",
+  "manifest_path": "data/manifests/evaluation-v2.json",
+  "cases_sha256": "40558746e915c6f5296235109900c050da61f87fe4f4fe320bf0290af9aa432d",
+  "labels_sha256": "9280d3e8e2aa7a61df31bed689647f768a98361bb7509e7f8d172bb376989a14",
+  "split": "heldout",
+  "conditions": [
+    "graph",
+    "text",
+    "semantic"
+  ],
+  "case_count": 18,
+  "valid_case_count": 13,
+  "invalid_case_count": 5,
+  "model": "deepseek-flash",
+  "provider": "deepseek-openai-compatible",
+  "cache_path": "/home/ifan/Projects/MemBud/.cache/membud/deepseek-cache.sqlite3",
+  "max_attempts": 3,
+  "estimated_tokens_per_attempt": 2500,
+  "prompt_versions": {
+    "llm": "membud-transition-checks-v1",
+    "semantic": "membud-semantic-compare-v1"
+  },
+  "results": [
+    {
+      "case_id": "HELD-01",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 75294.999,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 971,
+        "output_tokens": 12174,
+        "total_tokens": 13145,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 13145,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-02",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 18222.822,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 2039,
+        "output_tokens": 3013,
+        "total_tokens": 5052,
+        "reported": true,
+        "json_retries": 1
+      },
+      "accounted_tokens": 5052,
+      "usage_estimated": false,
+      "attempts": 2,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-03",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 11790.786,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1125,
+        "output_tokens": 2096,
+        "total_tokens": 3221,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 3221,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-04",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 7098.981,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1229,
+        "output_tokens": 1085,
+        "total_tokens": 2314,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 2314,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-05",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 5741.835,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 919,
+        "output_tokens": 954,
+        "total_tokens": 1873,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 1873,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-06",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 41756.028,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 3584,
+        "output_tokens": 7082,
+        "total_tokens": 10666,
+        "reported": true,
+        "json_retries": 1
+      },
+      "accounted_tokens": 10666,
+      "usage_estimated": false,
+      "attempts": 2,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-07",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 26402.541,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 893,
+        "output_tokens": 4366,
+        "total_tokens": 5259,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 5259,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-08",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 21051.134,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 832,
+        "output_tokens": 3495,
+        "total_tokens": 4327,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 4327,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-09",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 13346.29,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1004,
+        "output_tokens": 2336,
+        "total_tokens": 3340,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 3340,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-10",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 15123.442,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 2675,
+        "output_tokens": 2590,
+        "total_tokens": 5265,
+        "reported": true,
+        "json_retries": 1
+      },
+      "accounted_tokens": 5265,
+      "usage_estimated": false,
+      "attempts": 2,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-11",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 13190.427,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1221,
+        "output_tokens": 2309,
+        "total_tokens": 3530,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 3530,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-12",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 6084.301,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1300,
+        "output_tokens": 1012,
+        "total_tokens": 2312,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 2312,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-13",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 10517.767,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "CONTRADICTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1101,
+        "output_tokens": 1806,
+        "total_tokens": 2907,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 2907,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-14",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.284,
+      "checks": [],
+      "error": "ValueError: DELETE requires structured authorization metadata",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-15",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.041,
+      "checks": [],
+      "error": "ValueError: DELETE authorization target_id must match the operation target",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-16",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.163,
+      "checks": [],
+      "error": "ValueError: undeclared insertion of candidate record r2",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-17",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.013,
+      "checks": [],
+      "error": "ValueError: undeclared modification of prior record r1",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-18",
+      "condition": "graph",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.033,
+      "checks": [],
+      "error": "ValueError: undeclared removal of prior record r2",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-01",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 5709.769,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 481,
+        "output_tokens": 1019,
+        "total_tokens": 1500,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 1500,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-02",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 10878.023,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1163,
+        "output_tokens": 2014,
+        "total_tokens": 3177,
+        "reported": true,
+        "json_retries": 1
+      },
+      "accounted_tokens": 3177,
+      "usage_estimated": false,
+      "attempts": 2,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-03",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 13899.735,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 502,
+        "output_tokens": 2331,
+        "total_tokens": 2833,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 2833,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-04",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 3800.3,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 571,
+        "output_tokens": 569,
+        "total_tokens": 1140,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 1140,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-05",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 2078.618,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 446,
+        "output_tokens": 304,
+        "total_tokens": 750,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 750,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-06",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 12137.372,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 667,
+        "output_tokens": 2068,
+        "total_tokens": 2735,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 2735,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-07",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 13036.095,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 458,
+        "output_tokens": 2231,
+        "total_tokens": 2689,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 2689,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-08",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 8363.357,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 455,
+        "output_tokens": 1408,
+        "total_tokens": 1863,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 1863,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-09",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 11135.25,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1131,
+        "output_tokens": 1881,
+        "total_tokens": 3012,
+        "reported": true,
+        "json_retries": 1
+      },
+      "accounted_tokens": 3012,
+      "usage_estimated": false,
+      "attempts": 2,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-10",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 6373.269,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1290,
+        "output_tokens": 1316,
+        "total_tokens": 2606,
+        "reported": true,
+        "json_retries": 1
+      },
+      "accounted_tokens": 2606,
+      "usage_estimated": false,
+      "attempts": 2,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-11",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 5904.172,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 512,
+        "output_tokens": 1092,
+        "total_tokens": 1604,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 1604,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-12",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 6026.167,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 534,
+        "output_tokens": 1103,
+        "total_tokens": 1637,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 1637,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-13",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 11591.463,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "CONTRADICTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1220,
+        "output_tokens": 1721,
+        "total_tokens": 2941,
+        "reported": true,
+        "json_retries": 1
+      },
+      "accounted_tokens": 2941,
+      "usage_estimated": false,
+      "attempts": 2,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-14",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.038,
+      "checks": [],
+      "error": "ValueError: DELETE requires structured authorization metadata",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-15",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.014,
+      "checks": [],
+      "error": "ValueError: DELETE authorization target_id must match the operation target",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-16",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.004,
+      "checks": [],
+      "error": "ValueError: undeclared insertion of candidate record r2",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-17",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.011,
+      "checks": [],
+      "error": "ValueError: undeclared modification of prior record r1",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-18",
+      "condition": "text",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.007,
+      "checks": [],
+      "error": "ValueError: undeclared removal of prior record r2",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-01",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 1203.868,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        },
+        {
+          "name": "semantic",
+          "status": "PASS",
+          "reason_code": "SEMANTIC_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 239,
+        "output_tokens": 114,
+        "total_tokens": 353,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 353,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-02",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.32,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        },
+        {
+          "name": "semantic",
+          "status": "PASS",
+          "reason_code": "SEMANTIC_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-03",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 1297.65,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        },
+        {
+          "name": "semantic",
+          "status": "PASS",
+          "reason_code": "SEMANTIC_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 234,
+        "output_tokens": 80,
+        "total_tokens": 314,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 314,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-04",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 1706.001,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        },
+        {
+          "name": "semantic",
+          "status": "PASS",
+          "reason_code": "SEMANTIC_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 236,
+        "output_tokens": 99,
+        "total_tokens": 335,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 335,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-05",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 1281.189,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        },
+        {
+          "name": "semantic",
+          "status": "PASS",
+          "reason_code": "SEMANTIC_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 238,
+        "output_tokens": 107,
+        "total_tokens": 345,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 345,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-06",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 3778.303,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        },
+        {
+          "name": "semantic",
+          "status": "PASS",
+          "reason_code": "SEMANTIC_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 714,
+        "output_tokens": 297,
+        "total_tokens": 1011,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 1011,
+      "usage_estimated": false,
+      "attempts": 3,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-07",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.673,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        },
+        {
+          "name": "semantic",
+          "status": "PASS",
+          "reason_code": "SEMANTIC_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-08",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.613,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        },
+        {
+          "name": "semantic",
+          "status": "PASS",
+          "reason_code": "SEMANTIC_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-09",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 4635.139,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        },
+        {
+          "name": "semantic",
+          "status": "FAIL",
+          "reason_code": "CONTRADICTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 708,
+        "output_tokens": 531,
+        "total_tokens": 1239,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 1239,
+      "usage_estimated": false,
+      "attempts": 3,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-10",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 6124.318,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        },
+        {
+          "name": "semantic",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 720,
+        "output_tokens": 687,
+        "total_tokens": 1407,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 1407,
+      "usage_estimated": false,
+      "attempts": 3,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-11",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 7035.289,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        },
+        {
+          "name": "semantic",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1181,
+        "output_tokens": 498,
+        "total_tokens": 1679,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 1679,
+      "usage_estimated": false,
+      "attempts": 5,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-12",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 10365.419,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        },
+        {
+          "name": "semantic",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 1674,
+        "output_tokens": 839,
+        "total_tokens": 2513,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 2513,
+      "usage_estimated": false,
+      "attempts": 7,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-13",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 1229.912,
+      "checks": [
+        {
+          "name": "coverage",
+          "status": "PASS",
+          "reason_code": "COVERAGE_OK"
+        },
+        {
+          "name": "preservation",
+          "status": "PASS",
+          "reason_code": "PRESERVATION_OK"
+        },
+        {
+          "name": "faithfulness",
+          "status": "PASS",
+          "reason_code": "FAITHFULNESS_OK"
+        },
+        {
+          "name": "semantic",
+          "status": "PASS",
+          "reason_code": "SEMANTIC_OK"
+        }
+      ],
+      "error": null,
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 238,
+        "output_tokens": 99,
+        "total_tokens": 337,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 337,
+      "usage_estimated": false,
+      "attempts": 1,
+      "attempts_estimated": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-14",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.039,
+      "checks": [],
+      "error": "ValueError: DELETE requires structured authorization metadata",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-15",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.014,
+      "checks": [],
+      "error": "ValueError: DELETE authorization target_id must match the operation target",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-16",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.089,
+      "checks": [],
+      "error": "ValueError: undeclared insertion of candidate record r2",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-17",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.012,
+      "checks": [],
+      "error": "ValueError: undeclared modification of prior record r1",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-18",
+      "condition": "semantic",
+      "split": "heldout",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.01,
+      "checks": [],
+      "error": "ValueError: undeclared removal of prior record r2",
+      "cache_hit": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "reported": true,
+        "json_retries": 0
+      },
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "attempts": 0,
+      "attempts_estimated": false,
+      "label_expected_decision": "INVALID_INPUT"
+    }
+  ],
+  "budget": {
+    "max_total_tokens": 250000,
+    "accounted_tokens_used": 101231,
+    "reported_tokens_used": 101231,
+    "estimated_tokens_used": 0,
+    "aborted": false,
+    "abort_reason": "",
+    "overshoot_tokens": 0,
+    "planned_non_invalid_rows": 39,
+    "executed_non_invalid_rows": 39,
+    "note": "The cap is checked after each row and before the next row starts. Because token usage is only known after a provider response, one in-flight row can overshoot the cap; overshoot_tokens reports it. Rows without reported usage are charged 2500 tokens/attempt (marked estimated)."
+  },
+  "usage": {
+    "reported": {
+      "input_tokens": 34505,
+      "output_tokens": 66726,
+      "total_tokens": 101231,
+      "rows_with_reported_usage": 54
+    },
+    "estimated": {
+      "accounted_tokens": 0,
+      "rows": 0,
+      "basis": "2500 tokens/attempt when usage is absent and the row is not a cache hit"
+    },
+    "accounted_total_tokens": 101231
+  },
+  "reported_tokens_used": 101231,
+  "estimated_tokens_used": 0,
+  "accounted_tokens_used": 101231,
+  "attempts": 59,
+  "cache_hits": 0,
+  "llm_verifier_errors": {
+    "rows": 0,
+    "case_ids": []
+  },
+  "semantic_uncertain_rows": 0
+}

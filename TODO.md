@@ -71,7 +71,10 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [x] Fairness/equivalence audit (plain text vs fair text with equal contradiction access vs structural graph): fair text matches graph on all 26 non-invalid cases; the earlier 2/36 graph advantage is explained by annotation access, not structural inference (`docs/fairness-audit.md`).
 - [ ] Define and evaluate a graph hypothesis where relational structure supplies detection capability a fair text verifier cannot reconstruct from the same facts (multi-hop provenance/derivation, entity-relation contradictions across records, temporal ordering), and compare against a fair-text control with identical information.
 - [ ] Collect the pending independent second human review and adjudicate v2 labels.
-- [ ] Run the optional semantic/LLM conditions on the v2 held-out split under a bounded spend approval; report calibration and abstention.
+- [x] Run the optional semantic/LLM conditions on the v2 held-out split under the approved $2 cap (101,231 reported tokens, ~$0.40 upper-bound estimate, no abort): graph LLM 3/10/5, text LLM 6/7/5, semantic 8/5/5; no superiority claim. See `docs/llm-heldout.md`.
+- [ ] Make the semantic verifier consume `evidence.contradicts` (it inherited plain text's blind spot and accepted HELD-13), then rerun the cached held-out conditions.
+- [ ] Investigate the graph-LLM false holds (4/7 valid held; prompt/serialization effects, retries) before any representation comparison.
+- [ ] Use the blind quiz (`data/review/quiz-v2.html`) to collect the independent second review of the v2 labels.
 - [ ] Add checkpoint/resume, provider-billing cost accounting, and a powered evaluation with a justified sample size.
 - [ ] Implement a real third-party backend integration through a host-owned staged-write/fork after a safe pre-commit boundary is demonstrated.
 - [ ] Stabilize transition/store formats as a versioned interchange protocol with migration tests across releases.

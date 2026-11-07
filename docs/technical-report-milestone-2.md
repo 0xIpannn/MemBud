@@ -147,3 +147,18 @@ A post-milestone fairness audit tested whether the two graph-vs-text decision di
 Results on the 36 frozen v2 cases (no paid calls): plain text 16 ACCEPT / 10 HOLD / 10 INVALID with 2 false accepts (DEV-13, HELD-13); fair text and graph both 14 / 12 / 10 with 0 false accepts and 36/36 label agreement. `text_fair_vs_graph` has zero paired differences; `text_vs_text_fair` has exactly the two contradiction cases.
 
 **Interpretation:** on this manifest, the visible graph advantage is fully explained by annotation access, not by structural verification. The milestone's earlier framing that graph "catches contradictions text cannot" must be read as "graph consumes contradiction annotations text did not consume". Future graph-vs-text claims require relational structure a fair text verifier cannot reconstruct from the same facts, tested against an information-matched control. Full write-up: `docs/fairness-audit.md`; artifact: `data/results/fairness-audit-v2/audit.json`; implementation: `src/membud/fairness.py`, `scripts/run_fairness_audit.py`.
+
+
+---
+
+## 12. Held-out LLM and semantic addendum (paid, capped)
+
+A one-shot DeepSeek `deepseek-flash` run on the 18-case held-out split (13 valid/invalid-testable + 5 expected-invalid) compared three conditions: LLM verification on graph serialization, LLM verification on text serialization, and the deterministic text baseline plus the separate LLM semantic check.
+
+| Condition | ACCEPT | HOLD | INVALID | False accepts | False holds | Valid accepted |
+|---|---:|---:|---:|---:|---:|---:|
+| graph (LLM) | 3 | 10 | 5 | 0/6 | 4/7 | 3/7 |
+| text (LLM) | 6 | 7 | 5 | 0/6 | 1/7 | 6/7 |
+| semantic (text + semantic check) | 8 | 5 | 5 | 1/6 (HELD-13) | 0/7 | 7/7 |
+
+101,231 reported tokens, 59 attempts, 0 verifier errors, no budget abort; estimated upper bound ≈$0.40 at the top published per-token rate (billing unavailable). The LLM graph condition was markedly over-conservative; the semantic condition accepted HELD-13 because `verify_with_semantics` does not consume `evidence.contradicts` — the same annotation-access gap documented in §11. The held-out set is too small (7 valid, 6 faulty) and single-reviewed for any superiority claim; this run establishes that the harness can execute equivalent-information LLM/semantic comparisons under a hard spend cap. Details: `docs/llm-heldout.md`.

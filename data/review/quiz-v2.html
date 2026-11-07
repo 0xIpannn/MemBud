@@ -1,0 +1,4134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MemBud blind review quiz — membud-evaluation-v2</title>
+<style>
+  :root {
+    --bg: #f4f6fa;
+    --card: #ffffff;
+    --ink: #1b2430;
+    --muted: #5c6a7b;
+    --line: #d7dfe9;
+    --accent: #2358a6;
+    --accent-soft: #e8f0fb;
+    --warn: #a3480b;
+    --support: #1d6b45;
+    --contradict: #9b2c2c;
+    --shadow: 0 1px 2px rgba(21, 35, 55, 0.06), 0 8px 24px rgba(21, 35, 55, 0.05);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code { font-size: 0.92em; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 26px 18px 72px; }
+  .hero {
+    background: linear-gradient(135deg, #173a6b 0%, #2358a6 62%, #2c6fb5 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 30px 30px 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  .hero h1 { margin: 0 0 8px; font-size: 1.75rem; line-height: 1.2; }
+  .hero p { margin: 0; max-width: 72ch; }
+  .hero code { color: #dce9fb; }
+  .meta { display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 18px 0 0; }
+  .meta div { min-width: 180px; }
+  .meta dt { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.72; }
+  .meta dd { margin: 2px 0 0; font-size: 0.9rem; word-break: break-all; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+    margin-bottom: 18px;
+  }
+  h2 { font-size: 1.25rem; margin: 0 0 12px; }
+  h3 { font-size: 1rem; margin: 0 0 8px; }
+  .card > h2:not(:first-child) { margin-top: 22px; }
+  .lede { color: var(--muted); margin-top: 0; }
+  ol, ul { margin: 8px 0 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  .hint, .muted, .sub { color: var(--muted); }
+  .sub { font-weight: 400; font-size: 0.86em; }
+  .rubric { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .rubric-item { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: #fbfcfe; }
+  .rubric-item h3 { display: flex; align-items: center; gap: 8px; }
+  .rubric-item p { margin: 6px 0 0; color: var(--muted); font-size: 0.93rem; }
+  .pill { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; }
+  .pill.accept { background: #e2f2e8; color: var(--support); }
+  .pill.hold { background: #fdf0dd; color: var(--warn); }
+  .pill.invalid { background: #fbe5e5; color: var(--contradict); }
+  .reviewer-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+  .reviewer-row label { display: block; font-weight: 600; margin-bottom: 4px; }
+  input[type="text"], textarea {
+    font: inherit;
+    color: inherit;
+    background: #fff;
+    border: 1px solid #b9c5d3;
+    border-radius: 8px;
+    padding: 10px 12px;
+    width: 100%;
+  }
+  input[type="text"] { max-width: 420px; }
+  input[type="text"]:focus, textarea:focus, input[type="radio"]:focus-visible {
+    outline: 3px solid #b9d0f0;
+    outline-offset: 1px;
+  }
+  .progress-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  progress { width: min(100%, 560px); height: 16px; accent-color: var(--accent); }
+  .progress-text { font-weight: 600; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  button {
+    font: inherit;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 16px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+  }
+  button.secondary { background: #fff; color: var(--accent); }
+  button:hover { filter: brightness(1.05); }
+  #save-status { min-height: 1.4em; margin: 10px 0 0; font-size: 0.88rem; color: var(--muted); }
+  #save-status.error { color: var(--contradict); }
+  .case {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+  .case-head { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+  .case-head h2 { margin: 0; font-size: 1.45rem; }
+  .case-number { margin: 0 0 2px; color: var(--muted); font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .case-note { margin: 4px 0 0; color: var(--muted); font-size: 0.84rem; max-width: 34ch; text-align: right; }
+  .grid.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .panel { border: 1px solid var(--line); border-radius: 10px; background: #fbfcfe; padding: 14px 16px; margin-top: 14px; }
+  .grid .panel { margin-top: 14px; }
+  .empty { margin: 0; color: var(--muted); font-style: italic; }
+  .records, .claims, .operations { list-style: none; padding-left: 0; margin: 0; }
+  .records > li { padding: 6px 0; border-bottom: 1px dashed #e2e8f0; }
+  .records > li:last-child { border-bottom: 0; }
+  .claims { margin: 2px 0 0 18px; padding-left: 16px; list-style: disc; }
+  .claims li { margin: 1px 0; }
+  .rid { background: #edf2f8; border-radius: 5px; padding: 1px 6px; color: #24425f; font-weight: 600; }
+  .claim { background: var(--accent-soft); border-radius: 5px; padding: 1px 6px; }
+  .claims-line { margin: 0; line-height: 1.8; }
+  .evidence-item { border-top: 1px solid #e5ebf2; padding: 10px 0 4px; }
+  .evidence-item:first-child { border-top: 0; padding-top: 0; }
+  .ev-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .source { font-size: 0.8rem; color: var(--muted); background: #eef2f7; border-radius: 999px; padding: 1px 9px; }
+  blockquote { margin: 8px 0; padding: 8px 12px; border-left: 3px solid #b9cbe3; background: #f4f8fd; color: #22364c; }
+  .ev-tags { display: grid; gap: 4px; font-size: 0.9rem; }
+  .tag { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 4px; padding: 1px 7px; margin-right: 6px; }
+  .tag-support { background: #e2f2e8; color: var(--support); }
+  .tag-contradict { background: #fbe5e5; color: var(--contradict); }
+  .operation { padding: 8px 0; border-bottom: 1px dashed #e2e8f0; }
+  .operation:last-child { border-bottom: 0; }
+  .op-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .op-type { font-weight: 800; letter-spacing: 0.04em; background: #173a6b; color: #fff; border-radius: 5px; padding: 1px 8px; font-size: 0.8rem; }
+  .op-field { font-size: 0.86rem; color: #304459; }
+  .op-reason { margin-top: 4px; font-size: 0.9rem; color: var(--muted); }
+  .auth { margin-top: 6px; padding: 8px 10px; border: 1px solid #d9e5f2; background: #f4f8fd; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 0.86rem; }
+  .auth .tag { background: #e2ebf7; color: #24425f; margin-right: 0; }
+  .auth-missing { border-color: #f0c9a8; background: #fff7ef; }
+  .auth-missing .tag { background: #fbe3cf; color: var(--warn); }
+  .raw { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; background: #f8fafc; }
+  .raw summary { cursor: pointer; padding: 10px 14px; font-weight: 600; color: var(--accent); }
+  .raw pre { margin: 0; padding: 0 14px 14px; overflow-x: auto; font-size: 0.82rem; line-height: 1.45; }
+  .answer-block { border: 2px solid #c7d6ea; border-radius: 10px; padding: 12px 16px 14px; margin: 18px 0 0; background: #f8fbff; }
+  .answer-block legend { font-weight: 700; padding: 0 6px; }
+  .options { display: flex; flex-wrap: wrap; gap: 10px; }
+  .option { display: flex; align-items: center; gap: 7px; border: 1px solid #b9c5d3; border-radius: 8px; background: #fff; padding: 9px 14px; cursor: pointer; font-weight: 700; }
+  .option:hover { border-color: var(--accent); background: #f2f7ff; }
+  .option input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+  .note-wrap { margin-top: 12px; }
+  .note-wrap label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; }
+  textarea { resize: vertical; min-height: 58px; }
+  .footer { color: var(--muted); font-size: 0.85rem; text-align: center; margin-top: 26px; }
+  @media (max-width: 620px) {
+    .wrap { padding: 14px 10px 48px; }
+    .hero, .card, .case { padding: 18px 15px; }
+    .case-note { text-align: left; }
+  }
+  @media print {
+    body { background: #fff; }
+    .hero { background: #173a6b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card, .case { box-shadow: none; break-inside: avoid; }
+    .actions, #save-status { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>MemBud blind human-review quiz</h1>
+  <p class="lede">
+    You are independently reviewing <strong>36</strong> frozen memory-transition cases.
+    Judge each transition from the inputs and the decision rubric alone. This file is fully
+    offline and contains <strong>no answer key</strong>: no per-case labels, decision hints,
+    or reviewer notes from the label file appear anywhere in it.
+  </p>
+  <dl class="meta">
+    <div><dt>Manifest</dt><dd><code>membud-evaluation-v2</code></dd></div>
+    <div><dt>Manifest SHA-256</dt><dd><code>e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a</code></dd></div>
+    <div><dt>Cases</dt><dd>36 (display order is hash-shuffled)</dd></div>
+  </dl>
+</header>
+
+<section class="card" id="instructions">
+  <h2>Before you start</h2>
+  <ol>
+    <li>Enter your reviewer name below. Use the same name when running the grader.</li>
+    <li>Read each case's prior state, candidate state, evidence (note the
+      <em>supports</em> and <em>contradicts</em> claims), required claims, and declared
+      operations, including any structured DELETE authorization.</li>
+    <li>Choose one decision and optionally add a short note. A blank decision is allowed,
+      but it reduces coverage and cannot be counted as agreement.</li>
+    <li>Answers autosave in this browser via <code>localStorage</code>. Keep this tab open
+      until you download; clearing browser data or using private mode may lose drafts.</li>
+    <li>When finished, click <strong>Download answers JSON</strong> and send that file to the
+      review coordinator. Do not send a screenshot of the page.</li>
+  </ol>
+  <p class="hint">
+    Full annotation rules are in <code>data/annotation-guidelines.md</code>. If a case is
+    genuinely ambiguous under those rules, choose HOLD when it is schema-valid and note the
+    ambiguity; choose INVALID_INPUT only when the schema contract is broken before
+    verification.
+  </p>
+
+  <h2>Decision rubric</h2>
+  <div class="rubric">
+    <div class="rubric-item">
+      <h3><span class="pill accept">ACCEPT</span></h3>
+      <p>The transition is schema-valid, every required claim is present, every material
+      candidate claim is supported by the supplied evidence or valid prior memory, declared
+      operations match the state change, any DELETE has valid structured authorization, and
+      no contradiction remains unresolved.</p>
+    </div>
+    <div class="rubric-item">
+      <h3><span class="pill hold">HOLD</span></h3>
+      <p>The transition is schema-valid but has a material verification problem: an omitted
+      required claim, an unsupported or contradicted claim, an unjustified change/removal,
+      unsupported provenance, or an unresolved contradiction against a retained claim.</p>
+    </div>
+    <div class="rubric-item">
+      <h3><span class="pill invalid">INVALID_INPUT</span></h3>
+      <p>The v2 schema contract is broken before verification: for example a DELETE without
+      valid structured authorization, an authorization that references missing evidence or
+      the wrong target, or a candidate state change not declared by a matching operation.
+      Invalid input is never verified or written.</p>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="reviewer-card">
+  <h2>Reviewer</h2>
+  <div class="reviewer-row">
+    <div>
+      <label for="reviewer">Your name</label>
+      <input type="text" id="reviewer" name="reviewer" autocomplete="off" spellcheck="false"
+        placeholder="e.g. Alice Rahman">
+    </div>
+  </div>
+  <p class="hint">The name is stored in your browser and included in the downloaded answers JSON.</p>
+</section>
+
+<section class="card" id="progress-card">
+  <h2>Progress</h2>
+  <div class="progress-row">
+    <progress id="progress-bar" value="0" max="36"></progress>
+    <span class="progress-text" id="progress-text">0 / 36 answered</span>
+  </div>
+  <div class="actions">
+    <button type="button" class="js-download" id="download">Download answers JSON</button>
+    <button type="button" class="secondary" id="reset">Clear saved answers</button>
+  </div>
+  <p id="save-status" role="status" aria-live="polite"></p>
+</section>
+
+<main id="cases">
+
+<article class="case" id="case-DEV-05">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 1 of 36</p>
+      <h2><code>DEV-05</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <p class="empty">(none)</p>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bandung</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">NOOP</span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-05&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bandung&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;NOOP&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-05</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-05" value="ACCEPT" data-case="DEV-05"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-05" value="HOLD" data-case="DEV-05"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-05" value="INVALID_INPUT" data-case="DEV-05"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-05">Optional note</label>
+    <textarea id="note-DEV-05" class="note-input" data-case="DEV-05"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-04">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 2 of 36</p>
+      <h2><code>DEV-04</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>memiliki langganan gym</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e3</code><span class="source">synthetic:user-request</span></div><blockquote>Tolong hapus catatan langganan gym saya.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="muted">(none)</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">bekerja di Tokopedia</span>; <span class="claim">tinggal di Bandung</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">DELETE</span><span class="op-field">target_id=<code>r2</code></span></div><div class="op-reason">reason: pengguna meminta penghapusan eksplisit</div><div class="auth"><span class="tag">Authorization</span><span class="op-field">source=<code>synthetic:user-request</code></span><span class="op-field">evidence_id=<code>e3</code></span><span class="op-field">target_id=<code>r2</code></span><span class="op-field">rationale=<code>pengguna secara eksplisit meminta catatan langganan gym dihapus</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-04&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;memiliki langganan gym&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e3&quot;,
+      &quot;source&quot;: &quot;synthetic:user-request&quot;,
+      &quot;text&quot;: &quot;Tolong hapus catatan langganan gym saya.&quot;,
+      &quot;supports&quot;: []
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;bekerja di Tokopedia&quot;,
+    &quot;tinggal di Bandung&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;DELETE&quot;,
+      &quot;target_id&quot;: &quot;r2&quot;,
+      &quot;reason&quot;: &quot;pengguna meminta penghapusan eksplisit&quot;,
+      &quot;authorization&quot;: {
+        &quot;source&quot;: &quot;synthetic:user-request&quot;,
+        &quot;evidence_id&quot;: &quot;e3&quot;,
+        &quot;target_id&quot;: &quot;r2&quot;,
+        &quot;rationale&quot;: &quot;pengguna secara eksplisit meminta catatan langganan gym dihapus&quot;
+      }
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-04</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-04" value="ACCEPT" data-case="DEV-04"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-04" value="HOLD" data-case="DEV-04"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-04" value="INVALID_INPUT" data-case="DEV-04"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-04">Optional note</label>
+    <textarea id="note-DEV-04" class="note-input" data-case="DEV-04"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-11">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 3 of 36</p>
+      <h2><code>HELD-11</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bali</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di hotel</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bali</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di hotel</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>memiliki jet pribadi</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:hobby</span></div><blockquote>Saya bermain tenis setiap minggu.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bermain tenis</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bali</span>; <span class="claim">bekerja di hotel</span>; <span class="claim">bermain tenis</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">WRITE</span><span class="op-field">record_id=<code>r3</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-11&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bali&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di hotel&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bali&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di hotel&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;memiliki jet pribadi&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:hobby&quot;,
+      &quot;text&quot;: &quot;Saya bermain tenis setiap minggu.&quot;,
+      &quot;supports&quot;: [
+        &quot;bermain tenis&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bali&quot;,
+    &quot;bekerja di hotel&quot;,
+    &quot;bermain tenis&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;WRITE&quot;,
+      &quot;record_id&quot;: &quot;r3&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-11</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-11" value="ACCEPT" data-case="HELD-11"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-11" value="HOLD" data-case="HELD-11"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-11" value="INVALID_INPUT" data-case="HELD-11"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-11">Optional note</label>
+    <textarea id="note-HELD-11" class="note-input" data-case="HELD-11"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-18">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 4 of 36</p>
+      <h2><code>DEV-18</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>belajar bahasa Jepang</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:hobby</span></div><blockquote>Saya mulai belajar bahasa Jepang.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">belajar bahasa Jepang</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bandung</span>; <span class="claim">bekerja di Tokopedia</span>; <span class="claim">belajar bahasa Jepang</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">WRITE</span><span class="op-field">record_id=<code>r3</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-18&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;belajar bahasa Jepang&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:hobby&quot;,
+      &quot;text&quot;: &quot;Saya mulai belajar bahasa Jepang.&quot;,
+      &quot;supports&quot;: [
+        &quot;belajar bahasa Jepang&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bandung&quot;,
+    &quot;bekerja di Tokopedia&quot;,
+    &quot;belajar bahasa Jepang&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;WRITE&quot;,
+      &quot;record_id&quot;: &quot;r3&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-18</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-18" value="ACCEPT" data-case="DEV-18"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-18" value="HOLD" data-case="DEV-18"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-18" value="INVALID_INPUT" data-case="DEV-18"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-18">Optional note</label>
+    <textarea id="note-DEV-18" class="note-input" data-case="DEV-18"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-11">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 5 of 36</p>
+      <h2><code>DEV-11</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>memiliki kapal pesiar</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:hobby</span></div><blockquote>Saya mulai belajar bahasa Jepang.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">belajar bahasa Jepang</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bandung</span>; <span class="claim">bekerja di Tokopedia</span>; <span class="claim">belajar bahasa Jepang</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">WRITE</span><span class="op-field">record_id=<code>r3</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-11&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;memiliki kapal pesiar&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:hobby&quot;,
+      &quot;text&quot;: &quot;Saya mulai belajar bahasa Jepang.&quot;,
+      &quot;supports&quot;: [
+        &quot;belajar bahasa Jepang&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bandung&quot;,
+    &quot;bekerja di Tokopedia&quot;,
+    &quot;belajar bahasa Jepang&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;WRITE&quot;,
+      &quot;record_id&quot;: &quot;r3&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-11</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-11" value="ACCEPT" data-case="DEV-11"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-11" value="HOLD" data-case="DEV-11"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-11" value="INVALID_INPUT" data-case="DEV-11"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-11">Optional note</label>
+    <textarea id="note-DEV-11" class="note-input" data-case="DEV-11"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-02">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 6 of 36</p>
+      <h2><code>HELD-02</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>bekerja di Bukalapak</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:correction</span></div><blockquote>Koreksi: saya bekerja di Bukalapak.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Bukalapak</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">bekerja di Bukalapak</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">REVISE</span><span class="op-field">record_id=<code>r1</code></span><span class="op-field">target_id=<code>r1</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-02&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Bukalapak&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:correction&quot;,
+      &quot;text&quot;: &quot;Koreksi: saya bekerja di Bukalapak.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Bukalapak&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;bekerja di Bukalapak&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;REVISE&quot;,
+      &quot;record_id&quot;: &quot;r1&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-02</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-02" value="ACCEPT" data-case="HELD-02"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-02" value="HOLD" data-case="HELD-02"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-02" value="INVALID_INPUT" data-case="HELD-02"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-02">Optional note</label>
+    <textarea id="note-HELD-02" class="note-input" data-case="HELD-02"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-12">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 7 of 36</p>
+      <h2><code>DEV-12</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Jakarta</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Jakarta</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Bank Mandiri</li><li>memiliki gaji 25 juta per bulan</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya bekerja di Bank Mandiri.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Bank Mandiri</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Jakarta</span>; <span class="claim">bekerja di Bank Mandiri</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">WRITE</span><span class="op-field">record_id=<code>r2</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-12&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Jakarta&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Jakarta&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Bank Mandiri&quot;,
+        &quot;memiliki gaji 25 juta per bulan&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya bekerja di Bank Mandiri.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Bank Mandiri&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Jakarta&quot;,
+    &quot;bekerja di Bank Mandiri&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;WRITE&quot;,
+      &quot;record_id&quot;: &quot;r2&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-12</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-12" value="ACCEPT" data-case="DEV-12"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-12" value="HOLD" data-case="DEV-12"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-12" value="INVALID_INPUT" data-case="DEV-12"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-12">Optional note</label>
+    <textarea id="note-DEV-12" class="note-input" data-case="DEV-12"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-03">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 8 of 36</p>
+      <h2><code>HELD-03</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>memiliki sepeda motor</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>tinggal di Malang</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r2</code><ul class="claims"><li>tinggal di Malang</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>memiliki mobil</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:possession</span></div><blockquote>Saya menjual sepeda motor dan membeli mobil.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">memiliki mobil</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Malang</span>; <span class="claim">memiliki mobil</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">SUPERSEDE</span><span class="op-field">record_id=<code>r3</code></span><span class="op-field">target_id=<code>r1</code></span></div><div class="op-reason">reason: kendaraan diganti</div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-03&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;memiliki sepeda motor&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Malang&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Malang&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;memiliki mobil&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:possession&quot;,
+      &quot;text&quot;: &quot;Saya menjual sepeda motor dan membeli mobil.&quot;,
+      &quot;supports&quot;: [
+        &quot;memiliki mobil&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Malang&quot;,
+    &quot;memiliki mobil&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;SUPERSEDE&quot;,
+      &quot;record_id&quot;: &quot;r3&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;,
+      &quot;reason&quot;: &quot;kendaraan diganti&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-03</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-03" value="ACCEPT" data-case="HELD-03"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-03" value="HOLD" data-case="HELD-03"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-03" value="INVALID_INPUT" data-case="HELD-03"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-03">Optional note</label>
+    <textarea id="note-HELD-03" class="note-input" data-case="HELD-03"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-14">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 9 of 36</p>
+      <h2><code>HELD-14</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Palembang</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <p class="empty">(none)</p>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya bekerja di puskesmas.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di puskesmas</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Palembang</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">DELETE</span><span class="op-field">target_id=<code>r1</code></span></div><div class="op-reason">reason: bersihkan data</div><div class="auth auth-missing"><span class="tag">Authorization</span><span class="muted">(none)</span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-14&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Palembang&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya bekerja di puskesmas.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di puskesmas&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Palembang&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;DELETE&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;,
+      &quot;reason&quot;: &quot;bersihkan data&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-14</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-14" value="ACCEPT" data-case="HELD-14"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-14" value="HOLD" data-case="HELD-14"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-14" value="INVALID_INPUT" data-case="HELD-14"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-14">Optional note</label>
+    <textarea id="note-HELD-14" class="note-input" data-case="HELD-14"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-03">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 10 of 36</p>
+      <h2><code>DEV-03</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r2</code><ul class="claims"><li>tinggal di Surabaya</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e2</code><span class="source">synthetic:relocation</span></div><blockquote>Saya sudah pindah dan sekarang tinggal di Surabaya.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">tinggal di Surabaya</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Surabaya</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">SUPERSEDE</span><span class="op-field">record_id=<code>r2</code></span><span class="op-field">target_id=<code>r1</code></span></div><div class="op-reason">reason: pengguna pindah</div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-03&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e2&quot;,
+      &quot;source&quot;: &quot;synthetic:relocation&quot;,
+      &quot;text&quot;: &quot;Saya sudah pindah dan sekarang tinggal di Surabaya.&quot;,
+      &quot;supports&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Surabaya&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;SUPERSEDE&quot;,
+      &quot;record_id&quot;: &quot;r2&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;,
+      &quot;reason&quot;: &quot;pengguna pindah&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-03</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-03" value="ACCEPT" data-case="DEV-03"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-03" value="HOLD" data-case="DEV-03"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-03" value="INVALID_INPUT" data-case="DEV-03"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-03">Optional note</label>
+    <textarea id="note-DEV-03" class="note-input" data-case="DEV-03"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-15">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 11 of 36</p>
+      <h2><code>DEV-15</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya bekerja di Tokopedia.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Tokopedia</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">bekerja di Tokopedia</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">DELETE</span><span class="op-field">target_id=<code>r1</code></span></div><div class="op-reason">reason: hapus data lama</div><div class="auth"><span class="tag">Authorization</span><span class="op-field">source=<code>synthetic:user-request</code></span><span class="op-field">evidence_id=<code>e_missing</code></span><span class="op-field">target_id=<code>r1</code></span><span class="op-field">rationale=<code>menghapus data lama</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-15&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya bekerja di Tokopedia.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;bekerja di Tokopedia&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;DELETE&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;,
+      &quot;reason&quot;: &quot;hapus data lama&quot;,
+      &quot;authorization&quot;: {
+        &quot;source&quot;: &quot;synthetic:user-request&quot;,
+        &quot;evidence_id&quot;: &quot;e_missing&quot;,
+        &quot;target_id&quot;: &quot;r1&quot;,
+        &quot;rationale&quot;: &quot;menghapus data lama&quot;
+      }
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-15</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-15" value="ACCEPT" data-case="DEV-15"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-15" value="HOLD" data-case="DEV-15"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-15" value="INVALID_INPUT" data-case="DEV-15"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-15">Optional note</label>
+    <textarea id="note-DEV-15" class="note-input" data-case="DEV-15"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-10">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 12 of 36</p>
+      <h2><code>DEV-10</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Surabaya</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya sekarang bekerja di Traveloka.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Traveloka</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bandung</span>; <span class="claim">bekerja di Tokopedia</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">REVISE</span><span class="op-field">record_id=<code>r1</code></span><span class="op-field">target_id=<code>r1</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-10&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya sekarang bekerja di Traveloka.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Traveloka&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bandung&quot;,
+    &quot;bekerja di Tokopedia&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;REVISE&quot;,
+      &quot;record_id&quot;: &quot;r1&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-10</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-10" value="ACCEPT" data-case="DEV-10"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-10" value="HOLD" data-case="DEV-10"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-10" value="INVALID_INPUT" data-case="DEV-10"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-10">Optional note</label>
+    <textarea id="note-DEV-10" class="note-input" data-case="DEV-10"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-08">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 13 of 36</p>
+      <h2><code>HELD-08</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Medan</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Medan</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya bekerja sebagai perawat.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja sebagai perawat</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Medan</span>; <span class="claim">bekerja sebagai perawat</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">NOOP</span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-08&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Medan&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Medan&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya bekerja sebagai perawat.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja sebagai perawat&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Medan&quot;,
+    &quot;bekerja sebagai perawat&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;NOOP&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-08</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-08" value="ACCEPT" data-case="HELD-08"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-08" value="HOLD" data-case="HELD-08"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-08" value="INVALID_INPUT" data-case="HELD-08"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-08">Optional note</label>
+    <textarea id="note-HELD-08" class="note-input" data-case="HELD-08"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-14">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 14 of 36</p>
+      <h2><code>DEV-14</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <p class="empty">(none)</p>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya bekerja di Tokopedia.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Tokopedia</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bandung</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">DELETE</span><span class="op-field">target_id=<code>r1</code></span></div><div class="op-reason">reason: hapus data lama</div><div class="auth auth-missing"><span class="tag">Authorization</span><span class="muted">(none)</span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-14&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya bekerja di Tokopedia.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bandung&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;DELETE&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;,
+      &quot;reason&quot;: &quot;hapus data lama&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-14</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-14" value="ACCEPT" data-case="DEV-14"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-14" value="HOLD" data-case="DEV-14"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-14" value="INVALID_INPUT" data-case="DEV-14"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-14">Optional note</label>
+    <textarea id="note-DEV-14" class="note-input" data-case="DEV-14"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-09">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 15 of 36</p>
+      <h2><code>DEV-09</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Surabaya</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <p class="empty">(none)</p>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bandung</span>; <span class="claim">bekerja di Tokopedia</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">REVISE</span><span class="op-field">record_id=<code>r1</code></span><span class="op-field">target_id=<code>r1</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-09&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bandung&quot;,
+    &quot;bekerja di Tokopedia&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;REVISE&quot;,
+      &quot;record_id&quot;: &quot;r1&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-09</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-09" value="ACCEPT" data-case="DEV-09"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-09" value="HOLD" data-case="DEV-09"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-09" value="INVALID_INPUT" data-case="DEV-09"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-09">Optional note</label>
+    <textarea id="note-DEV-09" class="note-input" data-case="DEV-09"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-17">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 16 of 36</p>
+      <h2><code>DEV-17</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Surabaya</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:correction</span></div><blockquote>Maaf, saya salah. Saya tinggal di Surabaya.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">tinggal di Surabaya</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Surabaya</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <p class="empty">(none declared)</p>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-17&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:correction&quot;,
+      &quot;text&quot;: &quot;Maaf, saya salah. Saya tinggal di Surabaya.&quot;,
+      &quot;supports&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Surabaya&quot;
+  ],
+  &quot;operations&quot;: []
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-17</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-17" value="ACCEPT" data-case="DEV-17"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-17" value="HOLD" data-case="DEV-17"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-17" value="INVALID_INPUT" data-case="DEV-17"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-17">Optional note</label>
+    <textarea id="note-DEV-17" class="note-input" data-case="DEV-17"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-04">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 17 of 36</p>
+      <h2><code>HELD-04</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Semarang</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>menderita alergi udang</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>bekerja di PLN</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Semarang</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>bekerja di PLN</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e2</code><span class="source">synthetic:user-request</span></div><blockquote>Hapus catatan alergi udang saya, sudah tidak relevan.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="muted">(none)</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Semarang</span>; <span class="claim">bekerja di PLN</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">DELETE</span><span class="op-field">target_id=<code>r2</code></span></div><div class="op-reason">reason: pengguna meminta penghapusan data alergi</div><div class="auth"><span class="tag">Authorization</span><span class="op-field">source=<code>synthetic:user-request</code></span><span class="op-field">evidence_id=<code>e2</code></span><span class="op-field">target_id=<code>r2</code></span><span class="op-field">rationale=<code>pengguna secara eksplisit meminta catatan alergi dihapus</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-04&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Semarang&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;menderita alergi udang&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di PLN&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Semarang&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di PLN&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e2&quot;,
+      &quot;source&quot;: &quot;synthetic:user-request&quot;,
+      &quot;text&quot;: &quot;Hapus catatan alergi udang saya, sudah tidak relevan.&quot;,
+      &quot;supports&quot;: []
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Semarang&quot;,
+    &quot;bekerja di PLN&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;DELETE&quot;,
+      &quot;target_id&quot;: &quot;r2&quot;,
+      &quot;reason&quot;: &quot;pengguna meminta penghapusan data alergi&quot;,
+      &quot;authorization&quot;: {
+        &quot;source&quot;: &quot;synthetic:user-request&quot;,
+        &quot;evidence_id&quot;: &quot;e2&quot;,
+        &quot;target_id&quot;: &quot;r2&quot;,
+        &quot;rationale&quot;: &quot;pengguna secara eksplisit meminta catatan alergi dihapus&quot;
+      }
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-04</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-04" value="ACCEPT" data-case="HELD-04"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-04" value="HOLD" data-case="HELD-04"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-04" value="INVALID_INPUT" data-case="HELD-04"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-04">Optional note</label>
+    <textarea id="note-HELD-04" class="note-input" data-case="HELD-04"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-01">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 18 of 36</p>
+      <h2><code>HELD-01</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Yogyakarta</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Yogyakarta</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Gojek</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya bekerja di Gojek.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Gojek</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Yogyakarta</span>; <span class="claim">bekerja di Gojek</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">WRITE</span><span class="op-field">record_id=<code>r2</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-01&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Yogyakarta&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Yogyakarta&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Gojek&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya bekerja di Gojek.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Gojek&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Yogyakarta&quot;,
+    &quot;bekerja di Gojek&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;WRITE&quot;,
+      &quot;record_id&quot;: &quot;r2&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-01</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-01" value="ACCEPT" data-case="HELD-01"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-01" value="HOLD" data-case="HELD-01"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-01" value="INVALID_INPUT" data-case="HELD-01"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-01">Optional note</label>
+    <textarea id="note-HELD-01" class="note-input" data-case="HELD-01"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-05">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 19 of 36</p>
+      <h2><code>HELD-05</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>bekerja di Bank BCA</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>tinggal di Bogor</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>bekerja di Bank BCA</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>tinggal di Bogor</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <p class="empty">(none)</p>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">bekerja di Bank BCA</span>; <span class="claim">tinggal di Bogor</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">NOOP</span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-05&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Bank BCA&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bogor&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Bank BCA&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bogor&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [],
+  &quot;required_claims&quot;: [
+    &quot;bekerja di Bank BCA&quot;,
+    &quot;tinggal di Bogor&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;NOOP&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-05</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-05" value="ACCEPT" data-case="HELD-05"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-05" value="HOLD" data-case="HELD-05"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-05" value="INVALID_INPUT" data-case="HELD-05"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-05">Optional note</label>
+    <textarea id="note-HELD-05" class="note-input" data-case="HELD-05"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-02">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 20 of 36</p>
+      <h2><code>DEV-02</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Surabaya</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:correction</span></div><blockquote>Maaf, saya salah. Saya tinggal di Surabaya, bukan Bandung.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">tinggal di Surabaya</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Surabaya</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">REVISE</span><span class="op-field">record_id=<code>r1</code></span><span class="op-field">target_id=<code>r1</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-02&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:correction&quot;,
+      &quot;text&quot;: &quot;Maaf, saya salah. Saya tinggal di Surabaya, bukan Bandung.&quot;,
+      &quot;supports&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Surabaya&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;REVISE&quot;,
+      &quot;record_id&quot;: &quot;r1&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-02</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-02" value="ACCEPT" data-case="DEV-02"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-02" value="HOLD" data-case="DEV-02"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-02" value="INVALID_INPUT" data-case="DEV-02"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-02">Optional note</label>
+    <textarea id="note-DEV-02" class="note-input" data-case="DEV-02"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-15">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 21 of 36</p>
+      <h2><code>HELD-15</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Palembang</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di puskesmas</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r2</code><ul class="claims"><li>bekerja di puskesmas</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya bekerja di puskesmas.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di puskesmas</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">bekerja di puskesmas</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">DELETE</span><span class="op-field">target_id=<code>r1</code></span></div><div class="op-reason">reason: hapus data lama</div><div class="auth"><span class="tag">Authorization</span><span class="op-field">source=<code>synthetic:user-request</code></span><span class="op-field">evidence_id=<code>e1</code></span><span class="op-field">target_id=<code>r2</code></span><span class="op-field">rationale=<code>menghapus data lama</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-15&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Palembang&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di puskesmas&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di puskesmas&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya bekerja di puskesmas.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di puskesmas&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;bekerja di puskesmas&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;DELETE&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;,
+      &quot;reason&quot;: &quot;hapus data lama&quot;,
+      &quot;authorization&quot;: {
+        &quot;source&quot;: &quot;synthetic:user-request&quot;,
+        &quot;evidence_id&quot;: &quot;e1&quot;,
+        &quot;target_id&quot;: &quot;r2&quot;,
+        &quot;rationale&quot;: &quot;menghapus data lama&quot;
+      }
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-15</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-15" value="ACCEPT" data-case="HELD-15"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-15" value="HOLD" data-case="HELD-15"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-15" value="INVALID_INPUT" data-case="HELD-15"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-15">Optional note</label>
+    <textarea id="note-HELD-15" class="note-input" data-case="HELD-15"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-07">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 22 of 36</p>
+      <h2><code>HELD-07</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>memiliki dua anak</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>memiliki tiga anak</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:correction</span></div><blockquote>Koreksi: saya memiliki tiga anak, bukan dua.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">memiliki tiga anak</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="claim">memiliki dua anak</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">memiliki tiga anak</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">REVISE</span><span class="op-field">record_id=<code>r1</code></span><span class="op-field">target_id=<code>r1</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-07&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;memiliki dua anak&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;memiliki tiga anak&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:correction&quot;,
+      &quot;text&quot;: &quot;Koreksi: saya memiliki tiga anak, bukan dua.&quot;,
+      &quot;supports&quot;: [
+        &quot;memiliki tiga anak&quot;
+      ],
+      &quot;contradicts&quot;: [
+        &quot;memiliki dua anak&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;memiliki tiga anak&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;REVISE&quot;,
+      &quot;record_id&quot;: &quot;r1&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-07</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-07" value="ACCEPT" data-case="HELD-07"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-07" value="HOLD" data-case="HELD-07"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-07" value="INVALID_INPUT" data-case="HELD-07"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-07">Optional note</label>
+    <textarea id="note-HELD-07" class="note-input" data-case="HELD-07"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-13">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 23 of 36</p>
+      <h2><code>DEV-13</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:relocation</span></div><blockquote>Saya sekarang tinggal di Surabaya.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">tinggal di Surabaya</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="claim">tinggal di Bandung</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bandung</span>; <span class="claim">bekerja di Tokopedia</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">NOOP</span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-13&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:relocation&quot;,
+      &quot;text&quot;: &quot;Saya sekarang tinggal di Surabaya.&quot;,
+      &quot;supports&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ],
+      &quot;contradicts&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bandung&quot;,
+    &quot;bekerja di Tokopedia&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;NOOP&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-13</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-13" value="ACCEPT" data-case="DEV-13"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-13" value="HOLD" data-case="DEV-13"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-13" value="INVALID_INPUT" data-case="DEV-13"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-13">Optional note</label>
+    <textarea id="note-DEV-13" class="note-input" data-case="DEV-13"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-10">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 24 of 36</p>
+      <h2><code>HELD-10</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>bekerja di Semen Gresik</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>tinggal di Gresik</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>bekerja di Holcim</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>tinggal di Gresik</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:pet</span></div><blockquote>Saya memelihara dua kucing.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">memelihara dua kucing</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">bekerja di Semen Gresik</span>; <span class="claim">tinggal di Gresik</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">REVISE</span><span class="op-field">record_id=<code>r1</code></span><span class="op-field">target_id=<code>r1</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-10&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Semen Gresik&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Gresik&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Holcim&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Gresik&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:pet&quot;,
+      &quot;text&quot;: &quot;Saya memelihara dua kucing.&quot;,
+      &quot;supports&quot;: [
+        &quot;memelihara dua kucing&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;bekerja di Semen Gresik&quot;,
+    &quot;tinggal di Gresik&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;REVISE&quot;,
+      &quot;record_id&quot;: &quot;r1&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-10</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-10" value="ACCEPT" data-case="HELD-10"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-10" value="HOLD" data-case="HELD-10"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-10" value="INVALID_INPUT" data-case="HELD-10"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-10">Optional note</label>
+    <textarea id="note-HELD-10" class="note-input" data-case="HELD-10"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-16">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 25 of 36</p>
+      <h2><code>HELD-16</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Makassar</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Makassar</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di bank</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya bekerja di bank.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di bank</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Makassar</span>; <span class="claim">bekerja di bank</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <p class="empty">(none declared)</p>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-16&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Makassar&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Makassar&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di bank&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya bekerja di bank.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di bank&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Makassar&quot;,
+    &quot;bekerja di bank&quot;
+  ],
+  &quot;operations&quot;: []
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-16</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-16" value="ACCEPT" data-case="HELD-16"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-16" value="HOLD" data-case="HELD-16"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-16" value="INVALID_INPUT" data-case="HELD-16"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-16">Optional note</label>
+    <textarea id="note-HELD-16" class="note-input" data-case="HELD-16"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-18">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 26 of 36</p>
+      <h2><code>HELD-18</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Papua</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di tambang</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Papua</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>pindah tugas</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:relocation</span></div><blockquote>Saya pindah tugas.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">pindah tugas</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Papua</span>; <span class="claim">bekerja di tambang</span>; <span class="claim">pindah tugas</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">WRITE</span><span class="op-field">record_id=<code>r3</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-18&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Papua&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di tambang&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Papua&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;pindah tugas&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:relocation&quot;,
+      &quot;text&quot;: &quot;Saya pindah tugas.&quot;,
+      &quot;supports&quot;: [
+        &quot;pindah tugas&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Papua&quot;,
+    &quot;bekerja di tambang&quot;,
+    &quot;pindah tugas&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;WRITE&quot;,
+      &quot;record_id&quot;: &quot;r3&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-18</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-18" value="ACCEPT" data-case="HELD-18"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-18" value="HOLD" data-case="HELD-18"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-18" value="INVALID_INPUT" data-case="HELD-18"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-18">Optional note</label>
+    <textarea id="note-HELD-18" class="note-input" data-case="HELD-18"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-09">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 27 of 36</p>
+      <h2><code>HELD-09</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Solo</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di industri batik</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Jakarta</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di industri batik</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <p class="empty">(none)</p>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Solo</span>; <span class="claim">bekerja di industri batik</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">REVISE</span><span class="op-field">record_id=<code>r1</code></span><span class="op-field">target_id=<code>r1</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-09&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Solo&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di industri batik&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Jakarta&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di industri batik&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Solo&quot;,
+    &quot;bekerja di industri batik&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;REVISE&quot;,
+      &quot;record_id&quot;: &quot;r1&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-09</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-09" value="ACCEPT" data-case="HELD-09"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-09" value="HOLD" data-case="HELD-09"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-09" value="INVALID_INPUT" data-case="HELD-09"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-09">Optional note</label>
+    <textarea id="note-HELD-09" class="note-input" data-case="HELD-09"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-06">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 28 of 36</p>
+      <h2><code>DEV-06</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Surabaya</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Traveloka</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>belajar bahasa Jepang</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:relocation</span></div><blockquote>Saya pindah ke Surabaya.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">tinggal di Surabaya</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div><div class="evidence-item"><div class="ev-head"><code class="rid">e2</code><span class="source">synthetic:employment</span></div><blockquote>Saya sekarang bekerja di Traveloka.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Traveloka</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div><div class="evidence-item"><div class="ev-head"><code class="rid">e3</code><span class="source">synthetic:hobby</span></div><blockquote>Saya mulai belajar bahasa Jepang.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">belajar bahasa Jepang</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Surabaya</span>; <span class="claim">bekerja di Traveloka</span>; <span class="claim">belajar bahasa Jepang</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">REVISE</span><span class="op-field">record_id=<code>r1</code></span><span class="op-field">target_id=<code>r1</code></span></div></li><li class="operation"><div class="op-head"><span class="op-type">REVISE</span><span class="op-field">record_id=<code>r2</code></span><span class="op-field">target_id=<code>r2</code></span></div></li><li class="operation"><div class="op-head"><span class="op-type">WRITE</span><span class="op-field">record_id=<code>r3</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-06&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Traveloka&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;belajar bahasa Jepang&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:relocation&quot;,
+      &quot;text&quot;: &quot;Saya pindah ke Surabaya.&quot;,
+      &quot;supports&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;e2&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya sekarang bekerja di Traveloka.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Traveloka&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;e3&quot;,
+      &quot;source&quot;: &quot;synthetic:hobby&quot;,
+      &quot;text&quot;: &quot;Saya mulai belajar bahasa Jepang.&quot;,
+      &quot;supports&quot;: [
+        &quot;belajar bahasa Jepang&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Surabaya&quot;,
+    &quot;bekerja di Traveloka&quot;,
+    &quot;belajar bahasa Jepang&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;REVISE&quot;,
+      &quot;record_id&quot;: &quot;r1&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;
+    },
+    {
+      &quot;type&quot;: &quot;REVISE&quot;,
+      &quot;record_id&quot;: &quot;r2&quot;,
+      &quot;target_id&quot;: &quot;r2&quot;
+    },
+    {
+      &quot;type&quot;: &quot;WRITE&quot;,
+      &quot;record_id&quot;: &quot;r3&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-06</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-06" value="ACCEPT" data-case="DEV-06"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-06" value="HOLD" data-case="DEV-06"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-06" value="INVALID_INPUT" data-case="DEV-06"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-06">Optional note</label>
+    <textarea id="note-DEV-06" class="note-input" data-case="DEV-06"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-17">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 29 of 36</p>
+      <h2><code>HELD-17</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>memiliki satu anjing</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>memiliki dua anjing</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:possession</span></div><blockquote>Sekarang saya memiliki dua anjing.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">memiliki dua anjing</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">memiliki dua anjing</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <p class="empty">(none declared)</p>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-17&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;memiliki satu anjing&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;memiliki dua anjing&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:possession&quot;,
+      &quot;text&quot;: &quot;Sekarang saya memiliki dua anjing.&quot;,
+      &quot;supports&quot;: [
+        &quot;memiliki dua anjing&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;memiliki dua anjing&quot;
+  ],
+  &quot;operations&quot;: []
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-17</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-17" value="ACCEPT" data-case="HELD-17"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-17" value="HOLD" data-case="HELD-17"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-17" value="INVALID_INPUT" data-case="HELD-17"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-17">Optional note</label>
+    <textarea id="note-HELD-17" class="note-input" data-case="HELD-17"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-08">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 30 of 36</p>
+      <h2><code>DEV-08</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Ia bekerja di Tokopedia.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Tokopedia</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bandung</span>; <span class="claim">bekerja di Tokopedia</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">NOOP</span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-08&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Ia bekerja di Tokopedia.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bandung&quot;,
+    &quot;bekerja di Tokopedia&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;NOOP&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-08</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-08" value="ACCEPT" data-case="DEV-08"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-08" value="HOLD" data-case="DEV-08"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-08" value="INVALID_INPUT" data-case="DEV-08"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-08">Optional note</label>
+    <textarea id="note-DEV-08" class="note-input" data-case="DEV-08"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-07">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 31 of 36</p>
+      <h2><code>DEV-07</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Jakarta</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di PT Sinar</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Jakarta</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di PT Astra</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:correction</span></div><blockquote>Koreksi: saya bekerja di PT Astra, bukan PT Sinar.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di PT Astra</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="claim">bekerja di PT Sinar</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Jakarta</span>; <span class="claim">bekerja di PT Astra</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">REVISE</span><span class="op-field">record_id=<code>r2</code></span><span class="op-field">target_id=<code>r2</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-07&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Jakarta&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di PT Sinar&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Jakarta&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di PT Astra&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:correction&quot;,
+      &quot;text&quot;: &quot;Koreksi: saya bekerja di PT Astra, bukan PT Sinar.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di PT Astra&quot;
+      ],
+      &quot;contradicts&quot;: [
+        &quot;bekerja di PT Sinar&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Jakarta&quot;,
+    &quot;bekerja di PT Astra&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;REVISE&quot;,
+      &quot;record_id&quot;: &quot;r2&quot;,
+      &quot;target_id&quot;: &quot;r2&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-07</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-07" value="ACCEPT" data-case="DEV-07"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-07" value="HOLD" data-case="DEV-07"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-07" value="INVALID_INPUT" data-case="DEV-07"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-07">Optional note</label>
+    <textarea id="note-DEV-07" class="note-input" data-case="DEV-07"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-12">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 32 of 36</p>
+      <h2><code>HELD-12</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Surabaya</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di pelabuhan</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Surabaya</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di pelabuhan</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>menjadi nakhoda</li><li>memiliki izin pelayaran</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya menjadi nakhoda.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">menjadi nakhoda</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Surabaya</span>; <span class="claim">bekerja di pelabuhan</span>; <span class="claim">menjadi nakhoda</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">WRITE</span><span class="op-field">record_id=<code>r3</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-12&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di pelabuhan&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Surabaya&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di pelabuhan&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;menjadi nakhoda&quot;,
+        &quot;memiliki izin pelayaran&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya menjadi nakhoda.&quot;,
+      &quot;supports&quot;: [
+        &quot;menjadi nakhoda&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Surabaya&quot;,
+    &quot;bekerja di pelabuhan&quot;,
+    &quot;menjadi nakhoda&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;WRITE&quot;,
+      &quot;record_id&quot;: &quot;r3&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-12</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-12" value="ACCEPT" data-case="HELD-12"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-12" value="HOLD" data-case="HELD-12"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-12" value="INVALID_INPUT" data-case="HELD-12"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-12">Optional note</label>
+    <textarea id="note-HELD-12" class="note-input" data-case="HELD-12"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-16">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 33 of 36</p>
+      <h2><code>DEV-16</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya bekerja di Tokopedia.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Tokopedia</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bandung</span>; <span class="claim">bekerja di Tokopedia</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <p class="empty">(none declared)</p>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-16&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya bekerja di Tokopedia.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bandung&quot;,
+    &quot;bekerja di Tokopedia&quot;
+  ],
+  &quot;operations&quot;: []
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-16</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-16" value="ACCEPT" data-case="DEV-16"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-16" value="HOLD" data-case="DEV-16"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-16" value="INVALID_INPUT" data-case="DEV-16"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-16">Optional note</label>
+    <textarea id="note-DEV-16" class="note-input" data-case="DEV-16"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-06">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 34 of 36</p>
+      <h2><code>HELD-06</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Depok</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bekasi</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Pertamina</li></ul></li><li><code class="rid">r3</code><ul class="claims"><li>menjadi anggota koperasi</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:relocation</span></div><blockquote>Saya pindah ke Bekasi.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">tinggal di Bekasi</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div><div class="evidence-item"><div class="ev-head"><code class="rid">e2</code><span class="source">synthetic:employment</span></div><blockquote>Saya bekerja di Pertamina.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Pertamina</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div><div class="evidence-item"><div class="ev-head"><code class="rid">e3</code><span class="source">synthetic:membership</span></div><blockquote>Saya menjadi anggota koperasi.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">menjadi anggota koperasi</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bekasi</span>; <span class="claim">bekerja di Pertamina</span>; <span class="claim">menjadi anggota koperasi</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">REVISE</span><span class="op-field">record_id=<code>r1</code></span><span class="op-field">target_id=<code>r1</code></span></div></li><li class="operation"><div class="op-head"><span class="op-type">WRITE</span><span class="op-field">record_id=<code>r2</code></span></div></li><li class="operation"><div class="op-head"><span class="op-type">WRITE</span><span class="op-field">record_id=<code>r3</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-06&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Depok&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bekasi&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Pertamina&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r3&quot;,
+      &quot;claims&quot;: [
+        &quot;menjadi anggota koperasi&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:relocation&quot;,
+      &quot;text&quot;: &quot;Saya pindah ke Bekasi.&quot;,
+      &quot;supports&quot;: [
+        &quot;tinggal di Bekasi&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;e2&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya bekerja di Pertamina.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Pertamina&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;e3&quot;,
+      &quot;source&quot;: &quot;synthetic:membership&quot;,
+      &quot;text&quot;: &quot;Saya menjadi anggota koperasi.&quot;,
+      &quot;supports&quot;: [
+        &quot;menjadi anggota koperasi&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bekasi&quot;,
+    &quot;bekerja di Pertamina&quot;,
+    &quot;menjadi anggota koperasi&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;REVISE&quot;,
+      &quot;record_id&quot;: &quot;r1&quot;,
+      &quot;target_id&quot;: &quot;r1&quot;
+    },
+    {
+      &quot;type&quot;: &quot;WRITE&quot;,
+      &quot;record_id&quot;: &quot;r2&quot;
+    },
+    {
+      &quot;type&quot;: &quot;WRITE&quot;,
+      &quot;record_id&quot;: &quot;r3&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-06</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-06" value="ACCEPT" data-case="HELD-06"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-06" value="HOLD" data-case="HELD-06"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-06" value="INVALID_INPUT" data-case="HELD-06"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-06">Optional note</label>
+    <textarea id="note-HELD-06" class="note-input" data-case="HELD-06"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-DEV-01">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 35 of 36</p>
+      <h2><code>DEV-01</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>tinggal di Bandung</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>bekerja di Tokopedia</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Ia bekerja di Tokopedia.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Tokopedia</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="muted">(none)</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">tinggal di Bandung</span>; <span class="claim">bekerja di Tokopedia</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">WRITE</span><span class="op-field">record_id=<code>r2</code></span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;DEV-01&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Bandung&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Ia bekerja di Tokopedia.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Tokopedia&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;tinggal di Bandung&quot;,
+    &quot;bekerja di Tokopedia&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;WRITE&quot;,
+      &quot;record_id&quot;: &quot;r2&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>DEV-01</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-DEV-01" value="ACCEPT" data-case="DEV-01"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-01" value="HOLD" data-case="DEV-01"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-DEV-01" value="INVALID_INPUT" data-case="DEV-01"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-DEV-01">Optional note</label>
+    <textarea id="note-DEV-01" class="note-input" data-case="DEV-01"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+
+<article class="case" id="case-HELD-13">
+  <header class="case-head">
+    <div>
+      <p class="case-number">Case 36 of 36</p>
+      <h2><code>HELD-13</code></h2>
+    </div>
+    <p class="case-note">Transition inputs only — no label is present in this file.</p>
+  </header>
+
+  <div class="grid two">
+    <section class="panel">
+      <h3>Prior state (before)</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>bekerja di Unilever</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>tinggal di Tangerang</li></ul></li></ul>
+    </section>
+    <section class="panel">
+      <h3>Candidate state</h3>
+      <ul class="records"><li><code class="rid">r1</code><ul class="claims"><li>bekerja di Unilever</li></ul></li><li><code class="rid">r2</code><ul class="claims"><li>tinggal di Tangerang</li></ul></li></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Evidence</h3>
+    <div class="evidence-list"><div class="evidence-item"><div class="ev-head"><code class="rid">e1</code><span class="source">synthetic:employment</span></div><blockquote>Saya sekarang bekerja di Indofood.</blockquote><div class="ev-tags"><div><span class="tag tag-support">Supports</span> <span class="claim">bekerja di Indofood</span></div><div><span class="tag tag-contradict">Contradicts</span> <span class="claim">bekerja di Unilever</span></div></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="claims-line"><span class="claim">bekerja di Unilever</span>; <span class="claim">tinggal di Tangerang</span></p>
+  </section>
+
+  <section class="panel">
+    <h3>Declared operations</h3>
+    <ul class="operations"><li class="operation"><div class="op-head"><span class="op-type">NOOP</span></div></li></ul>
+  </section>
+
+  <details class="raw">
+    <summary>Full transition JSON</summary>
+    <pre>{
+  &quot;case_id&quot;: &quot;HELD-13&quot;,
+  &quot;schema_version&quot;: 2,
+  &quot;before&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Unilever&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Tangerang&quot;
+      ]
+    }
+  ],
+  &quot;candidate&quot;: [
+    {
+      &quot;id&quot;: &quot;r1&quot;,
+      &quot;claims&quot;: [
+        &quot;bekerja di Unilever&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;r2&quot;,
+      &quot;claims&quot;: [
+        &quot;tinggal di Tangerang&quot;
+      ]
+    }
+  ],
+  &quot;evidence&quot;: [
+    {
+      &quot;id&quot;: &quot;e1&quot;,
+      &quot;source&quot;: &quot;synthetic:employment&quot;,
+      &quot;text&quot;: &quot;Saya sekarang bekerja di Indofood.&quot;,
+      &quot;supports&quot;: [
+        &quot;bekerja di Indofood&quot;
+      ],
+      &quot;contradicts&quot;: [
+        &quot;bekerja di Unilever&quot;
+      ]
+    }
+  ],
+  &quot;required_claims&quot;: [
+    &quot;bekerja di Unilever&quot;,
+    &quot;tinggal di Tangerang&quot;
+  ],
+  &quot;operations&quot;: [
+    {
+      &quot;type&quot;: &quot;NOOP&quot;
+    }
+  ]
+}</pre>
+  </details>
+
+  <fieldset class="answer-block">
+    <legend>Your decision for <code>HELD-13</code></legend>
+    <div class="options"><label class="option"><input class="decision-input" type="radio" name="decision-HELD-13" value="ACCEPT" data-case="HELD-13"><span>ACCEPT</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-13" value="HOLD" data-case="HELD-13"><span>HOLD</span></label><label class="option"><input class="decision-input" type="radio" name="decision-HELD-13" value="INVALID_INPUT" data-case="HELD-13"><span>INVALID_INPUT</span></label></div>
+  </fieldset>
+
+  <div class="note-wrap">
+    <label for="note-HELD-13">Optional note</label>
+    <textarea id="note-HELD-13" class="note-input" data-case="HELD-13"
+      rows="2" placeholder="Reason, evidence cited, or rule applied (optional)."></textarea>
+  </div>
+</article>
+
+</main>
+
+<section class="card" id="finish">
+  <h2>Finish</h2>
+  <p>
+    Check that the progress indicator shows <strong>36 / 36</strong>
+    answered, then download the answers JSON. The coordinator will grade it with
+    <code>scripts/review_quiz.py --grade</code>; disagreements go to adjudication using
+    <code>data/review/adjudication-template.md</code>.
+  </p>
+  <div class="actions">
+    <button type="button" class="js-download">Download answers JSON</button>
+  </div>
+</section>
+
+<p class="footer">
+  Self-contained review artifact generated from manifest <code>membud-evaluation-v2</code>.
+  No network requests, no external assets, no labels.
+</p>
+
+</div>
+<script>
+(function () {
+  "use strict";
+
+  var MANIFEST_ID = "membud-evaluation-v2";
+  var MANIFEST_SHA256 = "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a";
+  var CASE_IDS = ["DEV-05", "DEV-04", "HELD-11", "DEV-18", "DEV-11", "HELD-02", "DEV-12", "HELD-03", "HELD-14", "DEV-03", "DEV-15", "DEV-10", "HELD-08", "DEV-14", "DEV-09", "DEV-17", "HELD-04", "HELD-01", "HELD-05", "DEV-02", "HELD-15", "HELD-07", "DEV-13", "HELD-10", "HELD-16", "HELD-18", "HELD-09", "DEV-06", "HELD-17", "DEV-08", "DEV-07", "HELD-12", "DEV-16", "HELD-06", "DEV-01", "HELD-13"];
+  var STORAGE_KEY = "membud-review-quiz:" + MANIFEST_ID + ":" + MANIFEST_SHA256;
+
+  var reviewerInput = document.getElementById("reviewer");
+  var progressBar = document.getElementById("progress-bar");
+  var progressText = document.getElementById("progress-text");
+  var saveStatus = document.getElementById("save-status");
+  var resetButton = document.getElementById("reset");
+  var downloadButtons = document.querySelectorAll(".js-download");
+
+  var state = { reviewer: "", answers: {} };
+
+  function blankAnswers() {
+    var answers = {};
+    CASE_IDS.forEach(function (caseId) {
+      answers[caseId] = { decision: null, note: "" };
+    });
+    return answers;
+  }
+
+  function normalizeDecision(value) {
+    if (value === "ACCEPT" || value === "HOLD" || value === "INVALID_INPUT") {
+      return value;
+    }
+    return null;
+  }
+
+  function setStatus(message, isError) {
+    saveStatus.textContent = message;
+    saveStatus.className = isError ? "error" : "";
+  }
+
+  function answeredCount() {
+    var count = 0;
+    CASE_IDS.forEach(function (caseId) {
+      if (state.answers[caseId] && state.answers[caseId].decision) count += 1;
+    });
+    return count;
+  }
+
+  function updateProgress() {
+    var count = answeredCount();
+    progressBar.value = count;
+    progressBar.max = CASE_IDS.length;
+    progressText.textContent = count + " / " + CASE_IDS.length + " answered";
+  }
+
+  function saveState(message) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        reviewer: state.reviewer,
+        answers: state.answers,
+        saved_at: new Date().toISOString()
+      }));
+      var stamp = new Date().toLocaleTimeString();
+      setStatus(message || ("Draft saved in this browser at " + stamp + "."), false);
+    } catch (error) {
+      setStatus(
+        "Could not save to localStorage. Keep this tab open and download before closing.",
+        true
+      );
+    }
+  }
+
+  function loadState() {
+    state.answers = blankAnswers();
+    var raw = null;
+    try {
+      raw = window.localStorage.getItem(STORAGE_KEY);
+    } catch (error) {
+      setStatus("localStorage is unavailable; answers will not autosave.", true);
+      return;
+    }
+    if (!raw) return;
+    try {
+      var saved = JSON.parse(raw);
+      if (saved && typeof saved.reviewer === "string") {
+        state.reviewer = saved.reviewer;
+      }
+      if (saved && saved.answers && typeof saved.answers === "object") {
+        CASE_IDS.forEach(function (caseId) {
+          var entry = saved.answers[caseId];
+          if (!entry || typeof entry !== "object") return;
+          state.answers[caseId].decision = normalizeDecision(entry.decision);
+          state.answers[caseId].note = typeof entry.note === "string" ? entry.note : "";
+        });
+      }
+      setStatus("Restored your saved draft from this browser.", false);
+    } catch (error) {
+      setStatus("A saved draft could not be read; starting with blank answers.", true);
+    }
+  }
+
+  function applyStateToForm() {
+    reviewerInput.value = state.reviewer;
+    CASE_IDS.forEach(function (caseId) {
+      var entry = state.answers[caseId];
+      if (entry.decision) {
+        var selector = 'input[name="decision-' + caseId + '"][value="' + entry.decision + '"]';
+        var radio = document.querySelector(selector);
+        if (radio) radio.checked = true;
+      }
+      var note = document.getElementById("note-" + caseId);
+      if (note) note.value = entry.note;
+    });
+    updateProgress();
+  }
+
+  Array.prototype.forEach.call(
+    document.querySelectorAll(".decision-input"),
+    function (radio) {
+      radio.addEventListener("change", function () {
+        var caseId = radio.getAttribute("data-case");
+        if (!state.answers[caseId]) state.answers[caseId] = { decision: null, note: "" };
+        state.answers[caseId].decision = normalizeDecision(radio.value);
+        updateProgress();
+        saveState();
+      });
+    }
+  );
+
+  Array.prototype.forEach.call(
+    document.querySelectorAll(".note-input"),
+    function (textarea) {
+      textarea.addEventListener("input", function () {
+        var caseId = textarea.getAttribute("data-case");
+        if (!state.answers[caseId]) state.answers[caseId] = { decision: null, note: "" };
+        state.answers[caseId].note = textarea.value;
+        saveState("Draft saved in this browser.");
+      });
+    }
+  );
+
+  reviewerInput.addEventListener("input", function () {
+    state.reviewer = reviewerInput.value.trim();
+    saveState();
+  });
+
+  function slugify(value) {
+    var slug = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    return slug || "reviewer";
+  }
+
+  function downloadAnswers() {
+    var reviewer = reviewerInput.value.trim();
+    if (!reviewer) {
+      window.alert("Enter your reviewer name before downloading answers.");
+      reviewerInput.focus();
+      return;
+    }
+    state.reviewer = reviewer;
+    saveState();
+    var answers = {};
+    CASE_IDS.forEach(function (caseId) {
+      answers[caseId] = {
+        decision: state.answers[caseId].decision,
+        note: state.answers[caseId].note || ""
+      };
+    });
+    var payload = {
+      reviewer: reviewer,
+      manifest_id: MANIFEST_ID,
+      manifest_sha256: MANIFEST_SHA256,
+      answers: answers
+    };
+    var blob = new Blob([JSON.stringify(payload, null, 2) + "\n"], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = MANIFEST_ID + "-answers-" + slugify(reviewer) + ".json";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    var unanswered = CASE_IDS.length - answeredCount();
+    var message = "Downloaded answers JSON for " + reviewer + ".";
+    if (unanswered > 0) message += " " + unanswered + " case(s) are still blank.";
+    setStatus(message, unanswered > 0);
+  }
+
+  Array.prototype.forEach.call(downloadButtons, function (button) {
+    button.addEventListener("click", downloadAnswers);
+  });
+
+  resetButton.addEventListener("click", function () {
+    if (!window.confirm("Clear all saved answers for this quiz? This cannot be undone.")) {
+      return;
+    }
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      /* localStorage may be unavailable; reset the form anyway. */
+    }
+    state.answers = blankAnswers();
+    Array.prototype.forEach.call(
+      document.querySelectorAll(".decision-input"),
+      function (radio) { radio.checked = false; }
+    );
+    Array.prototype.forEach.call(
+      document.querySelectorAll(".note-input"),
+      function (textarea) { textarea.value = ""; }
+    );
+    updateProgress();
+    saveState("Saved answers cleared from this browser.");
+  });
+
+  loadState();
+  applyStateToForm();
+})();
+</script>
+</body>
+</html>
