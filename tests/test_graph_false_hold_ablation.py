@@ -17,7 +17,7 @@ from membud.graph import build_graph, build_llm_graph
 from membud.llm.client import CacheMissError
 from membud.verification import (
     LLM_PROMPT_VERSION,
-    LLM_PROMPT_VERSION_POLICY_CLARIFIED,
+    LLM_PROMPT_VERSION_V1,
     POLICY_CLARIFICATION_SENTENCE,
     _llm_system_prompt,
     verify_with_llm,
@@ -190,31 +190,31 @@ def test_build_llm_graph_does_not_mutate_canonical_graph():
 # ---------------------------------------------------------------------------
 
 
-def test_default_prompt_is_unchanged():
+def test_default_prompt_is_clarified():
     prompt = _llm_system_prompt()
-    assert POLICY_CLARIFICATION_SENTENCE not in prompt
-    assert "An explicit operation alone does not authorize an unsupported change." in prompt
-
-
-def test_policy_clarified_prompt_includes_policy_sentence():
-    prompt = _llm_system_prompt(policy_clarification=True)
     assert POLICY_CLARIFICATION_SENTENCE in prompt
     assert "required only for DELETE" in prompt
 
 
-def test_verify_with_llm_reports_policy_prompt_version_and_sends_sentence():
-    t = _heldout_transition("HELD-01")
-    client = FakeClient()
-    result = verify_with_llm(t, client, "graph", policy_clarification=True)
-    assert result.prompt_version == LLM_PROMPT_VERSION_POLICY_CLARIFIED
-    assert POLICY_CLARIFICATION_SENTENCE in client.messages[0]["content"]
+def test_legacy_prompt_available_without_clarification():
+    prompt = _llm_system_prompt(policy_clarification=False)
+    assert POLICY_CLARIFICATION_SENTENCE not in prompt
+    assert "An explicit operation alone does not authorize an unsupported change." in prompt
 
 
-def test_verify_with_llm_default_version_unchanged():
+def test_verify_with_llm_defaults_to_clarified_prompt():
     t = _heldout_transition("HELD-01")
     client = FakeClient()
     result = verify_with_llm(t, client, "graph")
     assert result.prompt_version == LLM_PROMPT_VERSION
+    assert POLICY_CLARIFICATION_SENTENCE in client.messages[0]["content"]
+
+
+def test_verify_with_llm_legacy_prompt_selection():
+    t = _heldout_transition("HELD-01")
+    client = FakeClient()
+    result = verify_with_llm(t, client, "graph", policy_clarification=False)
+    assert result.prompt_version == LLM_PROMPT_VERSION_V1
     assert POLICY_CLARIFICATION_SENTENCE not in client.messages[0]["content"]
 
 
@@ -350,7 +350,7 @@ def test_run_ablation_writes_summary_with_fake_clients(tmp_path):
     assert len(written["rows"]) == 2
     assert written["budget"]["aborted"] is False
     assert set(written["variant_metrics"]) == {"graph_cache", "graph_no_null_auth"}
-    assert summary["rows"][0]["prompt_version"] == LLM_PROMPT_VERSION
+    assert summary["rows"][0]["prompt_version"] == LLM_PROMPT_VERSION_V1
 
 
 def test_run_ablation_policy_variant_uses_clarified_prompt(tmp_path):
@@ -365,6 +365,8 @@ def test_run_ablation_policy_variant_uses_clarified_prompt(tmp_path):
         max_attempts=3,
     )
     assert POLICY_CLARIFICATION_SENTENCE in client.messages[0]["content"]
+    row = json.loads((tmp_path / "out" / "summary.json").read_text())["rows"][0]
+    assert row["prompt_version"] == LLM_PROMPT_VERSION
 
 
 def test_run_ablation_aborts_on_budget_before_next_row(tmp_path):

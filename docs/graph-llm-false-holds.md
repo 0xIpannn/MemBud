@@ -332,9 +332,10 @@ remaining preservation failures are true HOLDs HELD-09/10, not false holds.)
   split or fresh cases is required before promoting G2 to the default prompt.
 - Single model, single run, single-reviewer labels (second review pending);
   temperature-0 provider determinism is unproven.
-- G2 remains an **opt-in prompt variant** (`verify_with_llm(policy_clarification=True)`,
-  prompt version `membud-transition-checks-v1-policy-clarified`); the default
-  prompt and all deterministic verifiers are unchanged.
+- G2 was promoted to the **default v2 prompt** (`membud-transition-checks-v2`)
+  after the dev-split replication. The legacy v1 prompt remains selectable
+  (`verify_with_llm(policy_clarification=False)`) for archival cache analysis;
+  all deterministic verifiers are unchanged.
 - This still does not establish graph-vs-text superiority: it removes a
   false-hold artifact inside the LLM graph condition.
 
@@ -372,5 +373,31 @@ This is a genuine out-of-sample check with respect to the four false-hold
 diagnosis, and it supports the policy clarification rather than the null-field
 serialization change. Caveats still apply: the dev cases were used earlier in
 case/verifier development, labels are single-reviewer, and this is one model and
-one run. Total ablation + replication spend: 33 paid calls, 117,392 accounted
-tokens (≈$0.012–$0.235 at the harness placeholder).
+one run. Total ablation + replication + re-run spend: 46 paid calls, 141,657 accounted
+tokens (≈$0.014–$0.283 at the harness placeholder).
+
+
+### Promotion and held-out re-run
+
+The clarified prompt became the default (`LLM_PROMPT_VERSION =
+"membud-transition-checks-v2"`; `policy_clarification=False` retains v1). The
+held-out evaluation was re-run into `data/results/llm-heldout-v2-prompt-v2/`:
+graph rows replayed the G2 ablation completions from cache, text rows were new
+paid calls with the clarified prompt, and semantic is unchanged.
+
+| Condition | ACCEPT | HOLD | INVALID_INPUT | False accepts | False holds | Valid accepted |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| graph (LLM) | 7 | 6 | 5 | 0/6 | 0/7 | 7/7 |
+| text (LLM) | 7 | 6 | 5 | 0/6 | 0/7 | 7/7 |
+| semantic | 7 | 6 | 5 | 0/6 | 0/7 | 7/7 |
+
+The run used 24,265 reported tokens (text only), 38 cache hits, and did not
+abort; estimated cost $0.0024-$0.0485 at the harness placeholder. The text
+condition's previous `HELD-03` false hold is gone with the shared prompt
+clarification.
+
+**Caveats unchanged:** the held-out split was used to select the promoted
+prompt, so these held-out numbers are still development evidence rather than a
+clean held-out result; the dev-split replication is the out-of-sample check, and
+labels remain single-reviewer with one model and one run. No graph-vs-text
+superiority is implied — the three guarded conditions are tied on this split.

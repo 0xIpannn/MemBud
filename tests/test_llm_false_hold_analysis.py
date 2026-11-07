@@ -397,7 +397,9 @@ class _CapturingClient:
 def test_derive_verifier_messages_matches_real_verify_with_llm(representation):
     transition = _transition(ACCEPT_RAW)
     client = _CapturingClient()
-    result = verify_with_llm(transition, client, representation)
+    result = verify_with_llm(
+        transition, client, representation, policy_clarification=False
+    )
     # The fake always fails, so the real function must fail closed to UNCERTAIN.
     assert result.decision == "HOLD"
     assert {check.status for check in result.checks} == {"UNCERTAIN"}

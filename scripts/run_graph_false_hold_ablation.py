@@ -9,14 +9,14 @@ preservation failures whose stated reasons cite a null/absent ``authorization``
 on an evidence-backed ``REVISE``/``SUPERSEDE``, plus one operation-scoping case.
 This runner tests the two direct hypotheses with the smallest controlled probe:
 
-* ``graph_cache`` (G0) — current graph + current prompt, replayed from the
+* ``graph_cache`` (G0) — legacy v1 graph + legacy v1 prompt, replayed from the
   existing response cache. Free control; must reproduce the original HOLDs.
-* ``graph_no_null_auth`` (G1) — same graph and prompt, but operation nodes with a
+* ``graph_no_null_auth`` (G1) — legacy v1 prompt, but operation nodes with a
   null ``authorization`` omit that key from the serialization.
-* ``graph_policy_clarified`` (G2) — current graph, but the shared system prompt
-  adds one sentence: an evidence-backed ``REVISE``/``SUPERSEDE`` is itself an
+* ``graph_policy_clarified`` (G2) — legacy v1 graph serialization with the
+  clarified prompt: an evidence-backed ``REVISE``/``SUPERSEDE`` is itself an
   explicit authorized change and structured authorization is required only for
-  ``DELETE``.
+  ``DELETE``. This clarified prompt is now the default v2 prompt.
 
 G1/G2 use new request material, so their completions are **new paid calls**.
 The runner has a hard accounting cap, aborts before starting a row once the cap
@@ -64,7 +64,7 @@ from membud.llm import OpenAICompatibleChatClient  # noqa: E402
 from membud.llm.client import CacheMissError  # noqa: E402
 from membud.verification import (  # noqa: E402
     LLM_PROMPT_VERSION,
-    LLM_PROMPT_VERSION_POLICY_CLARIFIED,
+    LLM_PROMPT_VERSION_V1,
     verify_with_llm,
 )
 
@@ -83,21 +83,21 @@ VARIANT_CONFIG: dict[str, dict[str, Any]] = {
         "omit_null_authorization": False,
         "policy_clarification": False,
         "cache_only": True,
-        "prompt_version": LLM_PROMPT_VERSION,
+        "prompt_version": LLM_PROMPT_VERSION_V1,
     },
     "graph_no_null_auth": {
-        "description": "G1: current graph/prompt; null authorization keys omitted",
+        "description": "G1: legacy v1 prompt; null authorization keys omitted",
         "omit_null_authorization": True,
         "policy_clarification": False,
         "cache_only": False,
-        "prompt_version": LLM_PROMPT_VERSION,
+        "prompt_version": LLM_PROMPT_VERSION_V1,
     },
     "graph_policy_clarified": {
-        "description": "G2: current graph; prompt states REVISE/SUPERSEDE authorization policy",
+        "description": "G2: current graph; clarified REVISE/SUPERSEDE policy (now the default v2 prompt)",
         "omit_null_authorization": False,
         "policy_clarification": True,
         "cache_only": False,
-        "prompt_version": LLM_PROMPT_VERSION_POLICY_CLARIFIED,
+        "prompt_version": LLM_PROMPT_VERSION,
     },
 }
 COMPARISON_POLICY = (

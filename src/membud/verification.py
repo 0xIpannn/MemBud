@@ -7,11 +7,14 @@ from .graph_verification import verify_graph
 from .schemas import Check, Result, Transition
 from .serialization import textual_representation
 
-LLM_PROMPT_VERSION = "membud-transition-checks-v1"
-#: Prompt variant used only by the controlled LLM ablation: it states the
-#: deterministic policy for prior-record changes (structured authorization is
-#: required for DELETE; an evidence-backed REVISE/SUPERSEDE is itself an
-#: explicit authorized change). The default prompt/version are unchanged.
+LLM_PROMPT_VERSION = "membud-transition-checks-v2"
+#: Legacy prompt used by the original committed held-out run (v1) and by the
+#: historical cache-control variants. Kept selectable so archived artifacts and
+#: the private response-cache mapping remain reproducible.
+LLM_PROMPT_VERSION_V1 = "membud-transition-checks-v1"
+#: Historical experiment label for the clarified prompt. The clarified prompt
+#: is now the default (``LLM_PROMPT_VERSION``); this constant is retained for
+#: the committed ablation artifacts.
 LLM_PROMPT_VERSION_POLICY_CLARIFIED = "membud-transition-checks-v1-policy-clarified"
 POLICY_CLARIFICATION_SENTENCE = (
     "An evidence-backed REVISE or SUPERSEDE is itself an explicit authorized change; "
@@ -95,8 +98,13 @@ def _verify_claim_sets(t: Transition) -> Result:
     return Result(t.case_id, decision, checks)
 
 
-def _llm_system_prompt(*, policy_clarification: bool = False) -> str:
-    """Return the shared system prompt, optionally with the ablation clarification."""
+def _llm_system_prompt(*, policy_clarification: bool = True) -> str:
+    """Return the shared system prompt.
+
+    The policy clarification is on by default (prompt v2). Passing
+    ``policy_clarification=False`` reproduces the legacy v1 prompt used by the
+    original held-out run and by the historical cache-control ablation.
+    """
     prompt = (
         "You are a cautious memory-transition verifier. Evaluate coverage, preservation, and faithfulness "
         "using only the transition input. required_claims are verifier inputs. Do not infer missing graph edges "
@@ -123,7 +131,7 @@ def verify_with_llm(
     representation: str = "graph",
     *,
     prepared_input: Any | None = None,
-    policy_clarification: bool = False,
+    policy_clarification: bool = True,
     omit_null_authorization: bool = False,
 ) -> Result:
     """Ask a JSON-mode chat model to assess the same three transition checks.
@@ -132,10 +140,13 @@ def verify_with_llm(
     become UNCERTAIN checks and HOLD; they never authorize a commit. Graph and
     text calls share one prompt/policy and differ only in the serialized input.
 
-    ``policy_clarification`` and ``omit_null_authorization`` select the
-    controlled ablation variants documented in ``docs/graph-llm-false-holds.md``;
-    the defaults reproduce the historical prompt/representation exactly, so
-    existing cached completions stay valid.
+    The clarified prompt is the default (``LLM_PROMPT_VERSION`` v2): it states
+    the deterministic policy that structured authorization is required for
+    ``DELETE`` while an evidence-backed ``REVISE``/``SUPERSEDE`` is itself an
+    authorized change. ``policy_clarification=False`` reproduces the legacy v1
+    prompt used by the original held-out run and the cache-control ablation
+    (``docs/graph-llm-false-holds.md``); ``omit_null_authorization`` selects the
+    historical G1 graph-serialization variant.
     """
     if representation not in {"graph", "text"}:
         raise ValueError("representation must be 'graph' or 'text'")
@@ -228,9 +239,7 @@ def verify_with_llm(
         raw_response = None
         provider_request_id = None
     decision = "ACCEPT" if all(check.status == "PASS" for check in checks) else "HOLD"
-    prompt_version = (
-        LLM_PROMPT_VERSION_POLICY_CLARIFIED if policy_clarification else LLM_PROMPT_VERSION
-    )
+    prompt_version = LLM_PROMPT_VERSION if policy_clarification else LLM_PROMPT_VERSION_V1
     return Result(
         t.case_id,
         decision,

@@ -58,7 +58,7 @@ from membud.experiment import load_manifest_entries, load_manifest_labels  # noq
 from membud.graph import build_graph  # noqa: E402
 from membud.schemas import Transition  # noqa: E402
 from membud.serialization import textual_representation  # noqa: E402
-from membud.verification import LLM_PROMPT_VERSION  # noqa: E402
+from membud.verification import LLM_PROMPT_VERSION_V1  # noqa: E402
 
 ANALYSIS_ID = "graph-llm-false-hold-analysis-v1"
 CHECK_NAMES = ("coverage", "preservation", "faithfulness")
@@ -82,9 +82,11 @@ OUTPUT_PATH = ROOT / "data/results/graph-llm-false-hold-analysis/analysis.json"
 
 FALSE_HOLD_IDS = ("HELD-01", "HELD-02", "HELD-03", "HELD-07")
 
-# Exact copy of the verifier system prompt used by
-# ``membud.verification.verify_with_llm`` (tests cross-check this copy against
-# the real function's captured messages so silent drift fails the suite).
+# Exact copy of the LEGACY v1 verifier system prompt used by the original
+# committed held-out run (``LLM_PROMPT_VERSION_V1``). It is pinned here so the
+# historical cache-key mapping stays reproducible after the clarified prompt
+# became the default; tests cross-check this copy against
+# ``verify_with_llm(..., policy_clarification=False)``.
 VERIFIER_SYSTEM_PROMPT = (
     "You are a cautious memory-transition verifier. Evaluate coverage, preservation, and faithfulness "
     "using only the transition input. required_claims are verifier inputs. Do not infer missing graph edges "
@@ -1416,7 +1418,7 @@ def analyse_cases(
             "response_format": response_format,
             "zero_data_retention": zero_data_retention,
             "cache_path": CACHE_PATH.relative_to(ROOT).as_posix() if CACHE_PATH.is_relative_to(ROOT) else str(CACHE_PATH),
-            "llm_prompt_version": LLM_PROMPT_VERSION,
+            "llm_prompt_version": LLM_PROMPT_VERSION_V1,
             "semantic_prompt_version": "membud-semantic-compare-v1",
         },
         "disclaimer": (
