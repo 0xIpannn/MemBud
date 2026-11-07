@@ -1,0 +1,1758 @@
+{
+  "run_id": "graph-ablation-20261107T160110Z",
+  "generated_at": "2026-11-07T16:03:33.816461+00:00",
+  "code_revision": "working-tree-sha256:7e6929ffe5f73bc0a109099067c831101e812446757a7ac3abe9ae5c12475fc2",
+  "manifest_id": "membud-evaluation-v2",
+  "manifest_sha256": "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a",
+  "manifest_path": "/home/ifan/Projects/MemBud/data/manifests/evaluation-v2.json",
+  "split": "heldout",
+  "cases": [
+    "DEV-01",
+    "DEV-02",
+    "DEV-03",
+    "DEV-04",
+    "DEV-05",
+    "DEV-06",
+    "DEV-07",
+    "DEV-08",
+    "DEV-09",
+    "DEV-10",
+    "DEV-11",
+    "DEV-12",
+    "DEV-13"
+  ],
+  "variants": [
+    "graph_policy_clarified"
+  ],
+  "comparison_policy": "Directional ablation on four hand-authored, single-reviewer held-out cases. One cached control (G0) plus two new-prompt/graph variants; descriptive only, no causal or representation-superiority claim.",
+  "budget": {
+    "max_total_tokens": 60000,
+    "accounted_tokens_used": 40906,
+    "aborted": false,
+    "abort_reason": ""
+  },
+  "variant_metrics": {
+    "graph_policy_clarified": {
+      "variant": "graph_policy_clarified",
+      "description": "G2: current graph; prompt states REVISE/SUPERSEDE authorization policy",
+      "rows": 13,
+      "decisions": {
+        "ACCEPT": 7,
+        "HOLD": 6,
+        "ERROR": 0
+      },
+      "expected_accept_cases": 7,
+      "false_hold_conversions": 7,
+      "false_holds_remaining": 0,
+      "preservation_failure_rows": 3,
+      "authorization_reason_mentions": 2,
+      "accounted_tokens": 40906,
+      "cache_hits": 0,
+      "estimated_cost_range_usd": {
+        "low_usd": 0.004091,
+        "high_usd": 0.081812,
+        "estimated": true,
+        "billing_data_available": false,
+        "accounted_tokens": 40906
+      }
+    }
+  },
+  "rows": [
+    {
+      "case_id": "DEV-01",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 14767.064,
+      "input_tokens": 2258,
+      "output_tokens": 2244,
+      "total_tokens": 4502,
+      "accounted_tokens": 4502,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 2,
+      "result": {
+        "case_id": "DEV-01",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "Both required claims are represented in the candidate records: bekerja di Tokopedia in candidate r2 and tinggal di Bandung in candidate r1.",
+            "affected_ids": [
+              "claim:bekerja di Tokopedia",
+              "claim:tinggal di Bandung",
+              "record:candidate:r1",
+              "record:candidate:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The prior record before:r1 containing tinggal di Bandung is preserved unchanged in candidate:r1; the write operation only proposes candidate r2, adding a new claim.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:candidate:r1",
+              "claim:tinggal di Bandung",
+              "operation:0:write",
+              "record:candidate:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The new claim bekerja di Tokopedia is directly supported by evidence e1; the preserved claim tinggal di Bandung is carried from the prior record and is not contradicted in the input.",
+            "affected_ids": [
+              "claim:bekerja di Tokopedia",
+              "evidence:e1",
+              "claim:tinggal di Bandung"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 2258,
+          "output_tokens": 2244,
+          "total_tokens": 4502,
+          "api_attempts": 2,
+          "json_retries": 1,
+          "cache_hit": 0
+        },
+        "latency_ms": 14767.064,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "Both required claims are represented in the candidate records: bekerja di Tokopedia in candidate r2 and tinggal di Bandung in candidate r1.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:bekerja di Tokopedia",
+                "claim:tinggal di Bandung",
+                "record:candidate:r1",
+                "record:candidate:r2"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The prior record before:r1 containing tinggal di Bandung is preserved unchanged in candidate:r1; the write operation only proposes candidate r2, adding a new claim.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "record:candidate:r1",
+                "claim:tinggal di Bandung",
+                "operation:0:write",
+                "record:candidate:r2"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The new claim bekerja di Tokopedia is directly supported by evidence e1; the preserved claim tinggal di Bandung is carried from the prior record and is not contradicted in the input.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:bekerja di Tokopedia",
+                "evidence:e1",
+                "claim:tinggal di Bandung"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "560466d3-7c5b-482a-b4cc-9636cb277728"
+      }
+    },
+    {
+      "case_id": "DEV-02",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 6702.427,
+      "input_tokens": 904,
+      "output_tokens": 1059,
+      "total_tokens": 1963,
+      "accounted_tokens": 1963,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "DEV-02",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "The candidate record contains the required claim 'tinggal di Surabaya', linked from the transition via REQUIRES and included in record:candidate:r1.",
+            "affected_ids": [
+              "claim:tinggal di Surabaya",
+              "record:candidate:r1"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The prior record's claim 'tinggal di Bandung' is changed by an explicit REVISE operation proposing record:candidate:r1, and the revision is supported by evidence:e1.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:candidate:r1",
+              "claim:tinggal di Bandung",
+              "claim:tinggal di Surabaya",
+              "operation:0:revise",
+              "evidence:e1"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The candidate claim 'tinggal di Surabaya' is directly supported by evidence:e1, whose text states the speaker lives in Surabaya rather than Bandung.",
+            "affected_ids": [
+              "claim:tinggal di Surabaya",
+              "evidence:e1"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 904,
+          "output_tokens": 1059,
+          "total_tokens": 1963,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 6702.427,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "The candidate record contains the required claim 'tinggal di Surabaya', linked from the transition via REQUIRES and included in record:candidate:r1.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:tinggal di Surabaya",
+                "record:candidate:r1"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The prior record's claim 'tinggal di Bandung' is changed by an explicit REVISE operation proposing record:candidate:r1, and the revision is supported by evidence:e1.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "record:candidate:r1",
+                "claim:tinggal di Bandung",
+                "claim:tinggal di Surabaya",
+                "operation:0:revise",
+                "evidence:e1"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The candidate claim 'tinggal di Surabaya' is directly supported by evidence:e1, whose text states the speaker lives in Surabaya rather than Bandung.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:tinggal di Surabaya",
+                "evidence:e1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "1cab2fb0-7204-4bf9-9385-1c37e34eda56"
+      }
+    },
+    {
+      "case_id": "DEV-03",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 6676.085,
+      "input_tokens": 917,
+      "output_tokens": 998,
+      "total_tokens": 1915,
+      "accounted_tokens": 1915,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "DEV-03",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "The required claim 'tinggal di Surabaya' is present in the candidate record r2.",
+            "affected_ids": [
+              "claim:tinggal di Surabaya",
+              "record:candidate:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The prior record r1 is superseded by an explicit SUPERSEDE operation backed by evidence e2; no unauthorized change to the prior record is shown.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:candidate:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The candidate claim 'tinggal di Surabaya' is supported by evidence e2, and the supersede operation is consistent with that evidence.",
+            "affected_ids": [
+              "claim:tinggal di Surabaya",
+              "record:candidate:r2",
+              "evidence:e2"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 917,
+          "output_tokens": 998,
+          "total_tokens": 1915,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 6676.085,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "The required claim 'tinggal di Surabaya' is present in the candidate record r2.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:tinggal di Surabaya",
+                "record:candidate:r2"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The prior record r1 is superseded by an explicit SUPERSEDE operation backed by evidence e2; no unauthorized change to the prior record is shown.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "record:candidate:r2"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The candidate claim 'tinggal di Surabaya' is supported by evidence e2, and the supersede operation is consistent with that evidence.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:tinggal di Surabaya",
+                "record:candidate:r2",
+                "evidence:e2"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "81c0eb19-02bf-43e8-8624-2b662b02aece"
+      }
+    },
+    {
+      "case_id": "DEV-04",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 6517.953,
+      "input_tokens": 1253,
+      "output_tokens": 870,
+      "total_tokens": 2123,
+      "accounted_tokens": 2123,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "DEV-04",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "The candidate records include both required claims: 'bekerja di Tokopedia' in candidate r1 and 'tinggal di Bandung' in candidate r3.",
+            "affected_ids": [
+              "claim:bekerja di Tokopedia",
+              "claim:tinggal di Bandung",
+              "record:candidate:r1",
+              "record:candidate:r3"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The only prior record removed is r2 ('memiliki langganan gym'), and the DELETE operation is authorized by evidence e3 with explicit authorization metadata targeting r2. Prior records r1 and r3 are preserved in candidates.",
+            "affected_ids": [
+              "record:before:r2",
+              "operation:0:delete",
+              "evidence:e3"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The transition preserves existing claims in candidate records and the deletion is explicitly supported by the user request evidence. No unsupported or contradicted claim is introduced.",
+            "affected_ids": [
+              "record:candidate:r1",
+              "record:candidate:r3",
+              "claim:bekerja di Tokopedia",
+              "claim:tinggal di Bandung",
+              "operation:0:delete",
+              "evidence:e3"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 1253,
+          "output_tokens": 870,
+          "total_tokens": 2123,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 6517.953,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "The candidate records include both required claims: 'bekerja di Tokopedia' in candidate r1 and 'tinggal di Bandung' in candidate r3.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:bekerja di Tokopedia",
+                "claim:tinggal di Bandung",
+                "record:candidate:r1",
+                "record:candidate:r3"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The only prior record removed is r2 ('memiliki langganan gym'), and the DELETE operation is authorized by evidence e3 with explicit authorization metadata targeting r2. Prior records r1 and r3 are preserved in candidates.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r2",
+                "operation:0:delete",
+                "evidence:e3"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The transition preserves existing claims in candidate records and the deletion is explicitly supported by the user request evidence. No unsupported or contradicted claim is introduced.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "record:candidate:r1",
+                "record:candidate:r3",
+                "claim:bekerja di Tokopedia",
+                "claim:tinggal di Bandung",
+                "operation:0:delete",
+                "evidence:e3"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "22e0f6ec-37c5-4c74-8a1f-98adc44bc0a4"
+      }
+    },
+    {
+      "case_id": "DEV-05",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 5635.378,
+      "input_tokens": 682,
+      "output_tokens": 810,
+      "total_tokens": 1492,
+      "accounted_tokens": 1492,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "DEV-05",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "The candidate record contains the required claim 'tinggal di Bandung', which is linked to the transition via the REQUIRES edge.",
+            "affected_ids": [
+              "claim:tinggal di Bandung",
+              "record:candidate:r1"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The before and candidate records both contain the same claim, and the only operation is NOOP, so no prior record content is changed.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:candidate:r1",
+              "operation:0:noop"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The claim 'tinggal di Bandung' is present in both before and candidate records, and the NOOP operation introduces no unsupported change.",
+            "affected_ids": [
+              "claim:tinggal di Bandung",
+              "operation:0:noop"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 682,
+          "output_tokens": 810,
+          "total_tokens": 1492,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 5635.378,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "The candidate record contains the required claim 'tinggal di Bandung', which is linked to the transition via the REQUIRES edge.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:tinggal di Bandung",
+                "record:candidate:r1"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The before and candidate records both contain the same claim, and the only operation is NOOP, so no prior record content is changed.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "record:candidate:r1",
+                "operation:0:noop"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The claim 'tinggal di Bandung' is present in both before and candidate records, and the NOOP operation introduces no unsupported change.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:tinggal di Bandung",
+                "operation:0:noop"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "768df87d-be97-469d-988e-b953d09d7e5d"
+      }
+    },
+    {
+      "case_id": "DEV-06",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 13634.919,
+      "input_tokens": 1807,
+      "output_tokens": 2248,
+      "total_tokens": 4055,
+      "accounted_tokens": 4055,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "DEV-06",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "All required claims appear in proposed candidate records.",
+            "affected_ids": [
+              "claim:bekerja di Traveloka",
+              "claim:belajar bahasa Jepang",
+              "claim:tinggal di Surabaya"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "Prior records r1 and r2 are changed only via explicit REVISE operations backed by supporting evidence.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:before:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "Each proposed candidate claim is supported by its corresponding evidence; no unsupported or contradicted claims are present.",
+            "affected_ids": [
+              "claim:tinggal di Surabaya",
+              "claim:bekerja di Traveloka",
+              "claim:belajar bahasa Jepang"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 1807,
+          "output_tokens": 2248,
+          "total_tokens": 4055,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 13634.919,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "All required claims appear in proposed candidate records.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:bekerja di Traveloka",
+                "claim:belajar bahasa Jepang",
+                "claim:tinggal di Surabaya"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "Prior records r1 and r2 are changed only via explicit REVISE operations backed by supporting evidence.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "record:before:r2"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "Each proposed candidate claim is supported by its corresponding evidence; no unsupported or contradicted claims are present.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:tinggal di Surabaya",
+                "claim:bekerja di Traveloka",
+                "claim:belajar bahasa Jepang"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "f56ee83c-7406-43e6-a757-1958478214cf"
+      }
+    },
+    {
+      "case_id": "DEV-07",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 12337.921,
+      "input_tokens": 2713,
+      "output_tokens": 1835,
+      "total_tokens": 4548,
+      "accounted_tokens": 4548,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 2,
+      "result": {
+        "case_id": "DEV-07",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "Both required claims are present in candidate records: 'tinggal di Jakarta' in candidate:r1 and 'bekerja di PT Astra' in candidate:r2.",
+            "affected_ids": [
+              "claim:tinggal di Jakarta",
+              "claim:bekerja di PT Astra",
+              "record:candidate:r1",
+              "record:candidate:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The prior claim 'tinggal di Jakarta' is preserved in candidate:r1, and the change from 'bekerja di PT Sinar' to 'bekerja di PT Astra' is an evidence-backed REVISE targeting before:r2. No unauthorized deletion or alteration is shown.",
+            "affected_ids": [
+              "record:before:r2",
+              "record:candidate:r2",
+              "operation:0:revise",
+              "evidence:e1"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The revised claim 'bekerja di PT Astra' is supported by evidence:e1, and 'tinggal di Jakarta' is carried forward from the before record. The contradicted prior claim 'bekerja di PT Sinar' is not present in the candidate.",
+            "affected_ids": [
+              "claim:bekerja di PT Astra",
+              "claim:tinggal di Jakarta",
+              "evidence:e1",
+              "claim:bekerja di PT Sinar"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 2713,
+          "output_tokens": 1835,
+          "total_tokens": 4548,
+          "api_attempts": 2,
+          "json_retries": 1,
+          "cache_hit": 0
+        },
+        "latency_ms": 12337.921,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "Both required claims are present in candidate records: 'tinggal di Jakarta' in candidate:r1 and 'bekerja di PT Astra' in candidate:r2.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:tinggal di Jakarta",
+                "claim:bekerja di PT Astra",
+                "record:candidate:r1",
+                "record:candidate:r2"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The prior claim 'tinggal di Jakarta' is preserved in candidate:r1, and the change from 'bekerja di PT Sinar' to 'bekerja di PT Astra' is an evidence-backed REVISE targeting before:r2. No unauthorized deletion or alteration is shown.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r2",
+                "record:candidate:r2",
+                "operation:0:revise",
+                "evidence:e1"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The revised claim 'bekerja di PT Astra' is supported by evidence:e1, and 'tinggal di Jakarta' is carried forward from the before record. The contradicted prior claim 'bekerja di PT Sinar' is not present in the candidate.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:bekerja di PT Astra",
+                "claim:tinggal di Jakarta",
+                "evidence:e1",
+                "claim:bekerja di PT Sinar"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "275ee303-3afd-4f16-957e-dd3e106bae48"
+      }
+    },
+    {
+      "case_id": "DEV-08",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "HOLD",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED",
+          "reason": "The candidate record omits the required claim \"bekerja di Tokopedia\" even though the transition has a REQUIRES edge to it; the candidate contains only \"tinggal di Bandung\"."
+        }
+      ],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 18262.98,
+      "input_tokens": 850,
+      "output_tokens": 2702,
+      "total_tokens": 3552,
+      "accounted_tokens": 3552,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "DEV-08",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": false,
+            "reason": "The candidate record omits the required claim \"bekerja di Tokopedia\" even though the transition has a REQUIRES edge to it; the candidate contains only \"tinggal di Bandung\".",
+            "affected_ids": [
+              "claim:bekerja di Tokopedia",
+              "record:candidate:r1"
+            ],
+            "status": "FAIL",
+            "reason_code": "REQUIRED_CLAIM_OMITTED"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The prior record claim \"tinggal di Bandung\" is preserved unchanged in the candidate record, and the operation is NOOP with no authorized deletion or alteration.",
+            "affected_ids": [],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The candidate record introduces no new unsupported claim: its only claim, \"tinggal di Bandung\", is carried over unchanged from the prior record, and no evidence contradicts it.",
+            "affected_ids": [],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 850,
+          "output_tokens": 2702,
+          "total_tokens": 3552,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 18262.98,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "FAIL",
+              "reason": "The candidate record omits the required claim \"bekerja di Tokopedia\" even though the transition has a REQUIRES edge to it; the candidate contains only \"tinggal di Bandung\".",
+              "reason_code": "REQUIRED_CLAIM_OMITTED",
+              "affected_ids": [
+                "claim:bekerja di Tokopedia",
+                "record:candidate:r1"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The prior record claim \"tinggal di Bandung\" is preserved unchanged in the candidate record, and the operation is NOOP with no authorized deletion or alteration.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": []
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The candidate record introduces no new unsupported claim: its only claim, \"tinggal di Bandung\", is carried over unchanged from the prior record, and no evidence contradicts it.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": []
+            }
+          ]
+        },
+        "provider_request_id": "e2b6a5c8-c6c8-494a-aa91-04a4fac90c2b"
+      }
+    },
+    {
+      "case_id": "DEV-09",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "HOLD",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED",
+          "reason": "Candidate records do not cover the required claim 'tinggal di Bandung'; candidate r1 instead contains 'tinggal di Surabaya'."
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+          "reason": "The transition revises prior record r1 from 'tinggal di Bandung' to 'tinggal di Surabaya' without supporting evidence; the REVISE operation has empty reason and null authorization."
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM",
+          "reason": "Candidate claim 'tinggal di Surabaya' is unsupported by the transition input; no evidence is provided for the change."
+        }
+      ],
+      "preservation_failed": true,
+      "authorization_mentions": 1,
+      "latency_ms": 13577.828,
+      "input_tokens": 1028,
+      "output_tokens": 2286,
+      "total_tokens": 3314,
+      "accounted_tokens": 3314,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "DEV-09",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": false,
+            "reason": "Candidate records do not cover the required claim 'tinggal di Bandung'; candidate r1 instead contains 'tinggal di Surabaya'.",
+            "affected_ids": [
+              "claim:tinggal di Bandung",
+              "record:candidate:r1"
+            ],
+            "status": "FAIL",
+            "reason_code": "REQUIRED_CLAIM_OMITTED"
+          },
+          {
+            "name": "preservation",
+            "passed": false,
+            "reason": "The transition revises prior record r1 from 'tinggal di Bandung' to 'tinggal di Surabaya' without supporting evidence; the REVISE operation has empty reason and null authorization.",
+            "affected_ids": [
+              "record:before:r1",
+              "claim:tinggal di Bandung",
+              "claim:tinggal di Surabaya",
+              "operation:0:revise"
+            ],
+            "status": "FAIL",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+          },
+          {
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "Candidate claim 'tinggal di Surabaya' is unsupported by the transition input; no evidence is provided for the change.",
+            "affected_ids": [
+              "claim:tinggal di Surabaya",
+              "record:candidate:r1"
+            ],
+            "status": "FAIL",
+            "reason_code": "UNSUPPORTED_CLAIM"
+          }
+        ],
+        "usage": {
+          "input_tokens": 1028,
+          "output_tokens": 2286,
+          "total_tokens": 3314,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 13577.828,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "FAIL",
+              "reason": "Candidate records do not cover the required claim 'tinggal di Bandung'; candidate r1 instead contains 'tinggal di Surabaya'.",
+              "reason_code": "REQUIRED_CLAIM_OMITTED",
+              "affected_ids": [
+                "claim:tinggal di Bandung",
+                "record:candidate:r1"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "FAIL",
+              "reason": "The transition revises prior record r1 from 'tinggal di Bandung' to 'tinggal di Surabaya' without supporting evidence; the REVISE operation has empty reason and null authorization.",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+              "affected_ids": [
+                "record:before:r1",
+                "claim:tinggal di Bandung",
+                "claim:tinggal di Surabaya",
+                "operation:0:revise"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "FAIL",
+              "reason": "Candidate claim 'tinggal di Surabaya' is unsupported by the transition input; no evidence is provided for the change.",
+              "reason_code": "UNSUPPORTED_CLAIM",
+              "affected_ids": [
+                "claim:tinggal di Surabaya",
+                "record:candidate:r1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "b26bc4b4-ca13-4a26-b730-714bb2bf7b80"
+      }
+    },
+    {
+      "case_id": "DEV-10",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "HOLD",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED",
+          "reason": "Required claim 'tinggal di Bandung' is required but no candidate record contains it; candidate r1 instead contains 'tinggal di Surabaya'."
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+          "reason": "Before record r1 contains 'tinggal di Bandung', but the REVISE operation changes it to 'tinggal di Surabaya' without supporting evidence for that change. The prior record is therefore changed without valid justification."
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM",
+          "reason": "Candidate r1's claim 'tinggal di Surabaya' is not supported by evidence e1; e1 supports 'bekerja di Traveloka' only. The proposed revision is unsupported."
+        }
+      ],
+      "preservation_failed": true,
+      "authorization_mentions": 0,
+      "latency_ms": 18812.632,
+      "input_tokens": 1167,
+      "output_tokens": 3054,
+      "total_tokens": 4221,
+      "accounted_tokens": 4221,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "DEV-10",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": false,
+            "reason": "Required claim 'tinggal di Bandung' is required but no candidate record contains it; candidate r1 instead contains 'tinggal di Surabaya'.",
+            "affected_ids": [
+              "claim:tinggal di Bandung",
+              "record:candidate:r1"
+            ],
+            "status": "FAIL",
+            "reason_code": "REQUIRED_CLAIM_OMITTED"
+          },
+          {
+            "name": "preservation",
+            "passed": false,
+            "reason": "Before record r1 contains 'tinggal di Bandung', but the REVISE operation changes it to 'tinggal di Surabaya' without supporting evidence for that change. The prior record is therefore changed without valid justification.",
+            "affected_ids": [
+              "record:before:r1",
+              "claim:tinggal di Bandung",
+              "operation:0:revise",
+              "record:candidate:r1"
+            ],
+            "status": "FAIL",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+          },
+          {
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "Candidate r1's claim 'tinggal di Surabaya' is not supported by evidence e1; e1 supports 'bekerja di Traveloka' only. The proposed revision is unsupported.",
+            "affected_ids": [
+              "claim:tinggal di Surabaya",
+              "record:candidate:r1",
+              "operation:0:revise",
+              "evidence:e1"
+            ],
+            "status": "FAIL",
+            "reason_code": "UNSUPPORTED_CLAIM"
+          }
+        ],
+        "usage": {
+          "input_tokens": 1167,
+          "output_tokens": 3054,
+          "total_tokens": 4221,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 18812.632,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "FAIL",
+              "reason": "Required claim 'tinggal di Bandung' is required but no candidate record contains it; candidate r1 instead contains 'tinggal di Surabaya'.",
+              "reason_code": "REQUIRED_CLAIM_OMITTED",
+              "affected_ids": [
+                "claim:tinggal di Bandung",
+                "record:candidate:r1"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "FAIL",
+              "reason": "Before record r1 contains 'tinggal di Bandung', but the REVISE operation changes it to 'tinggal di Surabaya' without supporting evidence for that change. The prior record is therefore changed without valid justification.",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+              "affected_ids": [
+                "record:before:r1",
+                "claim:tinggal di Bandung",
+                "operation:0:revise",
+                "record:candidate:r1"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "FAIL",
+              "reason": "Candidate r1's claim 'tinggal di Surabaya' is not supported by evidence e1; e1 supports 'bekerja di Traveloka' only. The proposed revision is unsupported.",
+              "reason_code": "UNSUPPORTED_CLAIM",
+              "affected_ids": [
+                "claim:tinggal di Surabaya",
+                "record:candidate:r1",
+                "operation:0:revise",
+                "evidence:e1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "a666b266-f28d-42d7-a6d8-b0f7d0d802ce"
+      }
+    },
+    {
+      "case_id": "DEV-11",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "HOLD",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED",
+          "reason": "The required claim 'belajar bahasa Jepang' is supported by evidence but is absent from all candidate records; the candidate set therefore omits a required claim."
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM",
+          "reason": "Candidate record r3 adds 'memiliki kapal pesiar', but the only evidence supports 'belajar bahasa Jepang' and does not support this claim."
+        }
+      ],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 4853.287,
+      "input_tokens": 1253,
+      "output_tokens": 726,
+      "total_tokens": 1979,
+      "accounted_tokens": 1979,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "DEV-11",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": false,
+            "reason": "The required claim 'belajar bahasa Jepang' is supported by evidence but is absent from all candidate records; the candidate set therefore omits a required claim.",
+            "affected_ids": [
+              "claim:belajar bahasa Jepang",
+              "record:candidate:r1",
+              "record:candidate:r2",
+              "record:candidate:r3"
+            ],
+            "status": "FAIL",
+            "reason_code": "REQUIRED_CLAIM_OMITTED"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "Prior claims 'tinggal di Bandung' and 'bekerja di Tokopedia' remain present in candidate records r1 and r2 without unauthorized alteration.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:before:r2",
+              "record:candidate:r1",
+              "record:candidate:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "Candidate record r3 adds 'memiliki kapal pesiar', but the only evidence supports 'belajar bahasa Jepang' and does not support this claim.",
+            "affected_ids": [
+              "claim:memiliki kapal pesiar",
+              "record:candidate:r3",
+              "operation:0:write",
+              "evidence:e1"
+            ],
+            "status": "FAIL",
+            "reason_code": "UNSUPPORTED_CLAIM"
+          }
+        ],
+        "usage": {
+          "input_tokens": 1253,
+          "output_tokens": 726,
+          "total_tokens": 1979,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 4853.287,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "FAIL",
+              "reason": "The required claim 'belajar bahasa Jepang' is supported by evidence but is absent from all candidate records; the candidate set therefore omits a required claim.",
+              "reason_code": "REQUIRED_CLAIM_OMITTED",
+              "affected_ids": [
+                "claim:belajar bahasa Jepang",
+                "record:candidate:r1",
+                "record:candidate:r2",
+                "record:candidate:r3"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "Prior claims 'tinggal di Bandung' and 'bekerja di Tokopedia' remain present in candidate records r1 and r2 without unauthorized alteration.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "record:before:r2",
+                "record:candidate:r1",
+                "record:candidate:r2"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "FAIL",
+              "reason": "Candidate record r3 adds 'memiliki kapal pesiar', but the only evidence supports 'belajar bahasa Jepang' and does not support this claim.",
+              "reason_code": "UNSUPPORTED_CLAIM",
+              "affected_ids": [
+                "claim:memiliki kapal pesiar",
+                "record:candidate:r3",
+                "operation:0:write",
+                "evidence:e1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "0798fe24-c527-4540-a83d-da13a47a27cd"
+      }
+    },
+    {
+      "case_id": "DEV-12",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "HOLD",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED",
+          "reason": "Required claim 'tinggal di Jakarta' is not contained in the written candidate record r2; only 'bekerja di Bank Mandiri' and 'memiliki gaji 25 juta per bulan' are present."
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+          "reason": "The prior record r1 contains 'tinggal di Jakarta', but operation:0:write targets candidate r2, which omits that prior claim without authorization or supporting evidence for removal."
+        },
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "UNSUPPORTED_CLAIM",
+          "reason": "Candidate r2 includes 'memiliki gaji 25 juta per bulan', but the only evidence e1 supports 'bekerja di Bank Mandiri'; no input evidence supports the salary claim."
+        }
+      ],
+      "preservation_failed": true,
+      "authorization_mentions": 1,
+      "latency_ms": 11172.32,
+      "input_tokens": 1058,
+      "output_tokens": 1863,
+      "total_tokens": 2921,
+      "accounted_tokens": 2921,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "DEV-12",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": false,
+            "reason": "Required claim 'tinggal di Jakarta' is not contained in the written candidate record r2; only 'bekerja di Bank Mandiri' and 'memiliki gaji 25 juta per bulan' are present.",
+            "affected_ids": [
+              "claim:tinggal di Jakarta",
+              "record:candidate:r2",
+              "operation:0:write"
+            ],
+            "status": "FAIL",
+            "reason_code": "REQUIRED_CLAIM_OMITTED"
+          },
+          {
+            "name": "preservation",
+            "passed": false,
+            "reason": "The prior record r1 contains 'tinggal di Jakarta', but operation:0:write targets candidate r2, which omits that prior claim without authorization or supporting evidence for removal.",
+            "affected_ids": [
+              "record:before:r1",
+              "claim:tinggal di Jakarta",
+              "record:candidate:r2",
+              "operation:0:write"
+            ],
+            "status": "FAIL",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+          },
+          {
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "Candidate r2 includes 'memiliki gaji 25 juta per bulan', but the only evidence e1 supports 'bekerja di Bank Mandiri'; no input evidence supports the salary claim.",
+            "affected_ids": [
+              "claim:memiliki gaji 25 juta per bulan",
+              "record:candidate:r2",
+              "operation:0:write"
+            ],
+            "status": "FAIL",
+            "reason_code": "UNSUPPORTED_CLAIM"
+          }
+        ],
+        "usage": {
+          "input_tokens": 1058,
+          "output_tokens": 1863,
+          "total_tokens": 2921,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 11172.32,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "FAIL",
+              "reason": "Required claim 'tinggal di Jakarta' is not contained in the written candidate record r2; only 'bekerja di Bank Mandiri' and 'memiliki gaji 25 juta per bulan' are present.",
+              "reason_code": "REQUIRED_CLAIM_OMITTED",
+              "affected_ids": [
+                "claim:tinggal di Jakarta",
+                "record:candidate:r2",
+                "operation:0:write"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "FAIL",
+              "reason": "The prior record r1 contains 'tinggal di Jakarta', but operation:0:write targets candidate r2, which omits that prior claim without authorization or supporting evidence for removal.",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+              "affected_ids": [
+                "record:before:r1",
+                "claim:tinggal di Jakarta",
+                "record:candidate:r2",
+                "operation:0:write"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "FAIL",
+              "reason": "Candidate r2 includes 'memiliki gaji 25 juta per bulan', but the only evidence e1 supports 'bekerja di Bank Mandiri'; no input evidence supports the salary claim.",
+              "reason_code": "UNSUPPORTED_CLAIM",
+              "affected_ids": [
+                "claim:memiliki gaji 25 juta per bulan",
+                "record:candidate:r2",
+                "operation:0:write"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "539d18e1-c927-4aa8-b9e8-6ce83b7db4a4"
+      }
+    },
+    {
+      "case_id": "DEV-13",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "HOLD",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [
+        {
+          "name": "faithfulness",
+          "status": "FAIL",
+          "reason_code": "CONTRADICTED_CLAIM",
+          "reason": "Evidence e1 contradicts the candidate claim 'tinggal di Bandung' by supporting 'tinggal di Surabaya', so the candidate is not faithful to the available evidence."
+        }
+      ],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 10594.241,
+      "input_tokens": 2492,
+      "output_tokens": 1829,
+      "total_tokens": 4321,
+      "accounted_tokens": 4321,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 2,
+      "result": {
+        "case_id": "DEV-13",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "Both required claims, 'tinggal di Bandung' and 'bekerja di Tokopedia', are present in the candidate records.",
+            "affected_ids": [
+              "claim:tinggal di Bandung",
+              "claim:bekerja di Tokopedia"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The candidate records preserve the prior claims from record:before:r1 and record:before:r2, and the NOOP operation does not alter prior records.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:before:r2",
+              "record:candidate:r1",
+              "record:candidate:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "Evidence e1 contradicts the candidate claim 'tinggal di Bandung' by supporting 'tinggal di Surabaya', so the candidate is not faithful to the available evidence.",
+            "affected_ids": [
+              "claim:tinggal di Bandung",
+              "evidence:e1"
+            ],
+            "status": "FAIL",
+            "reason_code": "CONTRADICTED_CLAIM"
+          }
+        ],
+        "usage": {
+          "input_tokens": 2492,
+          "output_tokens": 1829,
+          "total_tokens": 4321,
+          "api_attempts": 2,
+          "json_retries": 1,
+          "cache_hit": 0
+        },
+        "latency_ms": 10594.241,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "Both required claims, 'tinggal di Bandung' and 'bekerja di Tokopedia', are present in the candidate records.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:tinggal di Bandung",
+                "claim:bekerja di Tokopedia"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The candidate records preserve the prior claims from record:before:r1 and record:before:r2, and the NOOP operation does not alter prior records.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "record:before:r2",
+                "record:candidate:r1",
+                "record:candidate:r2"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "FAIL",
+              "reason": "Evidence e1 contradicts the candidate claim 'tinggal di Bandung' by supporting 'tinggal di Surabaya', so the candidate is not faithful to the available evidence.",
+              "reason_code": "CONTRADICTED_CLAIM",
+              "affected_ids": [
+                "claim:tinggal di Bandung",
+                "evidence:e1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "ad9bfb45-5de4-4d77-9c3a-229b784c58ac"
+      }
+    }
+  ]
+}

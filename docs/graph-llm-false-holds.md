@@ -352,3 +352,25 @@ Replicate G2 on the dev split (or a fresh set) before changing the default
 prompt; if it holds, promote the clarification as a new default prompt version
 and re-run the held-out evaluation with a fresh cache. The G1 serialization
 change alone is not sufficient and should not replace the prompt fix.
+
+### Independent replication on the dev split (before promotion)
+
+G2 was then run on the **13 schema-valid dev cases**, which were not used to
+diagnose or select it (artifact:
+`data/results/graph-false-hold-ablation-dev/`).
+
+| Metric | Result |
+| --- | ---: |
+| Decisions | 7 ACCEPT / 6 HOLD |
+| Valid accepted | **7/7** |
+| False accepts on faulty cases | **0/6** |
+| False holds | 0 |
+| Label agreement | 13/13 |
+| Paid calls / accounted tokens | 13 / 40,906 |
+
+This is a genuine out-of-sample check with respect to the four false-hold
+diagnosis, and it supports the policy clarification rather than the null-field
+serialization change. Caveats still apply: the dev cases were used earlier in
+case/verifier development, labels are single-reviewer, and this is one model and
+one run. Total ablation + replication spend: 33 paid calls, 117,392 accounted
+tokens (≈$0.012–$0.235 at the harness placeholder).
