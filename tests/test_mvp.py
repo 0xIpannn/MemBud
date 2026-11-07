@@ -3,17 +3,12 @@ from dataclasses import replace
 
 import pytest
 
-from membud.core import (
-    Transition,
-    build_graph,
-    commit,
-    run_case,
-    textual_representation,
-    to_mermaid,
-    transition_dict,
-    verify,
-)
 from membud.demo import cases
+from membud.graph import build_graph, to_mermaid
+from membud.schemas import Transition
+from membud.serialization import textual_representation, transition_dict
+from membud.store import commit, run_case
+from membud.verification import verify
 
 
 EXPECTED_RESULTS = {
@@ -33,6 +28,26 @@ EXPECTED_RESULTS = {
 
 def case(case_id):
     return next(raw for raw in cases() if raw["case_id"] == case_id)
+
+
+def test_core_preserves_legacy_imports():
+    from membud import core
+
+    public_api = {
+        name: globals()[name]
+        for name in (
+            "Transition",
+            "build_graph",
+            "commit",
+            "run_case",
+            "textual_representation",
+            "to_mermaid",
+            "transition_dict",
+            "verify",
+        )
+    }
+    for name, exported in public_api.items():
+        assert getattr(core, name) is exported
 
 
 @pytest.mark.parametrize("raw", cases())

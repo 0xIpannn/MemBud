@@ -15,6 +15,17 @@ This runs 11 hand-authored cases through both input paths and writes isolated pe
 
 Run tests with `python -m pytest` after installing pytest (`python -m pip install pytest`).
 
+## Code layout
+
+- `membud.schemas`: canonical records, evidence, operations, transitions, checks, and validation.
+- `membud.graph`: canonical graph construction and Mermaid rendering.
+- `membud.serialization`: lossless dictionary and deterministic text representations.
+- `membud.verification`: coverage, preservation, faithfulness, and decision policy.
+- `membud.store`: guarded commits, JSON persistence, and append-only audit logging.
+- `membud.demo`: bundled fixtures and the local demonstration runner.
+
+`membud.core` remains as a compatibility facade that re-exports the original public API. New code should import from the focused modules directly.
+
 ## Input semantics
 
 A transition contains the full prior state (`before`), the full proposed resulting state (`candidate`), explicit source-supported claims (`evidence[].supports`), claims required to survive (`required_claims`), and proposed `operations`. Evidence can also retain a `source` reference and original `text` excerpt. Claims are exact strings; semantic equivalence is intentionally not inferred.
