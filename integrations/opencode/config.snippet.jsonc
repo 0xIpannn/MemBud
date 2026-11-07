@@ -1,0 +1,31 @@
+// Minimal opencode config for the MemBud verify guard (Phase 0 spike).
+//
+// 1. Copy this `plugin` array into your project `.opencode/opencode.json`
+//    (or your global `~/.config/opencode/opencode.json`).
+// 2. Replace the absolute paths with the location of this checkout and the
+//    JSON memory-state file your memory tool already uses.
+// 3. Start the sidecar first:  python -m membud.service --host 127.0.0.1 --port 8787
+//
+// A file spec must be a `file://` URL or a path relative to the config file.
+// opencode 1.19.5 resolves the entry through dynamic `import()` and requires
+// the module's *default export* to be an object with `server()`.
+//
+// Alternative (no config change): copy plugin/membud-verify-guard.js into
+// `<project>/.opencode/plugin/` — opencode auto-discovers
+// `{plugin,plugins}/*.{ts,js}` there. Options then come from environment
+// variables (MEMBUD_VERIFY_URL, MEMBUD_MEMORY_STATE, MEMBUD_VERIFY_TIMEOUT_MS).
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    [
+      "file:///home/you/Projects/MemBud/integrations/opencode/plugin/membud-verify-guard.js",
+      {
+        "verifyUrl": "http://127.0.0.1:8787/verify",
+        "memoryStatePath": "/home/you/.local/share/membud/memory-state.json",
+        "toolNames": ["memory_write"],
+        "timeoutMs": 2000,
+        "representation": "graph"
+      }
+    ]
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "membud-opencode-integration",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Phase 0 MemBud /verify sidecar guard for opencode: no-build ESM plugin, mock memory tool, local harness. No dependencies.",
+  "engines": {
+    "node": ">=18"
+  }
+}
