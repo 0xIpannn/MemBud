@@ -230,15 +230,16 @@ class OpenAICompatibleChatClient:
         encoded = json.dumps(material, ensure_ascii=False, sort_keys=True).encode("utf-8")
         return hashlib.sha256(encoded).hexdigest()
 
-    def _ensure_cache_dir(self) -> None:
+    def _ensure_cache_dir(self) -> bool:
         parent = self.cache_path.parent
-        created = not parent.exists()
-        parent.mkdir(parents=True, exist_ok=True)
-        if created:
-            try:
+        try:
+            created = not parent.exists()
+            parent.mkdir(parents=True, exist_ok=True)
+            if created:
                 parent.chmod(0o700)
-            except OSError:
-                pass
+        except OSError:
+            return False
+        return True
 
     def _chmod_cache_file(self) -> None:
         try:
@@ -249,14 +250,19 @@ class OpenAICompatibleChatClient:
     def _load_cache(self, key: str) -> dict[str, Any] | None:
         if self.cache_path is None:
             return None
-        self._ensure_cache_dir()
-        with sqlite3.connect(self.cache_path, timeout=30) as connection:
-            connection.execute(
-                "CREATE TABLE IF NOT EXISTS completions (cache_key TEXT PRIMARY KEY, payload TEXT NOT NULL)"
-            )
-            row = connection.execute(
-                "SELECT payload FROM completions WHERE cache_key = ?", (key,)
-            ).fetchone()
+        if not self._ensure_cache_dir():
+            return None
+        try:
+            with sqlite3.connect(self.cache_path, timeout=30) as connection:
+                connection.execute(
+                    "CREATE TABLE IF NOT EXISTS completions (cache_key TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+                )
+                row = connection.execute(
+                    "SELECT payload FROM completions WHERE cache_key = ?", (key,)
+                ).fetchone()
+        except sqlite3.Error:
+            # A read-only or unavailable cache must not fail every verification.
+            return None
         self._chmod_cache_file()
         if not row:
             return None
@@ -270,7 +276,8 @@ class OpenAICompatibleChatClient:
     def _save_cache(self, key: str, completion: JSONCompletion) -> None:
         if self.cache_path is None:
             return
-        self._ensure_cache_dir()
+        if not self._ensure_cache_dir():
+            return
         payload = {
             "json": completion.json,
             "content": completion.content,
@@ -283,21 +290,27 @@ class OpenAICompatibleChatClient:
             "request_attempts": completion.request_attempts,
             "json_retries": completion.json_retries,
         }
-        with sqlite3.connect(self.cache_path, timeout=30) as connection:
-            connection.execute(
-                "CREATE TABLE IF NOT EXISTS completions (cache_key TEXT PRIMARY KEY, payload TEXT NOT NULL)"
-            )
-            connection.execute(
-                "INSERT OR REPLACE INTO completions(cache_key, payload) VALUES (?, ?)",
-                (key, json.dumps(payload, ensure_ascii=False, sort_keys=True)),
-            )
+        try:
+            with sqlite3.connect(self.cache_path, timeout=30) as connection:
+                connection.execute(
+                    "CREATE TABLE IF NOT EXISTS completions (cache_key TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+                )
+                connection.execute(
+                    "INSERT OR REPLACE INTO completions(cache_key, payload) VALUES (?, ?)",
+                    (key, json.dumps(payload, ensure_ascii=False, sort_keys=True)),
+                )
+        except sqlite3.Error:
+            return
         self._chmod_cache_file()
 
     def _delete_cache(self, key: str) -> None:
         if self.cache_path is None:
             return
-        with sqlite3.connect(self.cache_path, timeout=30) as connection:
-            connection.execute("DELETE FROM completions WHERE cache_key = ?", (key,))
+        try:
+            with sqlite3.connect(self.cache_path, timeout=30) as connection:
+                connection.execute("DELETE FROM completions WHERE cache_key = ?", (key,))
+        except sqlite3.Error:
+            return
 
     def _request_json_object(
         self, messages: Sequence[Mapping[str, str]]

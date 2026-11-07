@@ -336,3 +336,25 @@ def test_cache_file_is_private(monkeypatch, tmp_path):
     monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
     client.complete_json([{"role": "user", "content": "Assess transition"}])
     assert cache_path.stat().st_mode & 0o777 == 0o600
+
+
+def test_unwritable_cache_degrades_to_a_miss(monkeypatch):
+    import sqlite3
+
+    def failing_connect(*args, **kwargs):
+        raise sqlite3.OperationalError("attempt to write a readonly database")
+
+    monkeypatch.setattr("sqlite3.connect", failing_connect)
+
+    def fake_urlopen(request, timeout):
+        return FakeResponse(api_response('{"decision":"HOLD"}'))
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    client = OpenAICompatibleChatClient(
+        api_key="secret",
+        model="deepseek/deepseek-v4.1-flash",
+        cache_path="/nonexistent/readonly/cache.sqlite3",
+    )
+    result = client.complete_json([{"role": "user", "content": "Assess transition"}])
+    assert result.json == {"decision": "HOLD"}
+    assert result.cached is False
