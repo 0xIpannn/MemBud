@@ -100,11 +100,20 @@ def test_accept_write_is_atomic_and_leaves_no_temp_files(tmp_path):
     store, log = tmp_path / "state.json", tmp_path / "audit.jsonl"
     run_case(transition, store, log)
 
-    assert json.loads(store.read_text()) == [
+    payload = json.loads(store.read_text())
+    assert payload["schema_version"] == 2
+    assert payload["version"] == 1
+    assert payload["records"] == [
         {"id": record.id, "claims": list(record.claims)} for record in transition.candidate
     ]
-    assert sorted(path.name for path in tmp_path.iterdir()) == ["audit.jsonl", "state.json"]
+    # The lock file is a persistent, stateless flock target; no temp files remain.
+    assert sorted(path.name for path in tmp_path.iterdir()) == [
+        "audit.jsonl",
+        "state.json",
+        "state.json.lock",
+    ]
     assert not list(tmp_path.glob(".*.tmp"))
+    assert not list(tmp_path.glob("*.tmp"))
 
 
 def test_hold_does_not_create_a_store_file(tmp_path):

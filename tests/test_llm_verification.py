@@ -129,7 +129,10 @@ def test_run_case_can_commit_from_llm_verification_callback(tmp_path):
         ),
     )
     assert result.verifier == client.model
-    assert json.loads((tmp_path / "state.json").read_text()) == [
+    payload = json.loads((tmp_path / "state.json").read_text())
+    assert payload["schema_version"] == 2
+    assert payload["version"] == 1
+    assert payload["records"] == [
         {"id": record.id, "claims": list(record.claims)} for record in t.candidate
     ]
     event = json.loads((tmp_path / "audit.jsonl").read_text())
