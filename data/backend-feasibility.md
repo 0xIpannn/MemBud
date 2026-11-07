@@ -86,3 +86,15 @@ integration. Integrate a third-party host only after pinning an exact release/co
 the experiment configuration, and demonstrating with a test that every relevant write side effect
 (primary store, history, messages, entity links) is absent on HOLD. Do not integrate against moving
 `HEAD`.
+
+## Staged-proposal bridge (host-owned, Phase 0)
+
+`src/membud/adapters/mem0_bridge.py` implements the host-owned staging mechanics required by the Mem0
+finding above as a Phase 0 step: a host-normalized Mem0-style extracted proposal set plus an explicit
+prior canonical snapshot is deterministically mapped to a schema-v2 `Transition` and routed through
+the existing reference `GuardedMemory` path (ACCEPT-only persistence). `tests/test_mem0_bridge.py`
+demonstrates exact-candidate ACCEPT and byte-identical HOLD with the reference SQLite backend, and
+`data/mem0-bridge.md` records the design, threat model, and the write-side-effect checklist.
+
+This does not change the finding above: nothing intercepts or imports unmodified Mem0, no Mem0 write
+path was exercised, and every Mem0 write side effect remains unverified. No compatibility is claimed.
