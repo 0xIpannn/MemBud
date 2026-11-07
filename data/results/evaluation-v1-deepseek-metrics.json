@@ -1,6 +1,10 @@
 {
   "manifest_id": "membud-evaluation-v1",
   "manifest_sha256": "a1b5fac09097be0a8a9d24da2e5cf69ba14ee2118722bc11abf8c028f7749947",
+  "summary_sha256": "dc2c673ff602ad4006d2d341a20433089be80735c0cc8c0ef47c679b2eeddcad",
+  "run_id": "c0ee6d19-7cf1-4cd3-a46c-a9bfcc6d309b",
+  "code_revision": "working-tree-sha256:da2bfd1bc7f69459328a329a299c658b7a83ce8db834bdd3a0b676cce2d841fe",
+  "verifier": "llm:deepseek",
   "case_count": 12,
   "reviewer_count": 1,
   "candidate_error_rates": {
@@ -61,25 +65,76 @@
           "deepseek-flash": 12
         }
       },
-      "faulty_case_detection": {
-        "numerator": 4,
-        "denominator": 7,
-        "rate": 0.5714285714285714
+      "as_completed": {
+        "faulty": {
+          "completed": 4,
+          "flagged": 4,
+          "detection_rate": {
+            "numerator": 4,
+            "denominator": 4,
+            "rate": 1.0
+          },
+          "false_accepts": 0,
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 4,
+            "rate": 0.0
+          }
+        },
+        "valid": {
+          "completed": 3,
+          "accepted": 3,
+          "acceptance_rate": {
+            "numerator": 3,
+            "denominator": 3,
+            "rate": 1.0
+          },
+          "held": 0,
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 3,
+            "rate": 0.0
+          }
+        }
       },
-      "false_hold_rate": {
-        "numerator": 0,
-        "denominator": 5,
-        "rate": 0.0
-      },
-      "valid_update_acceptance": {
-        "numerator": 3,
-        "denominator": 5,
-        "rate": 0.6
-      },
-      "false_accept_rate": {
-        "numerator": 0,
-        "denominator": 7,
-        "rate": 0.0
+      "fail_closed_itt": {
+        "faulty": {
+          "cases": 7,
+          "held_with_decision": 4,
+          "error_holds": 3,
+          "accepted": 0,
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 7,
+            "rate": 0.0
+          },
+          "detection_rate": {
+            "numerator": 4,
+            "denominator": 7,
+            "rate": 0.5714285714285714
+          },
+          "not_accepted_rate": {
+            "numerator": 7,
+            "denominator": 7,
+            "rate": 1.0
+          }
+        },
+        "valid": {
+          "cases": 5,
+          "accepted": 3,
+          "error_holds": 2,
+          "not_accepted": 2,
+          "acceptance_rate": {
+            "numerator": 3,
+            "denominator": 5,
+            "rate": 0.6
+          },
+          "false_hold_rate": {
+            "numerator": 2,
+            "denominator": 5,
+            "rate": 0.4
+          }
+        }
       },
       "decision_counts": {
         "ACCEPT": 3,
@@ -125,25 +180,76 @@
           "deepseek-flash": 12
         }
       },
-      "faulty_case_detection": {
-        "numerator": 4,
-        "denominator": 7,
-        "rate": 0.5714285714285714
+      "as_completed": {
+        "faulty": {
+          "completed": 4,
+          "flagged": 4,
+          "detection_rate": {
+            "numerator": 4,
+            "denominator": 4,
+            "rate": 1.0
+          },
+          "false_accepts": 0,
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 4,
+            "rate": 0.0
+          }
+        },
+        "valid": {
+          "completed": 4,
+          "accepted": 4,
+          "acceptance_rate": {
+            "numerator": 4,
+            "denominator": 4,
+            "rate": 1.0
+          },
+          "held": 0,
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 4,
+            "rate": 0.0
+          }
+        }
       },
-      "false_hold_rate": {
-        "numerator": 0,
-        "denominator": 5,
-        "rate": 0.0
-      },
-      "valid_update_acceptance": {
-        "numerator": 4,
-        "denominator": 5,
-        "rate": 0.8
-      },
-      "false_accept_rate": {
-        "numerator": 0,
-        "denominator": 7,
-        "rate": 0.0
+      "fail_closed_itt": {
+        "faulty": {
+          "cases": 7,
+          "held_with_decision": 4,
+          "error_holds": 3,
+          "accepted": 0,
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 7,
+            "rate": 0.0
+          },
+          "detection_rate": {
+            "numerator": 4,
+            "denominator": 7,
+            "rate": 0.5714285714285714
+          },
+          "not_accepted_rate": {
+            "numerator": 7,
+            "denominator": 7,
+            "rate": 1.0
+          }
+        },
+        "valid": {
+          "cases": 5,
+          "accepted": 4,
+          "error_holds": 1,
+          "not_accepted": 1,
+          "acceptance_rate": {
+            "numerator": 4,
+            "denominator": 5,
+            "rate": 0.8
+          },
+          "false_hold_rate": {
+            "numerator": 1,
+            "denominator": 5,
+            "rate": 0.2
+          }
+        }
       },
       "decision_counts": {
         "ACCEPT": 4,
@@ -181,5 +287,5 @@
       "execution_errors": 0
     }
   },
-  "interpretation": "Exploratory case-level rates on a small synthetic single-reviewer set; not population estimates."
+  "interpretation": "Exploratory case-level rates on a small synthetic single-reviewer set; not population estimates. Condition rates are reported both as-completed (verifier errors excluded from numerator and denominator) and as fail-closed intention-to-treat (non-accepting error outcomes retained; explicit HOLD detection and error-hold counts reported separately)."
 }

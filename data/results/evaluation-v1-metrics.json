@@ -1,6 +1,10 @@
 {
   "manifest_id": "membud-evaluation-v1",
   "manifest_sha256": "a1b5fac09097be0a8a9d24da2e5cf69ba14ee2118722bc11abf8c028f7749947",
+  "summary_sha256": "b053824d3e92ebd033acd28df04d7febdf09a17425579c544af63d8b01f614ee",
+  "run_id": "4d84bd39-9c83-4f68-ae15-b5b76c8b4cfc",
+  "code_revision": "d01c3bdc5f1fa20df594acb835545d81ad838394",
+  "verifier": "rules",
   "case_count": 12,
   "reviewer_count": 1,
   "candidate_error_rates": {
@@ -29,15 +33,15 @@
     "graph": {
       "timing_ms": {
         "latency_ms": {
-          "mean": 0.11675,
+          "mean": 0.14608333333333334,
           "case_count": 12
         },
         "preparation_ms": {
-          "mean": 0.018083333333333333,
+          "mean": 0.042333333333333334,
           "case_count": 12
         },
         "verification_ms": {
-          "mean": 0.05483333333333334,
+          "mean": 0.048249999999999994,
           "case_count": 12
         },
         "graph_node_count": {
@@ -49,25 +53,86 @@
           "case_count": 12
         }
       },
-      "faulty_case_detection": {
-        "numerator": 7,
-        "denominator": 7,
-        "rate": 1.0
+      "llm_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "api_attempts": 0,
+        "json_retries": 0,
+        "response_count": 0,
+        "usage_reported_count": 0,
+        "model_counts": {}
       },
-      "false_hold_rate": {
-        "numerator": 0,
-        "denominator": 5,
-        "rate": 0.0
+      "as_completed": {
+        "faulty": {
+          "completed": 7,
+          "flagged": 7,
+          "detection_rate": {
+            "numerator": 7,
+            "denominator": 7,
+            "rate": 1.0
+          },
+          "false_accepts": 0,
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 7,
+            "rate": 0.0
+          }
+        },
+        "valid": {
+          "completed": 5,
+          "accepted": 5,
+          "acceptance_rate": {
+            "numerator": 5,
+            "denominator": 5,
+            "rate": 1.0
+          },
+          "held": 0,
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 5,
+            "rate": 0.0
+          }
+        }
       },
-      "valid_update_acceptance": {
-        "numerator": 5,
-        "denominator": 5,
-        "rate": 1.0
-      },
-      "false_accept_rate": {
-        "numerator": 0,
-        "denominator": 7,
-        "rate": 0.0
+      "fail_closed_itt": {
+        "faulty": {
+          "cases": 7,
+          "held_with_decision": 7,
+          "error_holds": 0,
+          "accepted": 0,
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 7,
+            "rate": 0.0
+          },
+          "detection_rate": {
+            "numerator": 7,
+            "denominator": 7,
+            "rate": 1.0
+          },
+          "not_accepted_rate": {
+            "numerator": 7,
+            "denominator": 7,
+            "rate": 1.0
+          }
+        },
+        "valid": {
+          "cases": 5,
+          "accepted": 5,
+          "error_holds": 0,
+          "not_accepted": 0,
+          "acceptance_rate": {
+            "numerator": 5,
+            "denominator": 5,
+            "rate": 1.0
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 5,
+            "rate": 0.0
+          }
+        }
       },
       "decision_counts": {
         "ACCEPT": 5,
@@ -75,20 +140,21 @@
         "INVALID_INPUT": 0,
         "ERROR": 0
       },
+      "verifier_errors": 0,
       "execution_errors": 0
     },
     "text": {
       "timing_ms": {
         "latency_ms": {
-          "mean": 0.11708333333333333,
+          "mean": 0.21983333333333333,
           "case_count": 12
         },
         "preparation_ms": {
-          "mean": 0.02125,
+          "mean": 0.06516666666666666,
           "case_count": 12
         },
         "verification_ms": {
-          "mean": 0.052333333333333336,
+          "mean": 0.06675,
           "case_count": 12
         },
         "graph_node_count": {
@@ -100,25 +166,86 @@
           "case_count": 0
         }
       },
-      "faulty_case_detection": {
-        "numerator": 7,
-        "denominator": 7,
-        "rate": 1.0
+      "llm_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "api_attempts": 0,
+        "json_retries": 0,
+        "response_count": 0,
+        "usage_reported_count": 0,
+        "model_counts": {}
       },
-      "false_hold_rate": {
-        "numerator": 0,
-        "denominator": 5,
-        "rate": 0.0
+      "as_completed": {
+        "faulty": {
+          "completed": 7,
+          "flagged": 7,
+          "detection_rate": {
+            "numerator": 7,
+            "denominator": 7,
+            "rate": 1.0
+          },
+          "false_accepts": 0,
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 7,
+            "rate": 0.0
+          }
+        },
+        "valid": {
+          "completed": 5,
+          "accepted": 5,
+          "acceptance_rate": {
+            "numerator": 5,
+            "denominator": 5,
+            "rate": 1.0
+          },
+          "held": 0,
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 5,
+            "rate": 0.0
+          }
+        }
       },
-      "valid_update_acceptance": {
-        "numerator": 5,
-        "denominator": 5,
-        "rate": 1.0
-      },
-      "false_accept_rate": {
-        "numerator": 0,
-        "denominator": 7,
-        "rate": 0.0
+      "fail_closed_itt": {
+        "faulty": {
+          "cases": 7,
+          "held_with_decision": 7,
+          "error_holds": 0,
+          "accepted": 0,
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 7,
+            "rate": 0.0
+          },
+          "detection_rate": {
+            "numerator": 7,
+            "denominator": 7,
+            "rate": 1.0
+          },
+          "not_accepted_rate": {
+            "numerator": 7,
+            "denominator": 7,
+            "rate": 1.0
+          }
+        },
+        "valid": {
+          "cases": 5,
+          "accepted": 5,
+          "error_holds": 0,
+          "not_accepted": 0,
+          "acceptance_rate": {
+            "numerator": 5,
+            "denominator": 5,
+            "rate": 1.0
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 5,
+            "rate": 0.0
+          }
+        }
       },
       "decision_counts": {
         "ACCEPT": 5,
@@ -126,12 +253,13 @@
         "INVALID_INPUT": 0,
         "ERROR": 0
       },
+      "verifier_errors": 0,
       "execution_errors": 0
     },
     "unguarded": {
       "timing_ms": {
         "latency_ms": {
-          "mean": 0.050916666666666666,
+          "mean": 0.1681666666666667,
           "case_count": 12
         },
         "preparation_ms": {
@@ -155,5 +283,5 @@
       "execution_errors": 0
     }
   },
-  "interpretation": "Exploratory case-level rates on a small synthetic single-reviewer set; not population estimates."
+  "interpretation": "Exploratory case-level rates on a small synthetic single-reviewer set; not population estimates. Condition rates are reported both as-completed (verifier errors excluded from numerator and denominator) and as fail-closed intention-to-treat (non-accepting error outcomes retained; explicit HOLD detection and error-hold counts reported separately)."
 }
