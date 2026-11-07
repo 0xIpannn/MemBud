@@ -1,0 +1,185 @@
+{
+  "manifest_id": "membud-evaluation-v1",
+  "manifest_sha256": "a1b5fac09097be0a8a9d24da2e5cf69ba14ee2118722bc11abf8c028f7749947",
+  "case_count": 12,
+  "reviewer_count": 1,
+  "candidate_error_rates": {
+    "omission": {
+      "numerator": 7,
+      "denominator": 23,
+      "rate": 0.30434782608695654
+    },
+    "unsupported_addition": {
+      "numerator": 4,
+      "denominator": 20,
+      "rate": 0.2
+    },
+    "prior_record_corruption": {
+      "numerator": 4,
+      "denominator": 13,
+      "rate": 0.3076923076923077
+    },
+    "case_error": {
+      "numerator": 7,
+      "denominator": 12,
+      "rate": 0.5833333333333334
+    }
+  },
+  "condition_metrics": {
+    "graph": {
+      "timing_ms": {
+        "latency_ms": {
+          "mean": 35973.074916666665,
+          "case_count": 12
+        },
+        "preparation_ms": {
+          "mean": 0.26258333333333334,
+          "case_count": 12
+        },
+        "verification_ms": {
+          "mean": 35971.83216666667,
+          "case_count": 12
+        },
+        "graph_node_count": {
+          "mean": 8.333333333333334,
+          "case_count": 12
+        },
+        "graph_edge_count": {
+          "mean": 11.833333333333334,
+          "case_count": 12
+        }
+      },
+      "llm_usage": {
+        "input_tokens": 6023,
+        "output_tokens": 11131,
+        "total_tokens": 17154,
+        "api_attempts": 11,
+        "json_retries": 0,
+        "response_count": 12,
+        "usage_reported_count": 6,
+        "model_counts": {
+          "deepseek-flash": 12
+        }
+      },
+      "faulty_case_detection": {
+        "numerator": 4,
+        "denominator": 7,
+        "rate": 0.5714285714285714
+      },
+      "false_hold_rate": {
+        "numerator": 0,
+        "denominator": 5,
+        "rate": 0.0
+      },
+      "valid_update_acceptance": {
+        "numerator": 3,
+        "denominator": 5,
+        "rate": 0.6
+      },
+      "false_accept_rate": {
+        "numerator": 0,
+        "denominator": 7,
+        "rate": 0.0
+      },
+      "decision_counts": {
+        "ACCEPT": 3,
+        "HOLD": 4,
+        "INVALID_INPUT": 0,
+        "ERROR": 0
+      },
+      "verifier_errors": 5,
+      "execution_errors": 5
+    },
+    "text": {
+      "timing_ms": {
+        "latency_ms": {
+          "mean": 74581.12866666667,
+          "case_count": 12
+        },
+        "preparation_ms": {
+          "mean": 0.12975,
+          "case_count": 12
+        },
+        "verification_ms": {
+          "mean": 74579.00425000001,
+          "case_count": 12
+        },
+        "graph_node_count": {
+          "mean": null,
+          "case_count": 0
+        },
+        "graph_edge_count": {
+          "mean": null,
+          "case_count": 0
+        }
+      },
+      "llm_usage": {
+        "input_tokens": 5153,
+        "output_tokens": 9819,
+        "total_tokens": 14972,
+        "api_attempts": 15,
+        "json_retries": 3,
+        "response_count": 12,
+        "usage_reported_count": 7,
+        "model_counts": {
+          "deepseek-flash": 12
+        }
+      },
+      "faulty_case_detection": {
+        "numerator": 4,
+        "denominator": 7,
+        "rate": 0.5714285714285714
+      },
+      "false_hold_rate": {
+        "numerator": 0,
+        "denominator": 5,
+        "rate": 0.0
+      },
+      "valid_update_acceptance": {
+        "numerator": 4,
+        "denominator": 5,
+        "rate": 0.8
+      },
+      "false_accept_rate": {
+        "numerator": 0,
+        "denominator": 7,
+        "rate": 0.0
+      },
+      "decision_counts": {
+        "ACCEPT": 4,
+        "HOLD": 4,
+        "INVALID_INPUT": 0,
+        "ERROR": 0
+      },
+      "verifier_errors": 4,
+      "execution_errors": 4
+    },
+    "unguarded": {
+      "timing_ms": {
+        "latency_ms": {
+          "mean": 0.8629166666666667,
+          "case_count": 12
+        },
+        "preparation_ms": {
+          "mean": null,
+          "case_count": 0
+        },
+        "verification_ms": {
+          "mean": null,
+          "case_count": 0
+        },
+        "graph_node_count": {
+          "mean": null,
+          "case_count": 0
+        },
+        "graph_edge_count": {
+          "mean": null,
+          "case_count": 0
+        }
+      },
+      "applied_count": 12,
+      "execution_errors": 0
+    }
+  },
+  "interpretation": "Exploratory case-level rates on a small synthetic single-reviewer set; not population estimates."
+}

@@ -1,0 +1,36 @@
+{
+  "manifest_id": "membud-evaluation-v1",
+  "status": "frozen_exploratory_one_reviewer",
+  "purpose": "Small synthetic controlled evaluation set; not a representative benchmark.",
+  "review": {
+    "reviewer_count": 1,
+    "second_independent_reviewer": false,
+    "limitation": "Project owner reviewed and approved the case/policy draft. Labels are single-reviewer annotations and should be treated as exploratory, not independently adjudicated ground truth."
+  },
+  "cases_file": "../cases/evaluation-v1.jsonl",
+  "cases_sha256": "c13552bacd843be87ae5fc3a382e4b55f9ff6a0ea02a37c9419cb7799f83689d",
+  "labels_file": "../labels/evaluation-v1.jsonl",
+  "labels_sha256": "f541552a8f6d8f0375d25b64c79623ba98613419569b812dbc75b785bf8540c5",
+  "case_ids": [
+    "DRAFT-01", "DRAFT-02", "DRAFT-03", "DRAFT-04", "DRAFT-06", "DRAFT-07",
+    "DRAFT-08", "DRAFT-11", "DRAFT-14", "DRAFT-16", "DRAFT-17", "DRAFT-18"
+  ],
+  "case_count": 12,
+  "expected_decision_counts": {
+    "ACCEPT": 5,
+    "HOLD": 7
+  },
+  "excluded_case_ids": {
+    "semantic_or_llm_probes": ["DRAFT-09", "DRAFT-10", "DRAFT-13A", "DRAFT-13B"],
+    "schema_invariant": ["DRAFT-12"],
+    "blocked_on_structured_deletion": ["DRAFT-05", "DRAFT-15"]
+  },
+  "conditions": ["unguarded", "graph", "text"],
+  "input_labels_separated": true,
+  "notes": [
+    "The cases are synthetic and hand-authored; they do not contain HaluMem content.",
+    "required_claims are verifier inputs; expected decisions/findings/affected IDs are stored in the separate labels file.",
+    "Graph and text currently use the same deterministic verification logic. This manifest can test pipeline parity, not graph superiority.",
+    "Development fixtures in membud.demo are separate and are not part of this manifest."
+  ]
+}
