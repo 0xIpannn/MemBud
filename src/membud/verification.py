@@ -1,8 +1,9 @@
-"""Deterministic and LLM-assisted transition verification."""
+"""Deterministic graph/text verification and optional LLM-assisted verification."""
 import json
 from typing import Any
 
 from .graph import build_graph
+from .graph_verification import verify_graph
 from .schemas import Check, Result, Transition
 from .serialization import textual_representation
 
@@ -23,17 +24,28 @@ def verify(
     *,
     prepared_input: Any | None = None,
 ) -> Result:
-    """Run explicit annotation-based checks through graph or text input path.
+    """Dispatch to structural graph verification or the claim-set text baseline.
 
-    Both representations preserve identical data. These checks operate on the
-    canonical transition to avoid pretending the toy graph has semantic power.
+    ``representation="graph"`` runs :func:`membud.graph_verification.verify_graph`,
+    which derives its checks from actual graph adjacency (provenance paths,
+    required-claim reachability, operation edges, contradictions, connectivity).
+    ``representation="text"`` runs the original exact-claim-set baseline and is
+    intentionally kept implementation-independent of the graph verifier.
     """
     if representation not in {"graph", "text"}:
         raise ValueError("representation must be 'graph' or 'text'")
+    if representation == "graph":
+        graph = prepared_input if isinstance(prepared_input, dict) and "nodes" in prepared_input else None
+        return verify_graph(t, graph=graph)
     t.validate()
-    # Materialize both encodings; validate graph/text path is available.
-    if prepared_input is None:
-        _ = build_graph(t) if representation == "graph" else textual_representation(t)
+    if prepared_input is not None:
+        _ = textual_representation(t)
+    return _verify_claim_sets(t)
+
+
+def _verify_claim_sets(t: Transition) -> Result:
+    """Text baseline: compare exact claim sets over the canonical transition."""
+    t.validate()
     candidate_claims = {c for r in t.candidate for c in r.claims}
     before_claims = {c for r in t.before for c in r.claims}
     evidence_claims = {c for e in t.evidence for c in e.supports}
@@ -55,7 +67,7 @@ def verify(
                 damaged.append(rid)
             continue
         if operation.type == "DELETE":
-            continue  # An explicit, reasoned deletion is the authorization annotation.
+            continue  # An explicit, structured deletion is the authorization annotation.
         replacement = candidate_by_id[operation.record_id]
         old_claims, new_claims = set(old.claims), set(replacement.claims)
         added_claims = new_claims - old_claims

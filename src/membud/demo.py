@@ -21,7 +21,24 @@ def cases():
         "text": "Sekarang ia tinggal di Surabaya.",
         "supports": ["tinggal di Surabaya"],
     }]
-    base = {"before": [old], "evidence": employment_evidence, "required_claims": ["tinggal di Bandung"]}
+    deletion_evidence = [{
+        "id": "e3",
+        "source": "demo:user-request",
+        "text": "Pengguna meminta data lokasi dihapus.",
+        "supports": [],
+    }]
+    deletion_authorization = {
+        "source": "user_request",
+        "evidence_id": "e3",
+        "target_id": "r1",
+        "rationale": "Pengguna meminta data lokasi dihapus.",
+    }
+    base = {
+        "schema_version": 2,
+        "before": [old],
+        "evidence": employment_evidence,
+        "required_claims": ["tinggal di Bandung"],
+    }
     return [
         {
             **base,
@@ -72,15 +89,27 @@ def cases():
             **base,
             "case_id": "remove-record",
             "candidate": [],
-            "evidence": [],
+            "evidence": deletion_evidence,
             "required_claims": [],
-            "operations": [{"type": "DELETE", "target_id": "r1", "reason": "permintaan pengguna"}],
+            "operations": [{
+                "type": "DELETE",
+                "target_id": "r1",
+                "reason": "permintaan pengguna",
+                "authorization": deletion_authorization,
+            }],
         },
         {
             **base,
-            "case_id": "implicit-removal",
+            "case_id": "required-claim-deletion",
             "candidate": [],
-            "evidence": [],
+            "evidence": deletion_evidence,
+            "required_claims": ["tinggal di Bandung"],
+            "operations": [{
+                "type": "DELETE",
+                "target_id": "r1",
+                "reason": "permintaan pengguna",
+                "authorization": deletion_authorization,
+            }],
         },
         {
             **base,

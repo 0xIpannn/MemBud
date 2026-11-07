@@ -5,7 +5,13 @@ from .schemas import Transition
 
 
 def build_graph(t: Transition) -> dict[str, Any]:
-    """Build a graph from a validated transition, preserving explicit relationships."""
+    """Build a graph from a validated transition, preserving explicit relationships.
+
+    Node/edge types are the contract used by graph-structural verification:
+    transition/record/claim/evidence/operation nodes; BEFORE, PROPOSES, CONTAINS,
+    HAS_EVIDENCE, SUPPORTS, REQUIRES, HAS_OPERATION, REVISES/DELETES/SUPERSEDES,
+    CONTRADICTS, and AUTHORIZED_BY edges.
+    """
     t.validate()
     nodes = []
     edges = []
@@ -13,7 +19,7 @@ def build_graph(t: Transition) -> dict[str, Any]:
     nodes.append({"id": transition_node, "type": "transition", "label": f"candidate update: {t.case_id}"})
     claims = sorted(
         {c for r in (*t.before, *t.candidate) for c in r.claims}
-        | {c for e in t.evidence for c in e.supports}
+        | {c for e in t.evidence for c in (*e.supports, *e.contradicts)}
         | set(t.required_claims)
     )
     for claim in claims:
@@ -35,14 +41,18 @@ def build_graph(t: Transition) -> dict[str, Any]:
             "id": evidence_node,
             "type": "evidence",
             "supports": list(e.supports),
+            "contradicts": list(e.contradicts),
             "source": e.source,
             "text": e.text,
         })
         edges.append({"from": transition_node, "to": evidence_node, "type": "HAS_EVIDENCE"})
         for claim in e.supports:
             edges.append({"from": evidence_node, "to": f"claim:{claim}", "type": "SUPPORTS"})
+        for claim in e.contradicts:
+            edges.append({"from": evidence_node, "to": f"claim:{claim}", "type": "CONTRADICTS"})
     for claim in sorted(set(t.required_claims)):
         edges.append({"from": transition_node, "to": f"claim:{claim}", "type": "REQUIRES"})
+    relation_for_type = {"REVISE": "REVISES", "DELETE": "DELETES", "SUPERSEDE": "SUPERSEDES"}
     for index, operation in enumerate(t.operations):
         operation_node = f"operation:{index}:{operation.type.lower()}"
         nodes.append({
@@ -53,6 +63,12 @@ def build_graph(t: Transition) -> dict[str, Any]:
             "record_id": operation.record_id,
             "target_id": operation.target_id,
             "reason": operation.reason,
+            "authorization": None if operation.authorization is None else {
+                "source": operation.authorization.source,
+                "evidence_id": operation.authorization.evidence_id,
+                "target_id": operation.authorization.target_id,
+                "rationale": operation.authorization.rationale,
+            },
         })
         edges.append({"from": transition_node, "to": operation_node, "type": "HAS_OPERATION"})
         if operation.record_id:
@@ -62,11 +78,17 @@ def build_graph(t: Transition) -> dict[str, Any]:
                 "type": "PROPOSES",
             })
         if operation.target_id:
-            relation = {"REVISE": "REVISES", "DELETE": "DELETES", "SUPERSEDE": "SUPERSEDES"}[operation.type]
+            relation = relation_for_type[operation.type]
             edges.append({
                 "from": operation_node,
                 "to": f"record:before:{operation.target_id}",
                 "type": relation,
+            })
+        if operation.authorization is not None:
+            edges.append({
+                "from": operation_node,
+                "to": f"evidence:{operation.authorization.evidence_id}",
+                "type": "AUTHORIZED_BY",
             })
     return {"nodes": nodes, "edges": edges}
 

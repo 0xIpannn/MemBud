@@ -14,6 +14,7 @@ def textual_representation(t: Transition) -> str:
 def transition_dict(t: Transition) -> dict[str, Any]:
     """Convert a transition to its JSON-compatible canonical dictionary form."""
     return {
+        "schema_version": t.schema_version,
         "case_id": t.case_id,
         "before": [asdict(r) for r in t.before],
         "candidate": [asdict(r) for r in t.candidate],

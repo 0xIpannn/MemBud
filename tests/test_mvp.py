@@ -19,7 +19,7 @@ EXPECTED_RESULTS = {
     "valid-noop": ("ACCEPT", set()),
     "preserve-added-claim": ("ACCEPT", set()),
     "remove-record": ("ACCEPT", set()),
-    "implicit-removal": ("HOLD", {"coverage", "preservation"}),
+    "required-claim-deletion": ("HOLD", {"coverage"}),
     "supported-revision": ("ACCEPT", set()),
     "explicit-supersession": ("ACCEPT", set()),
     "unsupported-plus-valid": ("HOLD", {"faithfulness"}),
@@ -28,6 +28,11 @@ EXPECTED_RESULTS = {
 
 def case(case_id):
     return next(raw for raw in cases() if raw["case_id"] == case_id)
+
+
+def store_records(path):
+    payload = json.loads(path.read_text())
+    return payload["records"] if isinstance(payload, dict) else payload
 
 
 def test_memory_adapter_protocol_is_structural():
@@ -73,7 +78,13 @@ def test_demo_cases_match_annotations_in_both_paths(raw):
     transition = Transition.from_dict(raw)
     graph_result = verify(transition, "graph")
     text_result = verify(transition, "text")
-    assert graph_result.to_dict() == text_result.to_dict()
+    # The graph verifier is structural and the text verifier is a claim-set
+    # baseline, so their result payloads differ by design. They must agree on
+    # the decision and on which checks failed for these fixtures.
+    assert graph_result.decision == text_result.decision
+    assert {c.name for c in graph_result.checks if not c.passed} == {
+        c.name for c in text_result.checks if not c.passed
+    }
 
     expected_decision, expected_failures = EXPECTED_RESULTS[raw["case_id"]]
     assert graph_result.decision == expected_decision
@@ -184,8 +195,8 @@ def test_pilot_runner_executes_unguarded_graph_and_text_on_same_candidates(tmp_p
         text_store = tmp_path / "text" / f"{case_id}.json"
         assert unguarded == raw["candidate"]
         if case_id == "valid":
-            assert json.loads(graph_store.read_text()) == raw["candidate"]
-            assert json.loads(text_store.read_text()) == raw["candidate"]
+            assert store_records(graph_store) == raw["candidate"]
+            assert store_records(text_store) == raw["candidate"]
         else:
             # HOLD must not create a store file at all.
             assert not graph_store.exists()
@@ -234,7 +245,7 @@ def test_guarded_json_store_commits_accepted_update(tmp_path):
     store.write_text(json.dumps(raw["before"]))
     result = run_case(transition, store, log, run_id="run-1", code_revision="abc123")
     assert result.decision == "ACCEPT"
-    assert json.loads(store.read_text()) == raw["candidate"]
+    assert store_records(store) == raw["candidate"]
     event = json.loads(log.read_text())
     assert event["run_id"] == "run-1"
     assert event["code_revision"] == "abc123"
@@ -440,8 +451,9 @@ def test_supported_revision_needs_evidence_for_preservation():
     assert {check.name for check in result.checks if not check.passed} == {"preservation", "faithfulness"}
 
 
-def test_silent_drop_with_unrelated_write_fails_preservation():
+def test_undeclared_removal_is_rejected():
     raw = {
+        "schema_version": 2,
         "case_id": "silent-drop",
         "before": [{"id": "r1", "claims": ["tinggal di Bandung"]}],
         "candidate": [{"id": "r2", "claims": ["bekerja di Tokopedia"]}],
@@ -449,13 +461,13 @@ def test_silent_drop_with_unrelated_write_fails_preservation():
         "required_claims": ["tinggal di Bandung", "bekerja di Tokopedia"],
         "operations": [{"type": "WRITE", "record_id": "r2"}],
     }
-    result = verify(Transition.from_dict(raw))
-    assert result.decision == "HOLD"
-    assert {check.name for check in result.checks if not check.passed} == {"coverage", "preservation"}
+    with pytest.raises(ValueError, match="undeclared removal of prior record r1"):
+        Transition.from_dict(raw)
 
 
-def test_undeclared_mutation_is_caught_alongside_declared_write():
+def test_undeclared_modification_is_rejected():
     raw = {
+        "schema_version": 2,
         "case_id": "undeclared-mutation",
         "before": [
             {"id": "r1", "claims": ["tinggal di Bandung"]},
@@ -470,11 +482,8 @@ def test_undeclared_mutation_is_caught_alongside_declared_write():
         "required_claims": ["tinggal di Bandung", "bekerja di Tokopedia", "belajar bahasa Jepang"],
         "operations": [{"type": "WRITE", "record_id": "r3"}],
     }
-    result = verify(Transition.from_dict(raw))
-    assert result.decision == "HOLD"
-    assert {check.name for check in result.checks if not check.passed} == {"coverage", "preservation", "faithfulness"}
-    preservation = next(check for check in result.checks if check.name == "preservation")
-    assert preservation.affected_ids == ["r1"]
+    with pytest.raises(ValueError, match="undeclared modification of prior record r1"):
+        Transition.from_dict(raw)
 
 
 def test_valid_update_preserves_multiple_prior_records():
@@ -505,3 +514,88 @@ def test_pilot_runner_refuses_to_reuse_an_output_directory(tmp_path):
     run_pilot(transitions, tmp_path, run_id="first")
     with pytest.raises(ValueError, match="fresh --output"):
         run_pilot(transitions, tmp_path, run_id="second")
+
+
+def test_delete_requires_structured_authorization():
+    raw = case("remove-record")
+    del raw["operations"][0]["authorization"]
+    with pytest.raises(ValueError, match="structured authorization"):
+        Transition.from_dict(raw)
+
+
+def test_delete_authorization_must_reference_existing_evidence():
+    raw = case("remove-record")
+    raw["operations"][0]["authorization"]["evidence_id"] = "missing-evidence"
+    with pytest.raises(ValueError, match="evidence_id must reference"):
+        Transition.from_dict(raw)
+
+
+def test_delete_authorization_target_must_match_operation_target():
+    raw = case("remove-record")
+    raw["operations"][0]["authorization"]["target_id"] = "r2"
+    with pytest.raises(ValueError, match="target_id must match"):
+        Transition.from_dict(raw)
+
+
+def test_undeclared_insertion_is_rejected():
+    raw = case("valid")
+    raw["operations"] = []
+    with pytest.raises(ValueError, match="undeclared insertion"):
+        Transition.from_dict(raw)
+
+
+def test_undeclared_modification_is_rejected_without_revise():
+    raw = {
+        "schema_version": 2,
+        "case_id": "undeclared-revise",
+        "before": [{"id": "r1", "claims": ["tinggal di Bandung"]}],
+        "candidate": [{"id": "r1", "claims": ["tinggal di Surabaya"]}],
+        "evidence": [],
+        "required_claims": [],
+        "operations": [],
+    }
+    with pytest.raises(ValueError, match="undeclared modification"):
+        Transition.from_dict(raw)
+
+
+def test_revise_must_actually_change_the_record():
+    raw = {
+        "schema_version": 2,
+        "case_id": "no-op-revise",
+        "before": [{"id": "r1", "claims": ["tinggal di Bandung"]}],
+        "candidate": [{"id": "r1", "claims": ["tinggal di Bandung"]}],
+        "evidence": [],
+        "required_claims": [],
+        "operations": [{"type": "REVISE", "record_id": "r1", "target_id": "r1"}],
+    }
+    with pytest.raises(ValueError, match="REVISE must change"):
+        Transition.from_dict(raw)
+
+
+def test_unsupported_schema_version_is_rejected():
+    raw = case("valid")
+    raw["schema_version"] = 99
+    with pytest.raises(ValueError, match="unsupported schema_version"):
+        Transition.from_dict(raw)
+
+
+def test_versionless_input_keeps_v1_legacy_semantics():
+    raw = case("valid")
+    raw.pop("schema_version", None)
+    transition = Transition.from_dict(raw)
+    assert transition.schema_version == 1
+    assert transition_dict(transition)["schema_version"] == 1
+    # Legacy input skips strict operation-coverage invariants for archival
+    # reproducibility, but v2 input enforces them.
+    legacy_undeclared = {
+        "case_id": "legacy-undeclared",
+        "before": [{"id": "r1", "claims": ["tinggal di Bandung"]}],
+        "candidate": [{"id": "r2", "claims": ["bekerja di Tokopedia"]}],
+        "evidence": [],
+        "required_claims": ["tinggal di Bandung"],
+        "operations": [],
+    }
+    Transition.from_dict(legacy_undeclared)  # loads under v1 semantics
+    strict = dict(legacy_undeclared, schema_version=2)
+    with pytest.raises(ValueError, match="undeclared"):
+        Transition.from_dict(strict)
