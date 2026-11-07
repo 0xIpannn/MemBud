@@ -30,9 +30,13 @@ agent model ──tool call (memory_write)──► opencode tool wrapper
 | `mock-memory-tool.mjs` | The untrusted mock memory tool (`memory_write`) that mutates a local JSON state file, plus atomic state helpers. |
 | `harness.mjs` | Local node/bun harness: starts the real sidecar child process, replays opencode's tool-call order, asserts ACCEPT/HOLD/fail-closed behavior and measures latency. No model calls, no installs. |
 | `config.snippet.jsonc` | Example opencode config (`plugin: [[spec, options]]`). |
+| `live/memory-tool-plugin.mjs` | Mock `memory_write` tool used only by the opt-in live model test; writes env-configured state/capture files. |
+| `live/EVIDENCE.md`, `live/evidence-2026-11-07.json` | Live model-originated denial test results (real model, real opencode session) and method. |
 | `package.json` | `"type": "module"` so Node treats the `.js` plugin as ESM. No dependencies. |
 
-The Python sidecar lives in `src/membud/service.py` at the repository root.
+The Python sidecar lives in `src/membud/service.py` at the repository root. The
+opt-in live model test is `scripts/run_live_opencode_denial.py` (real paid
+provider calls; requires `--confirm-paid-call`).
 
 ## Quickstart (local demo)
 
@@ -299,6 +303,33 @@ machine it is quicker, but may attempt that install. This smoke proves **module
 load only**: no tool was executed, no model was called, no hook was fired, and
 no MCP host was involved (see below).
 
+## Live model-originated denial test (2026-11-07)
+
+The module-load smoke above proves loading only. A separate opt-in test runs
+two scripted sessions through a real model, with a real sidecar and a real
+opencode tool call, and asserts on the host state:
+
+```bash
+set -a; source .env; set +a   # DEEPSEEK_API_KEY
+.venv/bin/python scripts/run_live_opencode_denial.py \
+    --confirm-paid-call --workdir .tmp-live-denial
+```
+
+Environment: opencode 1.19.5, provider DeepSeek (`deepseek/deepseek-flash`),
+isolated throw-away HOME with a copied plugin package and cached model catalog
+(no npm install), and the real `membud.service` sidecar. Observed results
+(opencode's provider-side estimate):
+
+| Session | Tool call | Host state | Cost |
+| --- | --- | --- | --- |
+| HOLD (unsupported claim) | **error** — `MemBud denied memory_write: HOLD [UNSUPPORTED_CLAIM] — faithfulness=FAIL(...)`; model saw the denial | **byte-identical**, tool not executed (no capture line) | $0.00024948 |
+| ACCEPT (evidence-backed) | **completed** — `memory_write applied 2 record(s)` | advanced `version 0 → 1` with exactly the candidate; one execution capture | $0.00028338 |
+
+Both sessions logged `POST /verify 200`; the run used 1,042 input / 435 output
+tokens, ≈**$0.00053** total. Full method, raw evidence and caveats:
+[live/EVIDENCE.md](live/EVIDENCE.md). This is one model, one provider, one
+opencode version and two scripted prompts — not general agent behavior.
+
 ## Security boundaries
 
 * **Loopback only.** The sidecar refuses to bind anything but `127.0.0.1`
@@ -333,17 +364,17 @@ no MCP host was involved (see below).
 
 ## What is NOT proven
 
-* **No real agent/model run.** No LLM was invoked; no opencode session produced
-  a `memory_write` tool call; the hook was exercised by a local harness that
-  replays the wrapper order observed in the 1.19.5 binary.
-* **No end-to-end session evidence** that an actual model-originated tool call
-  is denied and surfaced to the model. The denial mechanism (throw from the
-  before-hook, tool not executed) is validated by code inspection + harness,
-  not by a live model conversation.
+* **One live model path, not general agent behavior.** A real
+  `deepseek/deepseek-flash` session with a scripted prompt did call the
+  plugin-registered `memory_write` tool: HOLD was denied (tool not executed,
+  state byte-identical) and ACCEPT executed/persisted (see `live/EVIDENCE.md`).
+  Not tested: other models/providers, unscripted agent behavior, or how a model
+  might retry/escalate after a denial.
 * **No MCP host integration.** This guards an opencode tool; it does not hook
-  MCP servers, external memory backends, or the provider layer.
+  MCP servers, a real memory backend, or the provider layer. The guarded tool
+  in the live test is a local mock that writes a JSON file.
 * **No 1.18.30 CLI compatibility proof** (only the 1.19.5 binary was
-  load-verified; the installed plugin typings are 1.18.30).
+  load-verified and exercised; the installed plugin typings are 1.18.30).
 * **Not hardened for production:** no auth, no TLS, no rate limiting, no
   multi-tenant isolation, no concurrency/DoS testing, no metrics/audit, no
   packaging/distribution. The sidecar is a spike.

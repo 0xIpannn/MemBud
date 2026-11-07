@@ -43,7 +43,8 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [x] Inspect A-Mem's note/evolution write path; safe guarding requires staging/forking, so defer integration (`data/backend-feasibility.md`).
 - [x] Phase 0 opencode productization spike: stdlib localhost `/verify` sidecar (`membud.service`) plus a no-build `tool.execute.before` guard plugin against a mock memory tool (`integrations/opencode/`); 39 sidecar tests, node/bun harness, real opencode 1.19.5 module-load smoke under an offline network namespace, and measured loopback latency. No live model-originated denial test, no MCP/memory-backend integration.
 - [x] Mem0 host-owned staged-proposal bridge (`membud.adapters.mem0_bridge`) with deterministic mapping and byte-identical HOLD tests; no Mem0 import and no compatibility claim (`data/mem0-bridge.md`).
-- [ ] Run a live model-originated opencode tool-call denial test; if productizing, decide on sidecar authentication/TLS/rate limiting/concurrency-version arbitration and integrate a real backend through a host-owned staged write.
+- [x] Live model-originated opencode denial test: a real `deepseek/deepseek-flash` session in opencode 1.19.5 called the plugin-registered `memory_write` tool; HOLD was denied before execution with byte-identical state and surfaced to the model, ACCEPT executed and persisted exactly the candidate. Reproducible via `scripts/run_live_opencode_denial.py --confirm-paid-call` (≈$0.0005 for the run); evidence in `integrations/opencode/live/EVIDENCE.md`.
+- [ ] If productizing: decide on sidecar authentication/TLS/rate limiting/concurrency-version arbitration; extend the live test to unscripted agent behavior, other providers/models, and a real backend/MCP tool through a host-owned staged write.
 - [ ] Treat Zep/Graphiti as a stretch goal after the core evaluation is reproducible.
 
 ## Run and report the evaluation

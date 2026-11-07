@@ -1,0 +1,74 @@
+{
+  "test": "live-opencode-membud-denial",
+  "date": "2026-11-07",
+  "environment": {
+    "opencode": "1.19.5 (/usr/bin/opencode)",
+    "plugin_typings_installed": "@opencode-ai/plugin 1.18.30 (plugin itself imports only Node built-ins)",
+    "provider": "deepseek (opencode catalog, @ai-sdk/openai-compatible)",
+    "model": "deepseek/deepseek-flash",
+    "python": "3.14 venv, membud.service sidecar on 127.0.0.1:8787"
+  },
+  "command": ".venv/bin/python scripts/run_live_opencode_denial.py --confirm-paid-call --workdir <dir>",
+  "hold": {
+    "tool_call_status": "error",
+    "denial": "MemBud denied memory_write: HOLD [UNSUPPORTED_CLAIM] \u2014 faithfulness=FAIL(UNSUPPORTED_CLAIM: claims without evidence provenance: memiliki kapal pesiar)",
+    "model_reported": "TOOL_OUTCOME=Denied by MemBud HOLD (UNSUPPORTED_CLAIM: \"memiliki kapal pesiar\" lacks evidence provenance).",
+    "state_sha256_unchanged": "2813eb5a2b3be76b164e64f712d6752ec131025c34b2195e9492568c39807a00",
+    "tool_executed": false,
+    "usage": {
+      "steps": 2,
+      "input_tokens": 476,
+      "output_tokens": 201,
+      "reasoning_tokens": 19,
+      "estimated_cost_usd": 0.00024948
+    }
+  },
+  "accept": {
+    "tool_call_status": "completed",
+    "tool_output": "memory_write applied 2 record(s)",
+    "model_reported": "TOOL_OUTCOME=memory_write applied 2 record(s), though the required claim \"tinggal di Bandung\" lacks supporting evidence.",
+    "persisted_state_sha256": "97d19b860a19952f387b7078532897fc24a6610a0fd637b6beefc65bc9c8b792",
+    "tool_executed": true,
+    "usage": {
+      "steps": 2,
+      "input_tokens": 566,
+      "output_tokens": 234,
+      "reasoning_tokens": 20,
+      "estimated_cost_usd": 0.00028338
+    }
+  },
+  "total_usage": {
+    "input_tokens": 1042,
+    "output_tokens": 435,
+    "estimated_cost_usd": 0.00053286
+  },
+  "state_file_final": {
+    "schema_version": 2,
+    "version": 1,
+    "records": [
+      {
+        "id": "r1",
+        "claims": [
+          "tinggal di Bandung"
+        ]
+      },
+      {
+        "id": "r2",
+        "claims": [
+          "bekerja di Tokopedia"
+        ]
+      }
+    ]
+  },
+  "sidecar_log": [
+    "GET /healthz 200",
+    "POST /verify 200 (HOLD session)",
+    "POST /verify 200 (ACCEPT session)"
+  ],
+  "notes": [
+    "A real model called the plugin-registered memory_write tool in a real opencode 1.19.5 session.",
+    "HOLD: the guard threw before tool execution; opencode recorded the tool call as an error, the model saw the denial, and the memory-state file stayed byte-identical (no tool capture).",
+    "ACCEPT: the guard allowed the call; the tool executed exactly once and persisted the candidate (version 0 -> 1).",
+    "Cost is opencode's provider-side estimate from the cached model catalog; the provider does not return a bill here."
+  ]
+}
