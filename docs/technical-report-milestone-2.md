@@ -136,3 +136,14 @@ This is a **reference backend**, not a third-party integration. Source inspectio
 - v2 evaluation reproduced independently by the Lead with identical decision counts and paired differences.
 - `python -m membud.demo` runs the 11-case demo through both guarded paths.
 - No paid API calls were made in this milestone.
+
+
+---
+
+## 11. Fairness follow-up addendum (2026-11-07)
+
+A post-milestone fairness audit tested whether the two graph-vs-text decision differences were structural or informational. A `text_fair` control was added that consumes the same `evidence.contradicts` annotations as the graph verifier, holding information constant.
+
+Results on the 36 frozen v2 cases (no paid calls): plain text 16 ACCEPT / 10 HOLD / 10 INVALID with 2 false accepts (DEV-13, HELD-13); fair text and graph both 14 / 12 / 10 with 0 false accepts and 36/36 label agreement. `text_fair_vs_graph` has zero paired differences; `text_vs_text_fair` has exactly the two contradiction cases.
+
+**Interpretation:** on this manifest, the visible graph advantage is fully explained by annotation access, not by structural verification. The milestone's earlier framing that graph "catches contradictions text cannot" must be read as "graph consumes contradiction annotations text did not consume". Future graph-vs-text claims require relational structure a fair text verifier cannot reconstruct from the same facts, tested against an information-matched control. Full write-up: `docs/fairness-audit.md`; artifact: `data/results/fairness-audit-v2/audit.json`; implementation: `src/membud/fairness.py`, `scripts/run_fairness_audit.py`.

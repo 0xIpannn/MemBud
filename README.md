@@ -20,7 +20,8 @@ MemBud is an experimental local prototype, not a production memory service.
 ### Rules-only v2 evaluation
 
 - The reproducible `scripts/run_evaluation_v2.py` run (no paid calls; 0 tokens; $0.00) over the 36-case v2 set produced, for graph and text respectively: 14/12/10 versus 16/10/10 ACCEPT/HOLD/INVALID_INPUT. Both conditions detect 12/12 gold faulty (HOLD) cases with 0 false accepts on the HOLD-only view, accept 14/14 valid updates with 0 false holds, and handle all 10 expected-invalid transitions identically.
-- Only **2 of 36** decisions differ (`DEV-13`, `HELD-13`): graph returns HOLD where text returns ACCEPT. Those cases were designed with `evidence.contradicts` metadata, which the exact-claim-set text baseline intentionally does not consume. This is a verifier-construction difference on synthetic cases authored alongside the verifier — **not evidence of graph superiority**, and no statistical claim is made.
+- Only **2 of 36** decisions differ (`DEV-13`, `HELD-13`): graph returns HOLD where text returns ACCEPT. Those cases carry `evidence.contradicts` metadata, which the exact-claim-set text baseline does not consume.
+- A **fairness audit** then equalized information access: a fair text control that reads the same contradiction annotations matches the structural graph verifier on **all 26 non-invalid cases** (both 14 ACCEPT / 12 HOLD, 0 false accepts, 36/36 label agreement), while plain text false-accepts the two contradiction cases. The visible graph advantage on this set is therefore attributable to **annotation access, not structural inference**; no decision-level graph advantage is demonstrated here. See `docs/fairness-audit.md`.
 
 ### Still to do
 
@@ -33,7 +34,7 @@ MemBud is an experimental local prototype, not a production memory service.
 
 ### Research status
 
-The graph-vs-text hypothesis remains open. Milestone 2 demonstrates that structural verification can use relationships (provenance, contradictions, operation edges) that a claim-set baseline cannot see, and that the evaluation harness can measure decision differences on equivalent inputs. It does not establish that graph verification is generally better: the v2 set is synthetic and single-reviewed, the differences are on deliberately constructed contradiction cases, and graph preparation adds overhead without evidence of a net benefit at scale. See `docs/technical-report-milestone-2.md` for the full analysis.
+The graph-vs-text hypothesis remains open, and the fairness audit narrows it considerably: once information access is equalized, the structural graph verifier and a fair text verifier agree on every v2 decision. The visible difference in the earlier comparison came from the text baseline ignoring `evidence.contradicts`, not from graph reasoning. A defensible graph advantage therefore requires relationships a text verifier cannot reconstruct from the same canonical facts (e.g. multi-hop provenance/derivation, entity-relation contradictions across records, temporal ordering), evaluated against a fair-text control that receives the same facts. Until such evidence exists, the repository makes no graph-superiority claim. See `docs/fairness-audit.md` and `docs/technical-report-milestone-2.md`.
 
 See `data/pilot-report.md`, `data/experiment-protocol.md`, `data/results/evaluation-v2/`, and `TODO.md` for run details, methods, limitations, and prioritized work.
 

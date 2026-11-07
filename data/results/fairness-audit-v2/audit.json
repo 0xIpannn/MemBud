@@ -1,0 +1,3109 @@
+{
+  "analysis_note": "Rules-only deterministic audit of graph vs text verification on the frozen membud-evaluation-v2 manifest (36 synthetic cases, 10 expected-invalid). No paid model calls were made and gold labels were used only for reporting. Information parity: plain text sees the claim sets but not evidence.contradicts; graph and the fair-text control both see contradiction annotations. Therefore text-vs-text_fair differences isolate the value of contradiction access, while text_fair-vs-graph differences isolate verifier construction. Adding contradiction access changes decisions on DEV-13, HELD-13; plain text false-accepts DEV-13, HELD-13, fair text false-accepts no faulty cases. Fair text and graph agree on all 26 non-invalid cases. Conclusion: on this manifest, once contradiction information access is equalized, structural graph verification adds no decision-level detection power beyond the fair text control. The graph-vs-plain-text gap observed on contradiction cases is explained by information access, not by representation. This is narrow evidence from a small, single-reviewer, synthetic set and does not establish equivalence in general; it does mean the earlier graph advantage should not be attributed to graph structure. Limitations: 36 hand-authored synthetic Indonesian-themed cases, single-reviewer labels with second review pending, and rules-only verifiers. INVALID_INPUT rows are schema-construction failures recorded before verification, not verifier decisions.",
+  "audit_id": "fairness-audit-v2",
+  "breakdown": {
+    "by_category": {
+      "contradiction_unresolved": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 0,
+          "HOLD": 2,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 0,
+              "evaluated": 2,
+              "rate": 0.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": [
+              "DEV-13",
+              "HELD-13"
+            ]
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 0,
+              "evaluated": 2,
+              "rate": 0.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": [
+              "DEV-13",
+              "HELD-13"
+            ]
+          }
+        }
+      },
+      "corruption_insufficient_evidence": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 0,
+          "HOLD": 2,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 0,
+              "evaluated": 2,
+              "rate": 0.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": [
+              "DEV-10",
+              "HELD-10"
+            ]
+          }
+        }
+      },
+      "corruption_no_evidence": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 0,
+          "HOLD": 2,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 0,
+              "evaluated": 2,
+              "rate": 0.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": [
+              "DEV-09",
+              "HELD-09"
+            ]
+          }
+        }
+      },
+      "invalid_delete_authorization_target": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "INVALID_INPUT": 2
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      },
+      "invalid_unauthorized_delete": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "INVALID_INPUT": 2
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      },
+      "invalid_undeclared_insertion": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "INVALID_INPUT": 2
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      },
+      "invalid_undeclared_modification": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "INVALID_INPUT": 2
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      },
+      "invalid_undeclared_removal": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "INVALID_INPUT": 2
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 0,
+              "INVALID_INPUT": 2
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      },
+      "omission": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 0,
+          "HOLD": 2,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 0,
+              "evaluated": 2,
+              "rate": 0.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": [
+              "DEV-08",
+              "HELD-08"
+            ]
+          }
+        }
+      },
+      "unsupported_addition": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 0,
+          "HOLD": 2,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 0,
+              "evaluated": 2,
+              "rate": 0.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": [
+              "DEV-11",
+              "HELD-11"
+            ]
+          }
+        }
+      },
+      "unsupported_provenance": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 0,
+          "HOLD": 2,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 0,
+              "HOLD": 2,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 0,
+              "evaluated": 2,
+              "rate": 0.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": [
+              "DEV-12",
+              "HELD-12"
+            ]
+          }
+        }
+      },
+      "valid_contradiction_correction": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 2,
+          "HOLD": 0,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      },
+      "valid_delete_authorized": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 2,
+          "HOLD": 0,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      },
+      "valid_multi_op": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 2,
+          "HOLD": 0,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      },
+      "valid_noop": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 2,
+          "HOLD": 0,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      },
+      "valid_revise": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 2,
+          "HOLD": 0,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      },
+      "valid_supersede": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 2,
+          "HOLD": 0,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      },
+      "valid_write": {
+        "case_count": 2,
+        "expected_decision_counts": {
+          "ACCEPT": 2,
+          "HOLD": 0,
+          "INVALID_INPUT": 0
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 2,
+              "evaluated": 2,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 2,
+              "HOLD": 0,
+              "INVALID_INPUT": 0
+            },
+            "false_accept_case_ids": []
+          }
+        }
+      }
+    },
+    "by_split": {
+      "dev": {
+        "case_count": 18,
+        "expected_decision_counts": {
+          "ACCEPT": 7,
+          "HOLD": 6,
+          "INVALID_INPUT": 5
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 18,
+              "evaluated": 18,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 7,
+              "HOLD": 6,
+              "INVALID_INPUT": 5
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 17,
+              "evaluated": 18,
+              "rate": 0.9444444444444444
+            },
+            "decision_counts": {
+              "ACCEPT": 8,
+              "HOLD": 5,
+              "INVALID_INPUT": 5
+            },
+            "false_accept_case_ids": [
+              "DEV-13"
+            ]
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 18,
+              "evaluated": 18,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 7,
+              "HOLD": 6,
+              "INVALID_INPUT": 5
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 12,
+              "evaluated": 18,
+              "rate": 0.6666666666666666
+            },
+            "decision_counts": {
+              "ACCEPT": 13,
+              "HOLD": 0,
+              "INVALID_INPUT": 5
+            },
+            "false_accept_case_ids": [
+              "DEV-08",
+              "DEV-09",
+              "DEV-10",
+              "DEV-11",
+              "DEV-12",
+              "DEV-13"
+            ]
+          }
+        }
+      },
+      "heldout": {
+        "case_count": 18,
+        "expected_decision_counts": {
+          "ACCEPT": 7,
+          "HOLD": 6,
+          "INVALID_INPUT": 5
+        },
+        "strategies": {
+          "graph": {
+            "agreement": {
+              "agreed": 18,
+              "evaluated": 18,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 7,
+              "HOLD": 6,
+              "INVALID_INPUT": 5
+            },
+            "false_accept_case_ids": []
+          },
+          "text": {
+            "agreement": {
+              "agreed": 17,
+              "evaluated": 18,
+              "rate": 0.9444444444444444
+            },
+            "decision_counts": {
+              "ACCEPT": 8,
+              "HOLD": 5,
+              "INVALID_INPUT": 5
+            },
+            "false_accept_case_ids": [
+              "HELD-13"
+            ]
+          },
+          "text_fair": {
+            "agreement": {
+              "agreed": 18,
+              "evaluated": 18,
+              "rate": 1.0
+            },
+            "decision_counts": {
+              "ACCEPT": 7,
+              "HOLD": 6,
+              "INVALID_INPUT": 5
+            },
+            "false_accept_case_ids": []
+          },
+          "unguarded": {
+            "agreement": {
+              "agreed": 12,
+              "evaluated": 18,
+              "rate": 0.6666666666666666
+            },
+            "decision_counts": {
+              "ACCEPT": 13,
+              "HOLD": 0,
+              "INVALID_INPUT": 5
+            },
+            "false_accept_case_ids": [
+              "HELD-08",
+              "HELD-09",
+              "HELD-10",
+              "HELD-11",
+              "HELD-12",
+              "HELD-13"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "case_count": 36,
+  "cases": [
+    {
+      "case_id": "DEV-01",
+      "category": "valid_write",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-02",
+      "category": "valid_revise",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-03",
+      "category": "valid_supersede",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-04",
+      "category": "valid_delete_authorized",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-05",
+      "category": "valid_noop",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-06",
+      "category": "valid_multi_op",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-07",
+      "category": "valid_contradiction_correction",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-08",
+      "category": "omission",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-09",
+      "category": "corruption_no_evidence",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-10",
+      "category": "corruption_insufficient_evidence",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-11",
+      "category": "unsupported_addition",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-12",
+      "category": "unsupported_provenance",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "PRESERVATION_OK",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "PRESERVATION_OK",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "PRESERVATION_OK",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-13",
+      "category": "contradiction_unresolved",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "CONTRADICTED_CLAIM",
+            "COVERAGE_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "CONTRADICTED_CLAIM",
+            "COVERAGE_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-14",
+      "category": "invalid_unauthorized_delete",
+      "decisions": {
+        "graph": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text_fair": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "unguarded": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "INVALID_INPUT",
+      "expected_invalid": true,
+      "invalid_input": true,
+      "invalid_reason": "ValueError: DELETE requires structured authorization metadata",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-15",
+      "category": "invalid_delete_authorization_target",
+      "decisions": {
+        "graph": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text_fair": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "unguarded": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "INVALID_INPUT",
+      "expected_invalid": true,
+      "invalid_input": true,
+      "invalid_reason": "ValueError: DELETE authorization evidence_id must reference transition evidence",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-16",
+      "category": "invalid_undeclared_insertion",
+      "decisions": {
+        "graph": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text_fair": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "unguarded": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "INVALID_INPUT",
+      "expected_invalid": true,
+      "invalid_input": true,
+      "invalid_reason": "ValueError: undeclared insertion of candidate record r2",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-17",
+      "category": "invalid_undeclared_modification",
+      "decisions": {
+        "graph": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text_fair": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "unguarded": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "INVALID_INPUT",
+      "expected_invalid": true,
+      "invalid_input": true,
+      "invalid_reason": "ValueError: undeclared modification of prior record r1",
+      "split": "dev"
+    },
+    {
+      "case_id": "DEV-18",
+      "category": "invalid_undeclared_removal",
+      "decisions": {
+        "graph": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text_fair": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "unguarded": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "INVALID_INPUT",
+      "expected_invalid": true,
+      "invalid_input": true,
+      "invalid_reason": "ValueError: undeclared removal of prior record r2",
+      "split": "dev"
+    },
+    {
+      "case_id": "HELD-01",
+      "category": "valid_write",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-02",
+      "category": "valid_revise",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-03",
+      "category": "valid_supersede",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-04",
+      "category": "valid_delete_authorized",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-05",
+      "category": "valid_noop",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-06",
+      "category": "valid_multi_op",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-07",
+      "category": "valid_contradiction_correction",
+      "decisions": {
+        "graph": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "ACCEPT",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-08",
+      "category": "omission",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-09",
+      "category": "corruption_no_evidence",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-10",
+      "category": "corruption_insufficient_evidence",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-11",
+      "category": "unsupported_addition",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "PRESERVATION_OK",
+            "REQUIRED_CLAIM_OMITTED",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-12",
+      "category": "unsupported_provenance",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "PRESERVATION_OK",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "PRESERVATION_OK",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "PRESERVATION_OK",
+            "UNSUPPORTED_CLAIM"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-13",
+      "category": "contradiction_unresolved",
+      "decisions": {
+        "graph": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "CONTRADICTED_CLAIM",
+            "COVERAGE_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text": {
+          "decision": "ACCEPT",
+          "reason_codes": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "text_fair": {
+          "decision": "HOLD",
+          "reason_codes": [
+            "CONTRADICTED_CLAIM",
+            "COVERAGE_OK",
+            "PRESERVATION_OK"
+          ],
+          "verified": true
+        },
+        "unguarded": {
+          "decision": "ACCEPT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "HOLD",
+      "expected_invalid": false,
+      "invalid_input": false,
+      "invalid_reason": "",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-14",
+      "category": "invalid_unauthorized_delete",
+      "decisions": {
+        "graph": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text_fair": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "unguarded": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "INVALID_INPUT",
+      "expected_invalid": true,
+      "invalid_input": true,
+      "invalid_reason": "ValueError: DELETE requires structured authorization metadata",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-15",
+      "category": "invalid_delete_authorization_target",
+      "decisions": {
+        "graph": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text_fair": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "unguarded": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "INVALID_INPUT",
+      "expected_invalid": true,
+      "invalid_input": true,
+      "invalid_reason": "ValueError: DELETE authorization target_id must match the operation target",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-16",
+      "category": "invalid_undeclared_insertion",
+      "decisions": {
+        "graph": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text_fair": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "unguarded": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "INVALID_INPUT",
+      "expected_invalid": true,
+      "invalid_input": true,
+      "invalid_reason": "ValueError: undeclared insertion of candidate record r2",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-17",
+      "category": "invalid_undeclared_modification",
+      "decisions": {
+        "graph": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text_fair": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "unguarded": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "INVALID_INPUT",
+      "expected_invalid": true,
+      "invalid_input": true,
+      "invalid_reason": "ValueError: undeclared modification of prior record r1",
+      "split": "heldout"
+    },
+    {
+      "case_id": "HELD-18",
+      "category": "invalid_undeclared_removal",
+      "decisions": {
+        "graph": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "text_fair": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        },
+        "unguarded": {
+          "decision": "INVALID_INPUT",
+          "reason_codes": [],
+          "verified": false
+        }
+      },
+      "expected": "INVALID_INPUT",
+      "expected_invalid": true,
+      "invalid_input": true,
+      "invalid_reason": "ValueError: undeclared removal of prior record r2",
+      "split": "heldout"
+    }
+  ],
+  "decision_vocabulary": [
+    "ACCEPT",
+    "HOLD",
+    "INVALID_INPUT"
+  ],
+  "manifest": {
+    "case_count": 36,
+    "case_count_loaded": 36,
+    "cases_sha256": "40558746e915c6f5296235109900c050da61f87fe4f4fe320bf0290af9aa432d",
+    "expected_invalid_case_count": 10,
+    "label_review": {
+      "reviewer_count": 1,
+      "second_independent_reviewer": false,
+      "second_review_status": "pending_human_review"
+    },
+    "labels_sha256": "9280d3e8e2aa7a61df31bed689647f768a98361bb7509e7f8d172bb376989a14",
+    "manifest_id": "membud-evaluation-v2",
+    "path": "data/manifests/evaluation-v2.json",
+    "schema_version": 2,
+    "sha256": "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a",
+    "status": "frozen_exploratory_single_reviewer_second_review_pending"
+  },
+  "paid_api_calls": 0,
+  "paired_differences": {
+    "text_fair_vs_graph": [],
+    "text_vs_text_fair": [
+      {
+        "case_id": "DEV-13",
+        "category": "contradiction_unresolved",
+        "decisions": {
+          "text": "ACCEPT",
+          "text_fair": "HOLD"
+        },
+        "expected": "HOLD",
+        "reason_codes": {
+          "text": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "text_fair": [
+            "CONTRADICTED_CLAIM",
+            "COVERAGE_OK",
+            "PRESERVATION_OK"
+          ]
+        },
+        "split": "dev"
+      },
+      {
+        "case_id": "HELD-13",
+        "category": "contradiction_unresolved",
+        "decisions": {
+          "text": "ACCEPT",
+          "text_fair": "HOLD"
+        },
+        "expected": "HOLD",
+        "reason_codes": {
+          "text": [
+            "COVERAGE_OK",
+            "FAITHFULNESS_OK",
+            "PRESERVATION_OK"
+          ],
+          "text_fair": [
+            "CONTRADICTED_CLAIM",
+            "COVERAGE_OK",
+            "PRESERVATION_OK"
+          ]
+        },
+        "split": "heldout"
+      }
+    ]
+  },
+  "per_strategy": {
+    "graph": {
+      "decision_counts": {
+        "ACCEPT": 14,
+        "HOLD": 12,
+        "INVALID_INPUT": 10
+      },
+      "decision_semantics": "verification derived from canonical graph adjacency and contradiction edges",
+      "false_accepts": {
+        "case_ids": [],
+        "count": 0,
+        "denominator": 12
+      },
+      "false_holds": {
+        "case_ids": [],
+        "count": 0,
+        "denominator": 14
+      },
+      "invalid_input_handling": {
+        "classified_invalid_input": 10,
+        "expected": 10
+      },
+      "kind": "structural_graph",
+      "label_agreement": {
+        "agreed": 36,
+        "evaluated": 36,
+        "mismatches": [],
+        "rate": 1.0
+      },
+      "reads_contradicts": true,
+      "valid_acceptance": {
+        "case_ids": [
+          "DEV-01",
+          "DEV-02",
+          "DEV-03",
+          "DEV-04",
+          "DEV-05",
+          "DEV-06",
+          "DEV-07",
+          "HELD-01",
+          "HELD-02",
+          "HELD-03",
+          "HELD-04",
+          "HELD-05",
+          "HELD-06",
+          "HELD-07"
+        ],
+        "denominator": 14,
+        "numerator": 14,
+        "rate": 1.0
+      }
+    },
+    "text": {
+      "decision_counts": {
+        "ACCEPT": 16,
+        "HOLD": 10,
+        "INVALID_INPUT": 10
+      },
+      "decision_semantics": "exact claim-set coverage/preservation/faithfulness baseline",
+      "false_accepts": {
+        "case_ids": [
+          "DEV-13",
+          "HELD-13"
+        ],
+        "count": 2,
+        "denominator": 12
+      },
+      "false_holds": {
+        "case_ids": [],
+        "count": 0,
+        "denominator": 14
+      },
+      "invalid_input_handling": {
+        "classified_invalid_input": 10,
+        "expected": 10
+      },
+      "kind": "claim_set_baseline",
+      "label_agreement": {
+        "agreed": 34,
+        "evaluated": 36,
+        "mismatches": [
+          {
+            "case_id": "DEV-13",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "HELD-13",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          }
+        ],
+        "rate": 0.9444444444444444
+      },
+      "reads_contradicts": false,
+      "valid_acceptance": {
+        "case_ids": [
+          "DEV-01",
+          "DEV-02",
+          "DEV-03",
+          "DEV-04",
+          "DEV-05",
+          "DEV-06",
+          "DEV-07",
+          "HELD-01",
+          "HELD-02",
+          "HELD-03",
+          "HELD-04",
+          "HELD-05",
+          "HELD-06",
+          "HELD-07"
+        ],
+        "denominator": 14,
+        "numerator": 14,
+        "rate": 1.0
+      }
+    },
+    "text_fair": {
+      "decision_counts": {
+        "ACCEPT": 14,
+        "HOLD": 12,
+        "INVALID_INPUT": 10
+      },
+      "decision_semantics": "claim-set baseline plus evidence.contradicts access: any candidate claim that appears in evidence.contradicts fails faithfulness with CONTRADICTED_CLAIM",
+      "false_accepts": {
+        "case_ids": [],
+        "count": 0,
+        "denominator": 12
+      },
+      "false_holds": {
+        "case_ids": [],
+        "count": 0,
+        "denominator": 14
+      },
+      "invalid_input_handling": {
+        "classified_invalid_input": 10,
+        "expected": 10
+      },
+      "kind": "fair_text_control",
+      "label_agreement": {
+        "agreed": 36,
+        "evaluated": 36,
+        "mismatches": [],
+        "rate": 1.0
+      },
+      "reads_contradicts": true,
+      "valid_acceptance": {
+        "case_ids": [
+          "DEV-01",
+          "DEV-02",
+          "DEV-03",
+          "DEV-04",
+          "DEV-05",
+          "DEV-06",
+          "DEV-07",
+          "HELD-01",
+          "HELD-02",
+          "HELD-03",
+          "HELD-04",
+          "HELD-05",
+          "HELD-06",
+          "HELD-07"
+        ],
+        "denominator": 14,
+        "numerator": 14,
+        "rate": 1.0
+      }
+    },
+    "unguarded": {
+      "decision_counts": {
+        "ACCEPT": 26,
+        "HOLD": 0,
+        "INVALID_INPUT": 10
+      },
+      "decision_semantics": "schema-valid candidate applied unconditionally; recorded as ACCEPT because no verifier was consulted (equivalent to applying the candidate)",
+      "false_accepts": {
+        "case_ids": [
+          "DEV-08",
+          "DEV-09",
+          "DEV-10",
+          "DEV-11",
+          "DEV-12",
+          "DEV-13",
+          "HELD-08",
+          "HELD-09",
+          "HELD-10",
+          "HELD-11",
+          "HELD-12",
+          "HELD-13"
+        ],
+        "count": 12,
+        "denominator": 12
+      },
+      "false_holds": {
+        "case_ids": [],
+        "count": 0,
+        "denominator": 14
+      },
+      "invalid_input_handling": {
+        "classified_invalid_input": 10,
+        "expected": 10
+      },
+      "kind": "no_verification_gate",
+      "label_agreement": {
+        "agreed": 24,
+        "evaluated": 36,
+        "mismatches": [
+          {
+            "case_id": "DEV-08",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "DEV-09",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "DEV-10",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "DEV-11",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "DEV-12",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "DEV-13",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "HELD-08",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "HELD-09",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "HELD-10",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "HELD-11",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "HELD-12",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          },
+          {
+            "case_id": "HELD-13",
+            "decision": "ACCEPT",
+            "expected": "HOLD"
+          }
+        ],
+        "rate": 0.6666666666666666
+      },
+      "reads_contradicts": false,
+      "valid_acceptance": {
+        "case_ids": [
+          "DEV-01",
+          "DEV-02",
+          "DEV-03",
+          "DEV-04",
+          "DEV-05",
+          "DEV-06",
+          "DEV-07",
+          "HELD-01",
+          "HELD-02",
+          "HELD-03",
+          "HELD-04",
+          "HELD-05",
+          "HELD-06",
+          "HELD-07"
+        ],
+        "denominator": 14,
+        "numerator": 14,
+        "rate": 1.0
+      }
+    }
+  },
+  "strategies": {
+    "graph": {
+      "decision_semantics": "verification derived from canonical graph adjacency and contradiction edges",
+      "kind": "structural_graph",
+      "reads_contradicts": true
+    },
+    "text": {
+      "decision_semantics": "exact claim-set coverage/preservation/faithfulness baseline",
+      "kind": "claim_set_baseline",
+      "reads_contradicts": false
+    },
+    "text_fair": {
+      "decision_semantics": "claim-set baseline plus evidence.contradicts access: any candidate claim that appears in evidence.contradicts fails faithfulness with CONTRADICTED_CLAIM",
+      "kind": "fair_text_control",
+      "reads_contradicts": true
+    },
+    "unguarded": {
+      "decision_semantics": "schema-valid candidate applied unconditionally; recorded as ACCEPT because no verifier was consulted (equivalent to applying the candidate)",
+      "kind": "no_verification_gate",
+      "reads_contradicts": false
+    }
+  },
+  "verifier": "rules"
+}

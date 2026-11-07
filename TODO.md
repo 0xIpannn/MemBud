@@ -68,6 +68,8 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 
 ### Remaining after Milestone 2
 
+- [x] Fairness/equivalence audit (plain text vs fair text with equal contradiction access vs structural graph): fair text matches graph on all 26 non-invalid cases; the earlier 2/36 graph advantage is explained by annotation access, not structural inference (`docs/fairness-audit.md`).
+- [ ] Define and evaluate a graph hypothesis where relational structure supplies detection capability a fair text verifier cannot reconstruct from the same facts (multi-hop provenance/derivation, entity-relation contradictions across records, temporal ordering), and compare against a fair-text control with identical information.
 - [ ] Collect the pending independent second human review and adjudicate v2 labels.
 - [ ] Run the optional semantic/LLM conditions on the v2 held-out split under a bounded spend approval; report calibration and abstention.
 - [ ] Add checkpoint/resume, provider-billing cost accounting, and a powered evaluation with a justified sample size.
