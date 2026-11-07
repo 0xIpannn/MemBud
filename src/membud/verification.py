@@ -13,6 +13,8 @@ _CHECK_REASON_CODES = {
     "preservation": {"PASS": {"PRESERVATION_OK"}, "FAIL": {"PRIOR_RECORD_UNAUTHORIZED_CHANGE"}, "UNCERTAIN": {"CHECK_UNCERTAIN"}},
     "faithfulness": {"PASS": {"FAITHFULNESS_OK"}, "FAIL": {"UNSUPPORTED_CLAIM", "CONTRADICTED_CLAIM"}, "UNCERTAIN": {"CHECK_UNCERTAIN"}},
 }
+# LLM/transport failures produce UNCERTAIN checks with INVALID_VERIFIER_OUTPUT;
+# that code is internal to the fallback and is never accepted from the model.
 
 
 def verify(

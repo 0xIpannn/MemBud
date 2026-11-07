@@ -182,11 +182,13 @@ def run_case(
             "graph_node_count": graph_node_count,
             "graph_edge_count": graph_edge_count,
             "status": event_status,
+            "decision": result.decision,
             "manifest_id": manifest_id,
             "manifest_sha256": manifest_sha256,
             "input": transition_dict(t),
             "representation": representation,
             "result": result.to_dict(),
+            "store_before": [asdict(record) for record in store.values()],
             "store_after": [asdict(record) for record in after.values()],
         }
         if result.decision == "ACCEPT":

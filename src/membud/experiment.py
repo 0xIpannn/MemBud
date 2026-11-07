@@ -28,6 +28,21 @@ def source_fingerprint() -> str:
     return "working-tree-sha256:" + digest.hexdigest()
 
 
+def _require_fresh_output(output_dir: Path, transitions: list[Transition]) -> None:
+    """Refuse to mix a new run into stores/logs left by an earlier run."""
+    if (output_dir / "pilot-summary.json").exists():
+        raise ValueError(
+            "output directory already contains a pilot summary; use a fresh --output directory"
+        )
+    for transition in transitions:
+        filename = quote(transition.case_id, safe="") + ".json"
+        for condition in ("unguarded", "graph", "text"):
+            if (output_dir / condition / filename).exists():
+                raise ValueError(
+                    f"output directory already contains a store for {transition.case_id}/{condition}; use a fresh --output directory"
+                )
+
+
 def load_manifest_cases(manifest_path: str | Path) -> list[Transition]:
     """Load only transition inputs from a hash-pinned manifest, never its labels."""
     manifest_path = Path(manifest_path)
@@ -72,6 +87,7 @@ def run_pilot(
         raise ValueError("case IDs must be unique within a pilot run")
 
     output_dir = Path(output_dir)
+    _require_fresh_output(output_dir, transitions)
     run_id = run_id or str(uuid.uuid4())
     results: list[dict[str, Any]] = []
     for transition in transitions:

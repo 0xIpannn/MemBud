@@ -8,7 +8,7 @@ from .graph import build_graph, to_mermaid
 from .schemas import Check, Evidence, Operation, Record, Result, Transition
 from .serialization import textual_representation, transition_dict
 from .store import commit, run_case
-from .verification import verify
+from .verification import verify, verify_with_llm
 
 __all__ = [
     "Check",
@@ -24,4 +24,5 @@ __all__ = [
     "to_mermaid",
     "transition_dict",
     "verify",
+    "verify_with_llm",
 ]

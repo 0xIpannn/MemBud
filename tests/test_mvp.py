@@ -496,3 +496,12 @@ def test_valid_update_preserves_multiple_prior_records():
     result = verify(Transition.from_dict(raw))
     assert result.decision == "ACCEPT"
     assert all(check.passed for check in result.checks)
+
+
+def test_pilot_runner_refuses_to_reuse_an_output_directory(tmp_path):
+    from membud.experiment import run_pilot
+
+    transitions = [Transition.from_dict(case("valid"))]
+    run_pilot(transitions, tmp_path, run_id="first")
+    with pytest.raises(ValueError, match="fresh --output"):
+        run_pilot(transitions, tmp_path, run_id="second")
