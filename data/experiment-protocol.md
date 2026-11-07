@@ -1,6 +1,6 @@
 # Draft controlled-evaluation protocol
 
-**Status: design draft only.** No external evaluation run has been performed. The final manifest and budget must be approved and frozen before collecting evaluation outcomes.
+**Status: pilot performed; final evaluation design draft.** An exploratory 12-case DeepSeek run has been performed on the frozen synthetic set (see `data/pilot-report.md` and `data/results/`). The final manifest and budget must still be approved and frozen before collecting evaluation outcomes; the pilot is not a powered effectiveness study.
 
 ## Conditions
 
@@ -10,7 +10,7 @@ All conditions receive the exact same frozen prior state, evidence/source excerp
 2. **Text guarded:** Present the transition as deterministic compact JSON/text, including all fields and provenance, then apply the common decision policy.
 3. **Graph guarded:** Present the same canonical transition as graph structure, including exactly the same facts, source text, provenance, required claims, and operation annotations; apply the same decision policy.
 
-The default `verify()` implementation accepts a representation selector but both routes call the same deterministic canonical checks; that is a plumbing baseline, **not** a graph-vs-text effectiveness test. An optional `verify_with_llm()` path uses a shared prompt/policy and the same JSON output schema, model, temperature, retry settings, and candidate transition for graph/text; only the serialized representation differs. Its prompt version is `membud-transition-checks-v1`, with JSON mode and temperature 0. The recommended API provider is DeepSeek's official OpenAI-compatible endpoint with model ID `deepseek-flash` (configurable via `DEEPSEEK_MODEL`); the API-returned model field is logged, but a catalog alias may not identify an immutable backend revision. Command Code remains an optional provider route. A live comparative run has not yet been performed. Do not claim graph superiority without outcome data. A text renderer must not receive less relational/provenance information than the graph.
+The default `verify()` implementation accepts a representation selector but both routes call the same deterministic canonical checks; that is a plumbing baseline, **not** a graph-vs-text effectiveness test. An optional `verify_with_llm()` path uses a shared prompt/policy and the same JSON output schema, model, temperature, retry settings, and candidate transition for graph/text; only the serialized representation differs. Its prompt version is `membud-transition-checks-v1`, with JSON mode and temperature 0. The recommended API provider is DeepSeek's official OpenAI-compatible endpoint with model ID `deepseek-flash` (configurable via `DEEPSEEK_MODEL`); the API-returned model field is logged, but a catalog alias may not identify an immutable backend revision. Command Code remains an optional provider route. An exploratory live comparative run on the 12-case synthetic set has been performed with DeepSeek; it is not a powered effectiveness test. Do not claim graph superiority without outcome data. A text renderer must not receive less relational/provenance information than the graph.
 
 For guarded conditions, commit the full candidate only if coverage, preservation, and faithfulness all return PASS. Any FAIL or UNCERTAIN yields HOLD. Invalid transition/schema input yields `INVALID_INPUT` before verification and must never write memory. RETRY, if added for model calls, is an execution event and cannot authorize a commit.
 
@@ -25,13 +25,13 @@ Report every numerator and denominator; do not count an absent denominator as ze
 - **Claim omission rate:** required supported claims absent from candidate / all required supported claims.
 - **Unsupported-addition rate:** unsupported material candidate claims / all material candidate claims.
 - **Prior-record corruption rate:** valid prior records expected to persist that are improperly changed/removed / all valid prior records annotated expected to persist.
-- **Faulty-case detection rate:** faulty transitions flagged (HOLD or invalid where appropriate) / all gold faulty transitions.
-- **False-hold rate:** valid transitions held / all gold valid transitions.
-- **Valid-update acceptance:** valid transitions accepted / all gold valid transitions.
+- **Faulty-case detection rate:** faulty transitions flagged with an explicit HOLD (or invalid where appropriate) / gold faulty transitions. Report both an **as-completed** denominator (verifier errors excluded from numerator and denominator) and a **fail-closed intention-to-treat** denominator (all gold faulty cases; error-holds are not credited as detections).
+- **False-hold rate:** valid transitions not accepted / gold valid transitions, reported as-completed (completed non-ACCEPT decisions) and fail-closed intention-to-treat (verifier/execution errors leave the update unaccepted and count as held).
+- **Valid-update acceptance:** valid transitions accepted / gold valid transitions, in both forms.
 - **Case-level error rate:** cases with at least one relevant error / cases with an applicable denominator.
 - **Decision counts:** ACCEPT, HOLD, INVALID_INPUT, and execution errors/missing results, separately.
 
-Claims are not independent statistical samples; use case-level paired comparisons as the primary analysis. Cases with no applicable claims/records for a metric are N/A for that metric.
+Do not report a single `error-adjusted` rate without its denominator definition. Errors are non-accepting outcomes, so they belong in the fail-closed intention-to-treat view even when they are excluded from the as-completed view; report error-hold counts alongside both. Claims are not independent statistical samples; use case-level paired comparisons as the primary analysis. Cases with no applicable claims/records for a metric are N/A for that metric.
 
 ## Cost, latency, and utility
 

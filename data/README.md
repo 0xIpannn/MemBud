@@ -18,4 +18,4 @@ This offers useful update-level reference material and supports update outcome c
 
 ### Recommendation
 
-Use the hand-authored, independently reviewed transition set for the controlled graph-versus-text safety experiment. Consider HaluMem only as a separately scoped exploratory external-validity or downstream update evaluation, subject to license review and a documented mapping from its dialogue/reference fields to fixed candidate transitions. Do not put HaluMem-derived records in this repository. Pin a specific dataset revision and obtain the files through the official Hugging Face dataset page only if proceeding.
+Use the hand-authored, single-reviewed (one reviewer, not independently adjudicated) transition set for the controlled graph-versus-text safety experiment. Consider HaluMem only as a separately scoped exploratory external-validity or downstream update evaluation, subject to license review and a documented mapping from its dialogue/reference fields to fixed candidate transitions. Do not put HaluMem-derived records in this repository. Pin a specific dataset revision and obtain the files through the official Hugging Face dataset page only if proceeding.

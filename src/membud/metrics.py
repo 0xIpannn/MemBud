@@ -89,26 +89,76 @@ def analyze_manifest_run(manifest_path: str | Path, summary_path: str | Path) ->
     for condition in ("graph", "text"):
         faulty_ids = [cid for cid in manifest["case_ids"] if labels[cid]["expected_decision"] == "HOLD"]
         valid_ids = [cid for cid in manifest["case_ids"] if labels[cid]["expected_decision"] == "ACCEPT"]
-        faulty_flagged = sum(
-            rows_by_key[(cid, condition)].get("status") == "completed"
-            and rows_by_key[(cid, condition)]["decision"] in {"HOLD", "INVALID_INPUT"}
-            for cid in faulty_ids
-        )
-        false_holds = sum(
-            rows_by_key[(cid, condition)].get("status") == "completed"
-            and rows_by_key[(cid, condition)]["decision"] != "ACCEPT"
-            for cid in valid_ids
-        )
-        valid_accepted = sum(
-            rows_by_key[(cid, condition)].get("status") == "completed"
-            and rows_by_key[(cid, condition)]["decision"] == "ACCEPT"
-            for cid in valid_ids
-        )
-        false_accepts = sum(
-            rows_by_key[(cid, condition)].get("status") == "completed"
-            and rows_by_key[(cid, condition)]["decision"] == "ACCEPT"
-            for cid in faulty_ids
-        )
+
+        def row_for(case_id: str) -> dict[str, Any]:
+            return rows_by_key[(case_id, condition)]
+
+        def is_completed(case_id: str) -> bool:
+            return row_for(case_id).get("status") == "completed"
+
+        def decision(case_id: str) -> str:
+            return row_for(case_id).get("decision", "ERROR")
+
+        # As-completed view: verifier errors leave BOTH numerator and denominator.
+        completed_faulty = [cid for cid in faulty_ids if is_completed(cid)]
+        completed_valid = [cid for cid in valid_ids if is_completed(cid)]
+        completed_faulty_flagged = [
+            cid for cid in completed_faulty if decision(cid) in {"HOLD", "INVALID_INPUT"}
+        ]
+        completed_faulty_accepted = [cid for cid in completed_faulty if decision(cid) == "ACCEPT"]
+        completed_valid_accepted = [cid for cid in completed_valid if decision(cid) == "ACCEPT"]
+        completed_valid_held = [cid for cid in completed_valid if decision(cid) != "ACCEPT"]
+        as_completed = {
+            "faulty": {
+                "completed": len(completed_faulty),
+                "flagged": len(completed_faulty_flagged),
+                "detection_rate": _rate(len(completed_faulty_flagged), len(completed_faulty)),
+                "false_accepts": len(completed_faulty_accepted),
+                "false_accept_rate": _rate(len(completed_faulty_accepted), len(completed_faulty)),
+            },
+            "valid": {
+                "completed": len(completed_valid),
+                "accepted": len(completed_valid_accepted),
+                "acceptance_rate": _rate(len(completed_valid_accepted), len(completed_valid)),
+                "held": len(completed_valid_held),
+                "false_hold_rate": _rate(len(completed_valid_held), len(completed_valid)),
+            },
+        }
+
+        # Fail-closed intention-to-treat: a verifier/execution error produced no
+        # commit, so it counts as a non-accepting outcome. Detection still counts
+        # only explicit HOLD decisions; error-hold counts are reported separately.
+        error_faulty = [cid for cid in faulty_ids if not is_completed(cid)]
+        error_valid = [cid for cid in valid_ids if not is_completed(cid)]
+        itt_faulty_held = [
+            cid for cid in faulty_ids if is_completed(cid) and decision(cid) in {"HOLD", "INVALID_INPUT"}
+        ]
+        itt_faulty_accepted = [cid for cid in faulty_ids if is_completed(cid) and decision(cid) == "ACCEPT"]
+        itt_valid_accepted = [cid for cid in valid_ids if is_completed(cid) and decision(cid) == "ACCEPT"]
+        fail_closed_itt = {
+            "faulty": {
+                "cases": len(faulty_ids),
+                "held_with_decision": len(itt_faulty_held),
+                "error_holds": len(error_faulty),
+                "accepted": len(itt_faulty_accepted),
+                "false_accept_rate": _rate(len(itt_faulty_accepted), len(faulty_ids)),
+                "detection_rate": _rate(len(itt_faulty_held), len(faulty_ids)),
+                "not_accepted_rate": _rate(
+                    len(faulty_ids) - len(itt_faulty_accepted), len(faulty_ids)
+                ),
+            },
+            "valid": {
+                "cases": len(valid_ids),
+                "accepted": len(itt_valid_accepted),
+                "error_holds": len(error_valid),
+                "not_accepted": len(valid_ids) - len(itt_valid_accepted),
+                "acceptance_rate": _rate(len(itt_valid_accepted), len(valid_ids)),
+                "false_hold_rate": _rate(
+                    len(valid_ids) - len(itt_valid_accepted), len(valid_ids)
+                ),
+            },
+        }
+
         condition_rows = [rows_by_key[(cid, condition)] for cid in manifest["case_ids"]]
         timing = {}
         for field in (
@@ -144,10 +194,8 @@ def analyze_manifest_run(manifest_path: str | Path, summary_path: str | Path) ->
         condition_metrics[condition] = {
             "timing_ms": timing,
             "llm_usage": llm_usage,
-            "faulty_case_detection": _rate(faulty_flagged, len(faulty_ids)),
-            "false_hold_rate": _rate(false_holds, len(valid_ids)),
-            "valid_update_acceptance": _rate(valid_accepted, len(valid_ids)),
-            "false_accept_rate": _rate(false_accepts, len(faulty_ids)),
+            "as_completed": as_completed,
+            "fail_closed_itt": fail_closed_itt,
             "decision_counts": {
                 decision: sum(
                     row.get("status") == "completed" and row["decision"] == decision
@@ -187,11 +235,20 @@ def analyze_manifest_run(manifest_path: str | Path, summary_path: str | Path) ->
     return {
         "manifest_id": manifest["manifest_id"],
         "manifest_sha256": manifest_hash,
+        "summary_sha256": hashlib.sha256(summary_path.read_bytes()).hexdigest(),
+        "run_id": summary.get("run_id"),
+        "code_revision": summary.get("code_revision"),
+        "verifier": summary.get("verifier"),
         "case_count": len(cases),
         "reviewer_count": manifest.get("review", {}).get("reviewer_count"),
         "candidate_error_rates": candidate_error_rates,
         "condition_metrics": condition_metrics,
-        "interpretation": "Exploratory case-level rates on a small synthetic single-reviewer set; not population estimates.",
+        "interpretation": (
+            "Exploratory case-level rates on a small synthetic single-reviewer set; not population "
+            "estimates. Condition rates are reported both as-completed (verifier errors excluded from "
+            "numerator and denominator) and as fail-closed intention-to-treat (non-accepting error "
+            "outcomes retained; explicit HOLD detection and error-hold counts reported separately)."
+        ),
     }
 
 

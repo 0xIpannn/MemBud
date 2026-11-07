@@ -59,14 +59,23 @@ def test_metrics_report_case_and_claim_denominators(tmp_path):
     assert report["candidate_error_rates"]["omission"] == {"numerator": 7, "denominator": 23, "rate": 7 / 23}
     assert report["candidate_error_rates"]["unsupported_addition"] == {"numerator": 4, "denominator": 20, "rate": 0.2}
     assert report["candidate_error_rates"]["prior_record_corruption"] == {"numerator": 4, "denominator": 13, "rate": 4 / 13}
+    assert report["run_id"] == "metrics-test"
+    assert report["code_revision"] == "test-revision"
+    assert len(report["summary_sha256"]) == 64
     for condition in ("graph", "text"):
-        assert report["condition_metrics"][condition]["faulty_case_detection"] == {"numerator": 7, "denominator": 7, "rate": 1.0}
-        assert report["condition_metrics"][condition]["false_hold_rate"] == {"numerator": 0, "denominator": 5, "rate": 0.0}
-        timing = report["condition_metrics"][condition]["timing_ms"]
+        metrics = report["condition_metrics"][condition]
+        assert metrics["as_completed"]["faulty"]["detection_rate"] == {"numerator": 7, "denominator": 7, "rate": 1.0}
+        assert metrics["as_completed"]["faulty"]["false_accept_rate"] == {"numerator": 0, "denominator": 7, "rate": 0.0}
+        assert metrics["as_completed"]["valid"]["false_hold_rate"] == {"numerator": 0, "denominator": 5, "rate": 0.0}
+        assert metrics["fail_closed_itt"]["faulty"]["detection_rate"] == {"numerator": 7, "denominator": 7, "rate": 1.0}
+        assert metrics["fail_closed_itt"]["faulty"]["error_holds"] == 0
+        assert metrics["fail_closed_itt"]["valid"]["false_hold_rate"] == {"numerator": 0, "denominator": 5, "rate": 0.0}
+        assert metrics["fail_closed_itt"]["valid"]["error_holds"] == 0
+        timing = metrics["timing_ms"]
         assert timing["latency_ms"]["case_count"] == 12
         assert timing["preparation_ms"]["case_count"] == 12
         assert timing["verification_ms"]["case_count"] == 12
-        assert report["condition_metrics"][condition]["llm_usage"]["response_count"] == 0
+        assert metrics["llm_usage"]["response_count"] == 0
     assert report["condition_metrics"]["graph"]["timing_ms"]["graph_node_count"]["case_count"] == 12
     assert report["condition_metrics"]["graph"]["timing_ms"]["graph_edge_count"]["case_count"] == 12
     assert report["condition_metrics"]["text"]["timing_ms"]["graph_node_count"]["case_count"] == 0
@@ -100,11 +109,20 @@ def test_metrics_do_not_misclassify_verifier_errors_as_decisions(tmp_path):
 
     report = analyze_manifest_run(MANIFEST_PATH, summary_path)
     graph = report["condition_metrics"]["graph"]
-    assert graph["faulty_case_detection"] == {"numerator": 6, "denominator": 7, "rate": 6 / 7}
-    assert graph["false_hold_rate"] == {"numerator": 0, "denominator": 5, "rate": 0.0}
-    assert graph["valid_update_acceptance"] == {"numerator": 4, "denominator": 5, "rate": 0.8}
+    # As-completed: the two error rows leave both numerator and denominator.
+    assert graph["as_completed"]["faulty"]["completed"] == 6
+    assert graph["as_completed"]["faulty"]["detection_rate"] == {"numerator": 6, "denominator": 6, "rate": 1.0}
+    assert graph["as_completed"]["valid"]["completed"] == 4
+    assert graph["as_completed"]["valid"]["acceptance_rate"] == {"numerator": 4, "denominator": 4, "rate": 1.0}
+    # Fail-closed ITT: error rows are non-accepting but are not credited as detections.
+    assert graph["fail_closed_itt"]["faulty"]["detection_rate"] == {"numerator": 6, "denominator": 7, "rate": 6 / 7}
+    assert graph["fail_closed_itt"]["faulty"]["error_holds"] == 1
+    assert graph["fail_closed_itt"]["faulty"]["false_accept_rate"] == {"numerator": 0, "denominator": 7, "rate": 0.0}
+    assert graph["fail_closed_itt"]["valid"]["false_hold_rate"] == {"numerator": 1, "denominator": 5, "rate": 0.2}
+    assert graph["fail_closed_itt"]["valid"]["error_holds"] == 1
     assert graph["verifier_errors"] == graph["execution_errors"] == 2
     assert graph["decision_counts"]["HOLD"] == 6
+    assert graph["decision_counts"]["ACCEPT"] == 4
 
 
 def test_frozen_case_labels_match_current_deterministic_verifier():
@@ -149,5 +167,10 @@ def test_metrics_tolerate_runner_error_rows(tmp_path):
     summary_path.write_text(json.dumps(summary), encoding="utf-8")
 
     report = analyze_manifest_run(MANIFEST_PATH, summary_path)
-    assert report["condition_metrics"]["graph"]["execution_errors"] == 1
-    assert report["condition_metrics"]["graph"]["llm_usage"]["response_count"] == 0
+    graph = report["condition_metrics"]["graph"]
+    assert graph["execution_errors"] == 1
+    assert graph["llm_usage"]["response_count"] == 0
+    # The first graph case (DRAFT-01) is a valid case; its error row is a
+    # non-accepting ITT outcome and must not crash or become a phantom decision.
+    assert graph["fail_closed_itt"]["valid"]["error_holds"] == 1
+    assert graph["fail_closed_itt"]["valid"]["false_hold_rate"] == {"numerator": 1, "denominator": 5, "rate": 0.2}
