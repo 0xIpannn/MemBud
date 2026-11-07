@@ -1,0 +1,3566 @@
+{
+  "run_id": "evaluation-v2-rules",
+  "code_revision": "working-tree-sha256:044a09c92325d90499c00616222144c5d0ea81d59b2ef5c769c71fbdebd92bfc",
+  "manifest_id": "membud-evaluation-v2",
+  "manifest_sha256": "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a",
+  "verifier": "rules",
+  "case_count": 36,
+  "invalid_input_case_count": 10,
+  "conditions": [
+    "unguarded",
+    "graph",
+    "text"
+  ],
+  "results": [
+    {
+      "case_id": "DEV-01",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.209,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-01",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.292,
+      "preparation_ms": 0.042,
+      "verification_ms": 0.136,
+      "graph_node_count": 8,
+      "graph_edge_count": 12,
+      "result": {
+        "case_id": "DEV-01",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-01",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.283,
+      "preparation_ms": 0.053,
+      "verification_ms": 0.098,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-01",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-02",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.201,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-02",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.36,
+      "preparation_ms": 0.058,
+      "verification_ms": 0.148,
+      "graph_node_count": 7,
+      "graph_edge_count": 10,
+      "result": {
+        "case_id": "DEV-02",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-02",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.282,
+      "preparation_ms": 0.049,
+      "verification_ms": 0.087,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-02",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-03",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.157,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-03",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.282,
+      "preparation_ms": 0.043,
+      "verification_ms": 0.107,
+      "graph_node_count": 7,
+      "graph_edge_count": 10,
+      "result": {
+        "case_id": "DEV-03",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-03",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.474,
+      "preparation_ms": 0.073,
+      "verification_ms": 0.148,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-03",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-04",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.195,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-04",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.275,
+      "preparation_ms": 0.042,
+      "verification_ms": 0.105,
+      "graph_node_count": 11,
+      "graph_edge_count": 16,
+      "result": {
+        "case_id": "DEV-04",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-04",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.328,
+      "preparation_ms": 0.067,
+      "verification_ms": 0.102,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-04",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-05",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.151,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-05",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.238,
+      "preparation_ms": 0.03,
+      "verification_ms": 0.077,
+      "graph_node_count": 5,
+      "graph_edge_count": 6,
+      "result": {
+        "case_id": "DEV-05",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-05",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.335,
+      "preparation_ms": 0.056,
+      "verification_ms": 0.089,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-05",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-06",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.15,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-06",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.327,
+      "preparation_ms": 0.05,
+      "verification_ms": 0.144,
+      "graph_node_count": 17,
+      "graph_edge_count": 27,
+      "result": {
+        "case_id": "DEV-06",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-06",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.33,
+      "preparation_ms": 0.066,
+      "verification_ms": 0.108,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-06",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-07",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.139,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-07",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.275,
+      "preparation_ms": 0.037,
+      "verification_ms": 0.104,
+      "graph_node_count": 10,
+      "graph_edge_count": 16,
+      "result": {
+        "case_id": "DEV-07",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-07",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.383,
+      "preparation_ms": 0.07,
+      "verification_ms": 0.11,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-07",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "DEV-08",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.23,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-08",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.251,
+      "preparation_ms": 0.031,
+      "verification_ms": 0.08,
+      "graph_node_count": 7,
+      "graph_edge_count": 9,
+      "result": {
+        "case_id": "DEV-08",
+        "checks": [
+          {
+            "affected_ids": [
+              "bekerja di Tokopedia"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: bekerja di Tokopedia",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-08",
+      "condition": "text",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.341,
+      "preparation_ms": 0.041,
+      "verification_ms": 0.068,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-08",
+        "checks": [
+          {
+            "affected_ids": [
+              "bekerja di Tokopedia"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: bekerja di Tokopedia",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-09",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.163,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-09",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.297,
+      "preparation_ms": 0.035,
+      "verification_ms": 0.093,
+      "graph_node_count": 9,
+      "graph_edge_count": 13,
+      "result": {
+        "case_id": "DEV-09",
+        "checks": [
+          {
+            "affected_ids": [
+              "tinggal di Bandung"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: tinggal di Bandung",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "r1"
+            ],
+            "name": "preservation",
+            "passed": false,
+            "reason": "prior records changed/removed without an authorizing operation: r1",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "tinggal di Surabaya"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "claims without evidence provenance: tinggal di Surabaya",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-09",
+      "condition": "text",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.559,
+      "preparation_ms": 0.066,
+      "verification_ms": 0.181,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-09",
+        "checks": [
+          {
+            "affected_ids": [
+              "tinggal di Bandung"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: tinggal di Bandung",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "r1"
+            ],
+            "name": "preservation",
+            "passed": false,
+            "reason": "valid prior records changed or removed without an evidenced operation: r1",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "tinggal di Surabaya"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "unsupported claims: tinggal di Surabaya",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-10",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.226,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-10",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.502,
+      "preparation_ms": 0.053,
+      "verification_ms": 0.159,
+      "graph_node_count": 11,
+      "graph_edge_count": 15,
+      "result": {
+        "case_id": "DEV-10",
+        "checks": [
+          {
+            "affected_ids": [
+              "tinggal di Bandung"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: tinggal di Bandung",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "r1"
+            ],
+            "name": "preservation",
+            "passed": false,
+            "reason": "prior records changed/removed without an authorizing operation: r1",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "tinggal di Surabaya"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "claims without evidence provenance: tinggal di Surabaya",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-10",
+      "condition": "text",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.32,
+      "preparation_ms": 0.05,
+      "verification_ms": 0.085,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-10",
+        "checks": [
+          {
+            "affected_ids": [
+              "tinggal di Bandung"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: tinggal di Bandung",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "r1"
+            ],
+            "name": "preservation",
+            "passed": false,
+            "reason": "valid prior records changed or removed without an evidenced operation: r1",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "tinggal di Surabaya"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "unsupported claims: tinggal di Surabaya",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-11",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.134,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-11",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.307,
+      "preparation_ms": 0.064,
+      "verification_ms": 0.109,
+      "graph_node_count": 12,
+      "graph_edge_count": 17,
+      "result": {
+        "case_id": "DEV-11",
+        "checks": [
+          {
+            "affected_ids": [
+              "belajar bahasa Jepang"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: belajar bahasa Jepang",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [
+              "memiliki kapal pesiar"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "claims without evidence provenance: memiliki kapal pesiar",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-11",
+      "condition": "text",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.394,
+      "preparation_ms": 0.061,
+      "verification_ms": 0.094,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-11",
+        "checks": [
+          {
+            "affected_ids": [
+              "belajar bahasa Jepang"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: belajar bahasa Jepang",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [
+              "memiliki kapal pesiar"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "unsupported claims: memiliki kapal pesiar",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-12",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.234,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-12",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.559,
+      "preparation_ms": 0.074,
+      "verification_ms": 0.154,
+      "graph_node_count": 9,
+      "graph_edge_count": 13,
+      "result": {
+        "case_id": "DEV-12",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [
+              "memiliki gaji 25 juta per bulan"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "claims without evidence provenance: memiliki gaji 25 juta per bulan",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-12",
+      "condition": "text",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.472,
+      "preparation_ms": 0.049,
+      "verification_ms": 0.08,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-12",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [
+              "memiliki gaji 25 juta per bulan"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "unsupported claims: memiliki gaji 25 juta per bulan",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-13",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.286,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-13",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.527,
+      "preparation_ms": 0.052,
+      "verification_ms": 0.163,
+      "graph_node_count": 10,
+      "graph_edge_count": 14,
+      "result": {
+        "case_id": "DEV-13",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [
+              "tinggal di Bandung"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "claims contradicted by connected evidence: tinggal di Bandung",
+            "reason_code": "CONTRADICTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-13",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.324,
+      "preparation_ms": 0.052,
+      "verification_ms": 0.09,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "DEV-13",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "dev",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "DEV-14",
+      "condition": "unguarded",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.015,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE requires structured authorization metadata",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-14",
+      "condition": "graph",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.005,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE requires structured authorization metadata",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-14",
+      "condition": "text",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.003,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE requires structured authorization metadata",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-15",
+      "condition": "unguarded",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE authorization evidence_id must reference transition evidence",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-15",
+      "condition": "graph",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE authorization evidence_id must reference transition evidence",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-15",
+      "condition": "text",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE authorization evidence_id must reference transition evidence",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-16",
+      "condition": "unguarded",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared insertion of candidate record r2",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-16",
+      "condition": "graph",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared insertion of candidate record r2",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-16",
+      "condition": "text",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared insertion of candidate record r2",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-17",
+      "condition": "unguarded",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared modification of prior record r1",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-17",
+      "condition": "graph",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared modification of prior record r1",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-17",
+      "condition": "text",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.003,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared modification of prior record r1",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-18",
+      "condition": "unguarded",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared removal of prior record r2",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-18",
+      "condition": "graph",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared removal of prior record r2",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "DEV-18",
+      "condition": "text",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared removal of prior record r2",
+      "split": "dev",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-01",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.152,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-01",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.322,
+      "preparation_ms": 0.036,
+      "verification_ms": 0.097,
+      "graph_node_count": 8,
+      "graph_edge_count": 12,
+      "result": {
+        "case_id": "HELD-01",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-01",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.328,
+      "preparation_ms": 0.052,
+      "verification_ms": 0.082,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-01",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-02",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.166,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-02",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.311,
+      "preparation_ms": 0.038,
+      "verification_ms": 0.103,
+      "graph_node_count": 7,
+      "graph_edge_count": 10,
+      "result": {
+        "case_id": "HELD-02",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-02",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.344,
+      "preparation_ms": 0.052,
+      "verification_ms": 0.083,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-02",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-03",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.271,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-03",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.523,
+      "preparation_ms": 0.04,
+      "verification_ms": 0.103,
+      "graph_node_count": 10,
+      "graph_edge_count": 15,
+      "result": {
+        "case_id": "HELD-03",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-03",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.343,
+      "preparation_ms": 0.048,
+      "verification_ms": 0.087,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-03",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-04",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.179,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-04",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.332,
+      "preparation_ms": 0.043,
+      "verification_ms": 0.108,
+      "graph_node_count": 11,
+      "graph_edge_count": 16,
+      "result": {
+        "case_id": "HELD-04",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-04",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.365,
+      "preparation_ms": 0.062,
+      "verification_ms": 0.096,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-04",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-05",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.149,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-05",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.282,
+      "preparation_ms": 0.03,
+      "verification_ms": 0.092,
+      "graph_node_count": 8,
+      "graph_edge_count": 11,
+      "result": {
+        "case_id": "HELD-05",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-05",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.315,
+      "preparation_ms": 0.04,
+      "verification_ms": 0.084,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-05",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-06",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.19,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-06",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.354,
+      "preparation_ms": 0.043,
+      "verification_ms": 0.121,
+      "graph_node_count": 15,
+      "graph_edge_count": 24,
+      "result": {
+        "case_id": "HELD-06",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-06",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.393,
+      "preparation_ms": 0.066,
+      "verification_ms": 0.105,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-06",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-07",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.163,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-07",
+      "condition": "graph",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.332,
+      "preparation_ms": 0.041,
+      "verification_ms": 0.099,
+      "graph_node_count": 7,
+      "graph_edge_count": 11,
+      "result": {
+        "case_id": "HELD-07",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-07",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.572,
+      "preparation_ms": 0.054,
+      "verification_ms": 0.082,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-07",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "ACCEPT"
+    },
+    {
+      "case_id": "HELD-08",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.139,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-08",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.324,
+      "preparation_ms": 0.035,
+      "verification_ms": 0.084,
+      "graph_node_count": 7,
+      "graph_edge_count": 9,
+      "result": {
+        "case_id": "HELD-08",
+        "checks": [
+          {
+            "affected_ids": [
+              "bekerja sebagai perawat"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: bekerja sebagai perawat",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims have a provenance path from evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-08",
+      "condition": "text",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.621,
+      "preparation_ms": 0.082,
+      "verification_ms": 0.128,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-08",
+        "checks": [
+          {
+            "affected_ids": [
+              "bekerja sebagai perawat"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: bekerja sebagai perawat",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-09",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.157,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-09",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.315,
+      "preparation_ms": 0.035,
+      "verification_ms": 0.099,
+      "graph_node_count": 9,
+      "graph_edge_count": 13,
+      "result": {
+        "case_id": "HELD-09",
+        "checks": [
+          {
+            "affected_ids": [
+              "tinggal di Solo"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: tinggal di Solo",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "r1"
+            ],
+            "name": "preservation",
+            "passed": false,
+            "reason": "prior records changed/removed without an authorizing operation: r1",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "tinggal di Jakarta"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "claims without evidence provenance: tinggal di Jakarta",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-09",
+      "condition": "text",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.327,
+      "preparation_ms": 0.038,
+      "verification_ms": 0.076,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-09",
+        "checks": [
+          {
+            "affected_ids": [
+              "tinggal di Solo"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: tinggal di Solo",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "r1"
+            ],
+            "name": "preservation",
+            "passed": false,
+            "reason": "valid prior records changed or removed without an evidenced operation: r1",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "tinggal di Jakarta"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "unsupported claims: tinggal di Jakarta",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-10",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.138,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-10",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.34,
+      "preparation_ms": 0.038,
+      "verification_ms": 0.098,
+      "graph_node_count": 11,
+      "graph_edge_count": 15,
+      "result": {
+        "case_id": "HELD-10",
+        "checks": [
+          {
+            "affected_ids": [
+              "bekerja di Semen Gresik"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: bekerja di Semen Gresik",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "r1"
+            ],
+            "name": "preservation",
+            "passed": false,
+            "reason": "prior records changed/removed without an authorizing operation: r1",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "bekerja di Holcim"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "claims without evidence provenance: bekerja di Holcim",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-10",
+      "condition": "text",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.396,
+      "preparation_ms": 0.053,
+      "verification_ms": 0.091,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-10",
+        "checks": [
+          {
+            "affected_ids": [
+              "bekerja di Semen Gresik"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: bekerja di Semen Gresik",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "r1"
+            ],
+            "name": "preservation",
+            "passed": false,
+            "reason": "valid prior records changed or removed without an evidenced operation: r1",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [
+              "bekerja di Holcim"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "unsupported claims: bekerja di Holcim",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-11",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.155,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-11",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.351,
+      "preparation_ms": 0.039,
+      "verification_ms": 0.105,
+      "graph_node_count": 12,
+      "graph_edge_count": 17,
+      "result": {
+        "case_id": "HELD-11",
+        "checks": [
+          {
+            "affected_ids": [
+              "bermain tenis"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: bermain tenis",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [
+              "memiliki jet pribadi"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "claims without evidence provenance: memiliki jet pribadi",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-11",
+      "condition": "text",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.62,
+      "preparation_ms": 0.06,
+      "verification_ms": 0.091,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-11",
+        "checks": [
+          {
+            "affected_ids": [
+              "bermain tenis"
+            ],
+            "name": "coverage",
+            "passed": false,
+            "reason": "required claims omitted: bermain tenis",
+            "reason_code": "REQUIRED_CLAIM_OMITTED",
+            "status": "FAIL"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [
+              "memiliki jet pribadi"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "unsupported claims: memiliki jet pribadi",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-12",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.169,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-12",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.342,
+      "preparation_ms": 0.04,
+      "verification_ms": 0.105,
+      "graph_node_count": 12,
+      "graph_edge_count": 18,
+      "result": {
+        "case_id": "HELD-12",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [
+              "memiliki izin pelayaran"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "claims without evidence provenance: memiliki izin pelayaran",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-12",
+      "condition": "text",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.688,
+      "preparation_ms": 0.079,
+      "verification_ms": 0.173,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-12",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [
+              "memiliki izin pelayaran"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "unsupported claims: memiliki izin pelayaran",
+            "reason_code": "UNSUPPORTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-13",
+      "condition": "unguarded",
+      "decision": "APPLIED",
+      "status": "completed",
+      "latency_ms": 0.162,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-13",
+      "condition": "graph",
+      "decision": "HOLD",
+      "status": "completed",
+      "latency_ms": 0.348,
+      "preparation_ms": 0.035,
+      "verification_ms": 0.099,
+      "graph_node_count": 10,
+      "graph_edge_count": 14,
+      "result": {
+        "case_id": "HELD-13",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims reachable in candidate state",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or changed through evidenced operations",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [
+              "bekerja di Unilever"
+            ],
+            "name": "faithfulness",
+            "passed": false,
+            "reason": "claims contradicted by connected evidence: bekerja di Unilever",
+            "reason_code": "CONTRADICTED_CLAIM",
+            "status": "FAIL"
+          }
+        ],
+        "decision": "HOLD",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-13",
+      "condition": "text",
+      "decision": "ACCEPT",
+      "status": "completed",
+      "latency_ms": 0.394,
+      "preparation_ms": 0.055,
+      "verification_ms": 0.089,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "result": {
+        "case_id": "HELD-13",
+        "checks": [
+          {
+            "affected_ids": [],
+            "name": "coverage",
+            "passed": true,
+            "reason": "all required claims retained",
+            "reason_code": "COVERAGE_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "preservation",
+            "passed": true,
+            "reason": "prior records preserved or explicitly changed with evidence",
+            "reason_code": "PRESERVATION_OK",
+            "status": "PASS"
+          },
+          {
+            "affected_ids": [],
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "candidate claims supported by evidence or prior memory",
+            "reason_code": "FAITHFULNESS_OK",
+            "status": "PASS"
+          }
+        ],
+        "decision": "ACCEPT",
+        "latency_ms": null,
+        "prompt_version": "",
+        "provider_request_id": null,
+        "raw_response": null,
+        "usage": {},
+        "verifier": "rules",
+        "verifier_config": {}
+      },
+      "split": "heldout",
+      "invalid_input": false,
+      "label_expected_decision": "HOLD"
+    },
+    {
+      "case_id": "HELD-14",
+      "condition": "unguarded",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.015,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE requires structured authorization metadata",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-14",
+      "condition": "graph",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.003,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE requires structured authorization metadata",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-14",
+      "condition": "text",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE requires structured authorization metadata",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-15",
+      "condition": "unguarded",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE authorization target_id must match the operation target",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-15",
+      "condition": "graph",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE authorization target_id must match the operation target",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-15",
+      "condition": "text",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: DELETE authorization target_id must match the operation target",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-16",
+      "condition": "unguarded",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared insertion of candidate record r2",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-16",
+      "condition": "graph",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared insertion of candidate record r2",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-16",
+      "condition": "text",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared insertion of candidate record r2",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-17",
+      "condition": "unguarded",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared modification of prior record r1",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-17",
+      "condition": "graph",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.002,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared modification of prior record r1",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-17",
+      "condition": "text",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.007,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared modification of prior record r1",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-18",
+      "condition": "unguarded",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.003,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared removal of prior record r2",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-18",
+      "condition": "graph",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.003,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared removal of prior record r2",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    },
+    {
+      "case_id": "HELD-18",
+      "condition": "text",
+      "decision": "INVALID_INPUT",
+      "status": "invalid_input",
+      "latency_ms": 0.003,
+      "preparation_ms": null,
+      "verification_ms": null,
+      "graph_node_count": null,
+      "graph_edge_count": null,
+      "error": "ValueError: undeclared removal of prior record r2",
+      "split": "heldout",
+      "invalid_input": true,
+      "label_expected_decision": "INVALID_INPUT"
+    }
+  ]
+}

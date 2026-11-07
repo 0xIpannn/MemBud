@@ -1,5 +1,11 @@
 # Dataset notes
 
+## Frozen local evaluation sets
+
+- `data/cases/evaluation-v1.jsonl` + `data/labels/evaluation-v1.jsonl` + `data/manifests/evaluation-v1.json`: the original 12-case synthetic set (single reviewer, exploratory), archived for reproducibility.
+- `data/cases/evaluation-v2.jsonl` + `data/labels/evaluation-v2.jsonl` + `data/manifests/evaluation-v2.json`: the expanded 36-case synthetic set (18 dev / 18 held-out; SHA-256 pinned; `schema_version: 2`). It covers valid updates, omission, corruption, unsupported additions, structured authorized deletion, contradiction evidence, unsupported provenance, and intentionally schema-invalid transitions recorded as `INVALID_INPUT`. Labels are **single-reviewer**; second independent human review is **pending** and no inter-annotator agreement exists (see `data/review/README.md` and `data/review/adjudication-template.md`). The set is synthetic Indonesian-themed and contains no HaluMem or other licensed data.
+- Rules-only results for the v2 set live in `data/results/evaluation-v2/`; generation command: `PYTHONPATH=src .venv/bin/python scripts/run_evaluation_v2.py`.
+
 ## HaluMem feasibility assessment
 
 Reviewed the public [MemTensor/HaluMem repository](https://github.com/MemTensor/HaluMem) at commit `d653749586bfc7d13f5b68e8851f52155b5b1650` on 2026-04-21, including its README, evaluation code, and Hugging Face dataset card.

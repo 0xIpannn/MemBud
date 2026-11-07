@@ -1,0 +1,274 @@
+{
+  "manifest_id": "membud-evaluation-v2",
+  "schema_version": 2,
+  "status": "frozen_exploratory_single_reviewer_second_review_pending",
+  "purpose": "Expanded 36-case synthetic controlled evaluation set covering valid updates, omission, corruption, unsupported additions, structured deletion, contradiction evidence, unsupported provenance, and schema-invalid transitions. Not a representative benchmark; labels are single-reviewer and second human review is pending.",
+  "review": {
+    "reviewer_count": 1,
+    "second_independent_reviewer": false,
+    "second_review_status": "pending_human_review",
+    "process": "../review/README.md",
+    "review_sheet_tool": "scripts/review_cases.py",
+    "limitation": "Cases and proposed labels were authored and reviewed by one reviewer (project owner) during milestone development. No second independent human annotation has been collected; scripts/review_cases.py generates a blank second-reviewer sheet and data/review/adjudication-template.md defines the pending process. Treat all labels as exploratory single-reviewer annotations."
+  },
+  "cases_file": "../cases/evaluation-v2.jsonl",
+  "cases_sha256": "40558746e915c6f5296235109900c050da61f87fe4f4fe320bf0290af9aa432d",
+  "labels_file": "../labels/evaluation-v2.jsonl",
+  "labels_sha256": "9280d3e8e2aa7a61df31bed689647f768a98361bb7509e7f8d172bb376989a14",
+  "case_ids": [
+    "DEV-01",
+    "DEV-02",
+    "DEV-03",
+    "DEV-04",
+    "DEV-05",
+    "DEV-06",
+    "DEV-07",
+    "DEV-08",
+    "DEV-09",
+    "DEV-10",
+    "DEV-11",
+    "DEV-12",
+    "DEV-13",
+    "DEV-14",
+    "DEV-15",
+    "DEV-16",
+    "DEV-17",
+    "DEV-18",
+    "HELD-01",
+    "HELD-02",
+    "HELD-03",
+    "HELD-04",
+    "HELD-05",
+    "HELD-06",
+    "HELD-07",
+    "HELD-08",
+    "HELD-09",
+    "HELD-10",
+    "HELD-11",
+    "HELD-12",
+    "HELD-13",
+    "HELD-14",
+    "HELD-15",
+    "HELD-16",
+    "HELD-17",
+    "HELD-18"
+  ],
+  "case_count": 36,
+  "case_entries": [
+    {
+      "case_id": "DEV-01",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-02",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-03",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-04",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-05",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-06",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-07",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-08",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-09",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-10",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-11",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-12",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-13",
+      "split": "dev",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "DEV-14",
+      "split": "dev",
+      "expected_invalid": true
+    },
+    {
+      "case_id": "DEV-15",
+      "split": "dev",
+      "expected_invalid": true
+    },
+    {
+      "case_id": "DEV-16",
+      "split": "dev",
+      "expected_invalid": true
+    },
+    {
+      "case_id": "DEV-17",
+      "split": "dev",
+      "expected_invalid": true
+    },
+    {
+      "case_id": "DEV-18",
+      "split": "dev",
+      "expected_invalid": true
+    },
+    {
+      "case_id": "HELD-01",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-02",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-03",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-04",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-05",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-06",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-07",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-08",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-09",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-10",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-11",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-12",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-13",
+      "split": "heldout",
+      "expected_invalid": false
+    },
+    {
+      "case_id": "HELD-14",
+      "split": "heldout",
+      "expected_invalid": true
+    },
+    {
+      "case_id": "HELD-15",
+      "split": "heldout",
+      "expected_invalid": true
+    },
+    {
+      "case_id": "HELD-16",
+      "split": "heldout",
+      "expected_invalid": true
+    },
+    {
+      "case_id": "HELD-17",
+      "split": "heldout",
+      "expected_invalid": true
+    },
+    {
+      "case_id": "HELD-18",
+      "split": "heldout",
+      "expected_invalid": true
+    }
+  ],
+  "split_counts": {
+    "dev": 18,
+    "heldout": 18
+  },
+  "expected_decision_counts": {
+    "ACCEPT": 14,
+    "HOLD": 12,
+    "INVALID_INPUT": 10
+  },
+  "expected_decision_counts_by_split": {
+    "dev": {
+      "ACCEPT": 7,
+      "HOLD": 6,
+      "INVALID_INPUT": 5
+    },
+    "heldout": {
+      "ACCEPT": 7,
+      "HOLD": 6,
+      "INVALID_INPUT": 5
+    }
+  },
+  "conditions": [
+    "unguarded",
+    "graph",
+    "text"
+  ],
+  "input_labels_separated": true,
+  "candidate_generation": "hand-authored fixed candidates; reused unchanged across conditions",
+  "notes": [
+    "Synthetic Indonesian-themed fictional cases; no HaluMem or other licensed data is included.",
+    "required_claims are verifier inputs; expected decisions, category, and persistence labels live in the separate labels file.",
+    "Every v2 case carries schema_version=2, enabling strict operation-coverage validation; invalid-input cases are expected to raise ValueError before verification and must never write memory.",
+    "Graph and text are evaluated under information parity: both receive the same canonical transition. Their verifiers differ structurally (graph adjacency vs claim-set baseline), so decision differences are attributable to verifier construction, not input information.",
+    "The 36 cases were authored together and frozen before the v2 rules-based run; dev/held-out results are reported separately and no tuning on held-out outcomes was performed."
+  ]
+}

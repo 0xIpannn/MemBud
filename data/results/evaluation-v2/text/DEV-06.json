@@ -1,0 +1,24 @@
+{
+  "schema_version": 2,
+  "version": 1,
+  "records": [
+    {
+      "id": "r1",
+      "claims": [
+        "tinggal di Surabaya"
+      ]
+    },
+    {
+      "id": "r2",
+      "claims": [
+        "bekerja di Traveloka"
+      ]
+    },
+    {
+      "id": "r3",
+      "claims": [
+        "belajar bahasa Jepang"
+      ]
+    }
+  ]
+}

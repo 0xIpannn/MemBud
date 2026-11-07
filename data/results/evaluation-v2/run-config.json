@@ -1,0 +1,15 @@
+{
+  "manifest_id": "membud-evaluation-v2",
+  "manifest_sha256": "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a",
+  "manifest_path": "/home/ifan/Projects/MemBud/data/manifests/evaluation-v2.json",
+  "run_id": "evaluation-v2-rules",
+  "code_revision": "working-tree-sha256:044a09c92325d90499c00616222144c5d0ea81d59b2ef5c769c71fbdebd92bfc",
+  "verifier": "rules",
+  "conditions": [
+    "unguarded",
+    "graph",
+    "text"
+  ],
+  "paid_api_calls": 0,
+  "note": "Rules-only evaluation run. Graph condition uses structural graph verification; text condition uses the claim-set baseline. Invalid inputs fail schema construction before verification."
+}

@@ -1,0 +1,1538 @@
+{
+  "manifest_id": "membud-evaluation-v2",
+  "manifest_sha256": "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a",
+  "summary_sha256": "fbc31a73caa86c1a6ca3379aac52d3f0b1965c4c9d75434dbfeca5545d305584",
+  "schema_version": 2,
+  "run_id": "evaluation-v2-rules",
+  "code_revision": "working-tree-sha256:044a09c92325d90499c00616222144c5d0ea81d59b2ef5c769c71fbdebd92bfc",
+  "verifier": "rules",
+  "case_count": 36,
+  "split_counts": {
+    "dev": 18,
+    "heldout": 18
+  },
+  "reviewer_count": 1,
+  "review": {
+    "reviewer_count": 1,
+    "second_independent_reviewer": false,
+    "second_review_status": "pending_human_review",
+    "limitation": "Cases and proposed labels were authored and reviewed by one reviewer (project owner) during milestone development. No second independent human annotation has been collected; scripts/review_cases.py generates a blank second-reviewer sheet and data/review/adjudication-template.md defines the pending process. Treat all labels as exploratory single-reviewer annotations."
+  },
+  "candidate_error_rates": {
+    "omission": {
+      "numerator": 12,
+      "denominator": 68,
+      "rate": 0.17647058823529413
+    },
+    "unsupported_addition": {
+      "numerator": 8,
+      "denominator": 64,
+      "rate": 0.125
+    },
+    "prior_record_corruption": {
+      "numerator": 4,
+      "denominator": 40,
+      "rate": 0.1
+    },
+    "case_error": {
+      "numerator": 12,
+      "denominator": 36,
+      "rate": 0.3333333333333333
+    }
+  },
+  "case_category_counts": {
+    "valid_write": 2,
+    "valid_revise": 2,
+    "valid_supersede": 2,
+    "valid_delete_authorized": 2,
+    "valid_noop": 2,
+    "valid_multi_op": 2,
+    "valid_contradiction_correction": 2,
+    "omission": 2,
+    "corruption_no_evidence": 2,
+    "corruption_insufficient_evidence": 2,
+    "unsupported_addition": 2,
+    "unsupported_provenance": 2,
+    "contradiction_unresolved": 2,
+    "invalid_unauthorized_delete": 2,
+    "invalid_delete_authorization_target": 2,
+    "invalid_undeclared_insertion": 2,
+    "invalid_undeclared_modification": 2,
+    "invalid_undeclared_removal": 2
+  },
+  "invalid_input_summary": {
+    "case_count": 10,
+    "case_ids": [
+      "DEV-14",
+      "DEV-15",
+      "DEV-16",
+      "DEV-17",
+      "DEV-18",
+      "HELD-14",
+      "HELD-15",
+      "HELD-16",
+      "HELD-17",
+      "HELD-18"
+    ],
+    "construction_failures_by_condition": {
+      "unguarded": 10,
+      "graph": 10,
+      "text": 10
+    },
+    "note": "Expected-invalid cases are rejected by schema construction for every condition before verification; they are not verifier detections and never write memory."
+  },
+  "condition_metrics": {
+    "graph": {
+      "case_count": 36,
+      "timing_ms": {
+        "latency_ms": {
+          "mean": 0.24980555555555556,
+          "case_count": 36
+        },
+        "preparation_ms": {
+          "mean": 0.04246153846153847,
+          "case_count": 26
+        },
+        "verification_ms": {
+          "mean": 0.11123076923076923,
+          "case_count": 26
+        },
+        "graph_node_count": {
+          "mean": 9.615384615384615,
+          "case_count": 26
+        },
+        "graph_edge_count": {
+          "mean": 13.961538461538462,
+          "case_count": 26
+        }
+      },
+      "timing_breakdown": {
+        "end_to_end_ms_mean": 0.24980555555555556,
+        "preparation_ms_mean": 0.04246153846153847,
+        "verification_ms_mean": 0.11123076923076923,
+        "graph_build_separated_from_verification": true,
+        "note": "preparation_ms is representation construction (graph build / text serialization); verification_ms is verifier execution only; latency_ms is end-to-end per case. Values are means over rows where instrumentation was recorded."
+      },
+      "llm_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "api_attempts": 0,
+        "json_retries": 0,
+        "response_count": 0,
+        "usage_reported_count": 0,
+        "model_counts": {}
+      },
+      "token_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "api_attempts": 0,
+        "json_retries": 0,
+        "response_count": 0,
+        "usage_reported_count": 0,
+        "model_counts": {}
+      },
+      "estimated_cost": {
+        "estimated_cost_usd": 0.0,
+        "estimated": true,
+        "billing_data_available": false,
+        "basis": "rules_only_no_paid_calls",
+        "note": "No paid model calls were made for this condition (rules verifier). Estimated monetary cost is 0.00 USD for the run and no token usage was incurred."
+      },
+      "as_completed": {
+        "faulty": {
+          "completed": 12,
+          "flagged": 12,
+          "detection_rate": {
+            "numerator": 12,
+            "denominator": 12,
+            "rate": 1.0
+          },
+          "false_accepts": 0,
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 12,
+            "rate": 0.0
+          }
+        },
+        "valid": {
+          "completed": 14,
+          "accepted": 14,
+          "acceptance_rate": {
+            "numerator": 14,
+            "denominator": 14,
+            "rate": 1.0
+          },
+          "held": 0,
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 14,
+            "rate": 0.0
+          }
+        }
+      },
+      "fail_closed_itt": {
+        "faulty": {
+          "cases": 12,
+          "held_with_decision": 12,
+          "error_holds": 0,
+          "accepted": 0,
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 12,
+            "rate": 0.0
+          },
+          "detection_rate": {
+            "numerator": 12,
+            "denominator": 12,
+            "rate": 1.0
+          },
+          "not_accepted_rate": {
+            "numerator": 12,
+            "denominator": 12,
+            "rate": 1.0
+          }
+        },
+        "valid": {
+          "cases": 14,
+          "accepted": 14,
+          "error_holds": 0,
+          "not_accepted": 0,
+          "acceptance_rate": {
+            "numerator": 14,
+            "denominator": 14,
+            "rate": 1.0
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 14,
+            "rate": 0.0
+          }
+        }
+      },
+      "faulty_detection": {
+        "gold_faulty_cases": 22,
+        "evaluated_cases": 36,
+        "error_rows": 0,
+        "true_positives": 22,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "precision": {
+          "numerator": 22,
+          "denominator": 22,
+          "rate": 1.0
+        },
+        "recall": {
+          "numerator": 22,
+          "denominator": 22,
+          "rate": 1.0
+        },
+        "false_accept_rate": {
+          "numerator": 0,
+          "denominator": 22,
+          "rate": 0.0
+        },
+        "fail_closed_recall": {
+          "numerator": 22,
+          "denominator": 22,
+          "rate": 1.0
+        },
+        "note": "Precision/recall are over cases with an available decision (completed or invalid_input); execution/verifier errors are excluded from precision/recall and reported as error_rows. fail_closed_recall treats error rows as non-detections. Faulty means expected_decision is HOLD or INVALID_INPUT."
+      },
+      "invalid_input": {
+        "expected_invalid_cases": 10,
+        "handled_invalid_cases": 10,
+        "handled_rate": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0
+        },
+        "schema_accepted_expected_invalid": 0,
+        "unexpected_invalid_rows": 0,
+        "unexpected_invalid_rate": {
+          "numerator": 0,
+          "denominator": 26,
+          "rate": 0.0
+        },
+        "rows_with_invalid_input_status": 10,
+        "expected_invalid_case_ids": [
+          "DEV-14",
+          "DEV-15",
+          "DEV-16",
+          "DEV-17",
+          "DEV-18",
+          "HELD-14",
+          "HELD-15",
+          "HELD-16",
+          "HELD-17",
+          "HELD-18"
+        ],
+        "note": "INVALID_INPUT is a construction failure recorded before verification: no ACCEPT/HOLD decision and no memory write. It is neither a verifier detection nor an execution error; expected-invalid rows are handled separately from precision/recall."
+      },
+      "valid_update_acceptance": {
+        "accepted": 14,
+        "cases": 14,
+        "rate": {
+          "numerator": 14,
+          "denominator": 14,
+          "rate": 1.0
+        }
+      },
+      "decision_counts": {
+        "ACCEPT": 14,
+        "HOLD": 12,
+        "INVALID_INPUT": 10,
+        "ERROR": 0
+      },
+      "reason_code_counts": {
+        "fail": {
+          "CONTRADICTED_CLAIM": 2,
+          "PRIOR_RECORD_UNAUTHORIZED_CHANGE": 4,
+          "REQUIRED_CLAIM_OMITTED": 8,
+          "UNSUPPORTED_CLAIM": 8
+        },
+        "uncertain": {},
+        "invalid_input_rows": 10,
+        "checks_observed": 78
+      },
+      "verifier_errors": 0,
+      "execution_errors": 0,
+      "splits": {
+        "dev": {
+          "case_count": 18,
+          "timing_ms": {
+            "latency_ms": {
+              "mean": 0.25027777777777777,
+              "case_count": 18
+            },
+            "preparation_ms": {
+              "mean": 0.047,
+              "case_count": 13
+            },
+            "verification_ms": {
+              "mean": 0.12146153846153845,
+              "case_count": 13
+            },
+            "graph_node_count": {
+              "mean": 9.461538461538462,
+              "case_count": 13
+            },
+            "graph_edge_count": {
+              "mean": 13.692307692307692,
+              "case_count": 13
+            }
+          },
+          "timing_breakdown": {
+            "end_to_end_ms_mean": 0.25027777777777777,
+            "preparation_ms_mean": 0.047,
+            "verification_ms_mean": 0.12146153846153845,
+            "graph_build_separated_from_verification": true,
+            "note": "preparation_ms is representation construction (graph build / text serialization); verification_ms is verifier execution only; latency_ms is end-to-end per case. Values are means over rows where instrumentation was recorded."
+          },
+          "llm_usage": {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+            "api_attempts": 0,
+            "json_retries": 0,
+            "response_count": 0,
+            "usage_reported_count": 0,
+            "model_counts": {}
+          },
+          "token_usage": {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+            "api_attempts": 0,
+            "json_retries": 0,
+            "response_count": 0,
+            "usage_reported_count": 0,
+            "model_counts": {}
+          },
+          "estimated_cost": {
+            "estimated_cost_usd": 0.0,
+            "estimated": true,
+            "billing_data_available": false,
+            "basis": "rules_only_no_paid_calls",
+            "note": "No paid model calls were made for this condition (rules verifier). Estimated monetary cost is 0.00 USD for the run and no token usage was incurred."
+          },
+          "as_completed": {
+            "faulty": {
+              "completed": 6,
+              "flagged": 6,
+              "detection_rate": {
+                "numerator": 6,
+                "denominator": 6,
+                "rate": 1.0
+              },
+              "false_accepts": 0,
+              "false_accept_rate": {
+                "numerator": 0,
+                "denominator": 6,
+                "rate": 0.0
+              }
+            },
+            "valid": {
+              "completed": 7,
+              "accepted": 7,
+              "acceptance_rate": {
+                "numerator": 7,
+                "denominator": 7,
+                "rate": 1.0
+              },
+              "held": 0,
+              "false_hold_rate": {
+                "numerator": 0,
+                "denominator": 7,
+                "rate": 0.0
+              }
+            }
+          },
+          "fail_closed_itt": {
+            "faulty": {
+              "cases": 6,
+              "held_with_decision": 6,
+              "error_holds": 0,
+              "accepted": 0,
+              "false_accept_rate": {
+                "numerator": 0,
+                "denominator": 6,
+                "rate": 0.0
+              },
+              "detection_rate": {
+                "numerator": 6,
+                "denominator": 6,
+                "rate": 1.0
+              },
+              "not_accepted_rate": {
+                "numerator": 6,
+                "denominator": 6,
+                "rate": 1.0
+              }
+            },
+            "valid": {
+              "cases": 7,
+              "accepted": 7,
+              "error_holds": 0,
+              "not_accepted": 0,
+              "acceptance_rate": {
+                "numerator": 7,
+                "denominator": 7,
+                "rate": 1.0
+              },
+              "false_hold_rate": {
+                "numerator": 0,
+                "denominator": 7,
+                "rate": 0.0
+              }
+            }
+          },
+          "faulty_detection": {
+            "gold_faulty_cases": 11,
+            "evaluated_cases": 18,
+            "error_rows": 0,
+            "true_positives": 11,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": {
+              "numerator": 11,
+              "denominator": 11,
+              "rate": 1.0
+            },
+            "recall": {
+              "numerator": 11,
+              "denominator": 11,
+              "rate": 1.0
+            },
+            "false_accept_rate": {
+              "numerator": 0,
+              "denominator": 11,
+              "rate": 0.0
+            },
+            "fail_closed_recall": {
+              "numerator": 11,
+              "denominator": 11,
+              "rate": 1.0
+            },
+            "note": "Precision/recall are over cases with an available decision (completed or invalid_input); execution/verifier errors are excluded from precision/recall and reported as error_rows. fail_closed_recall treats error rows as non-detections. Faulty means expected_decision is HOLD or INVALID_INPUT."
+          },
+          "invalid_input": {
+            "expected_invalid_cases": 5,
+            "handled_invalid_cases": 5,
+            "handled_rate": {
+              "numerator": 5,
+              "denominator": 5,
+              "rate": 1.0
+            },
+            "schema_accepted_expected_invalid": 0,
+            "unexpected_invalid_rows": 0,
+            "unexpected_invalid_rate": {
+              "numerator": 0,
+              "denominator": 13,
+              "rate": 0.0
+            },
+            "rows_with_invalid_input_status": 5,
+            "expected_invalid_case_ids": [
+              "DEV-14",
+              "DEV-15",
+              "DEV-16",
+              "DEV-17",
+              "DEV-18"
+            ],
+            "note": "INVALID_INPUT is a construction failure recorded before verification: no ACCEPT/HOLD decision and no memory write. It is neither a verifier detection nor an execution error; expected-invalid rows are handled separately from precision/recall."
+          },
+          "valid_update_acceptance": {
+            "accepted": 7,
+            "cases": 7,
+            "rate": {
+              "numerator": 7,
+              "denominator": 7,
+              "rate": 1.0
+            }
+          },
+          "decision_counts": {
+            "ACCEPT": 7,
+            "HOLD": 6,
+            "INVALID_INPUT": 5,
+            "ERROR": 0
+          },
+          "reason_code_counts": {
+            "fail": {
+              "CONTRADICTED_CLAIM": 1,
+              "PRIOR_RECORD_UNAUTHORIZED_CHANGE": 2,
+              "REQUIRED_CLAIM_OMITTED": 4,
+              "UNSUPPORTED_CLAIM": 4
+            },
+            "uncertain": {},
+            "invalid_input_rows": 5,
+            "checks_observed": 39
+          },
+          "verifier_errors": 0,
+          "execution_errors": 0
+        },
+        "heldout": {
+          "case_count": 18,
+          "timing_ms": {
+            "latency_ms": {
+              "mean": 0.24933333333333335,
+              "case_count": 18
+            },
+            "preparation_ms": {
+              "mean": 0.03792307692307692,
+              "case_count": 13
+            },
+            "verification_ms": {
+              "mean": 0.10099999999999999,
+              "case_count": 13
+            },
+            "graph_node_count": {
+              "mean": 9.76923076923077,
+              "case_count": 13
+            },
+            "graph_edge_count": {
+              "mean": 14.23076923076923,
+              "case_count": 13
+            }
+          },
+          "timing_breakdown": {
+            "end_to_end_ms_mean": 0.24933333333333335,
+            "preparation_ms_mean": 0.03792307692307692,
+            "verification_ms_mean": 0.10099999999999999,
+            "graph_build_separated_from_verification": true,
+            "note": "preparation_ms is representation construction (graph build / text serialization); verification_ms is verifier execution only; latency_ms is end-to-end per case. Values are means over rows where instrumentation was recorded."
+          },
+          "llm_usage": {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+            "api_attempts": 0,
+            "json_retries": 0,
+            "response_count": 0,
+            "usage_reported_count": 0,
+            "model_counts": {}
+          },
+          "token_usage": {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+            "api_attempts": 0,
+            "json_retries": 0,
+            "response_count": 0,
+            "usage_reported_count": 0,
+            "model_counts": {}
+          },
+          "estimated_cost": {
+            "estimated_cost_usd": 0.0,
+            "estimated": true,
+            "billing_data_available": false,
+            "basis": "rules_only_no_paid_calls",
+            "note": "No paid model calls were made for this condition (rules verifier). Estimated monetary cost is 0.00 USD for the run and no token usage was incurred."
+          },
+          "as_completed": {
+            "faulty": {
+              "completed": 6,
+              "flagged": 6,
+              "detection_rate": {
+                "numerator": 6,
+                "denominator": 6,
+                "rate": 1.0
+              },
+              "false_accepts": 0,
+              "false_accept_rate": {
+                "numerator": 0,
+                "denominator": 6,
+                "rate": 0.0
+              }
+            },
+            "valid": {
+              "completed": 7,
+              "accepted": 7,
+              "acceptance_rate": {
+                "numerator": 7,
+                "denominator": 7,
+                "rate": 1.0
+              },
+              "held": 0,
+              "false_hold_rate": {
+                "numerator": 0,
+                "denominator": 7,
+                "rate": 0.0
+              }
+            }
+          },
+          "fail_closed_itt": {
+            "faulty": {
+              "cases": 6,
+              "held_with_decision": 6,
+              "error_holds": 0,
+              "accepted": 0,
+              "false_accept_rate": {
+                "numerator": 0,
+                "denominator": 6,
+                "rate": 0.0
+              },
+              "detection_rate": {
+                "numerator": 6,
+                "denominator": 6,
+                "rate": 1.0
+              },
+              "not_accepted_rate": {
+                "numerator": 6,
+                "denominator": 6,
+                "rate": 1.0
+              }
+            },
+            "valid": {
+              "cases": 7,
+              "accepted": 7,
+              "error_holds": 0,
+              "not_accepted": 0,
+              "acceptance_rate": {
+                "numerator": 7,
+                "denominator": 7,
+                "rate": 1.0
+              },
+              "false_hold_rate": {
+                "numerator": 0,
+                "denominator": 7,
+                "rate": 0.0
+              }
+            }
+          },
+          "faulty_detection": {
+            "gold_faulty_cases": 11,
+            "evaluated_cases": 18,
+            "error_rows": 0,
+            "true_positives": 11,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": {
+              "numerator": 11,
+              "denominator": 11,
+              "rate": 1.0
+            },
+            "recall": {
+              "numerator": 11,
+              "denominator": 11,
+              "rate": 1.0
+            },
+            "false_accept_rate": {
+              "numerator": 0,
+              "denominator": 11,
+              "rate": 0.0
+            },
+            "fail_closed_recall": {
+              "numerator": 11,
+              "denominator": 11,
+              "rate": 1.0
+            },
+            "note": "Precision/recall are over cases with an available decision (completed or invalid_input); execution/verifier errors are excluded from precision/recall and reported as error_rows. fail_closed_recall treats error rows as non-detections. Faulty means expected_decision is HOLD or INVALID_INPUT."
+          },
+          "invalid_input": {
+            "expected_invalid_cases": 5,
+            "handled_invalid_cases": 5,
+            "handled_rate": {
+              "numerator": 5,
+              "denominator": 5,
+              "rate": 1.0
+            },
+            "schema_accepted_expected_invalid": 0,
+            "unexpected_invalid_rows": 0,
+            "unexpected_invalid_rate": {
+              "numerator": 0,
+              "denominator": 13,
+              "rate": 0.0
+            },
+            "rows_with_invalid_input_status": 5,
+            "expected_invalid_case_ids": [
+              "HELD-14",
+              "HELD-15",
+              "HELD-16",
+              "HELD-17",
+              "HELD-18"
+            ],
+            "note": "INVALID_INPUT is a construction failure recorded before verification: no ACCEPT/HOLD decision and no memory write. It is neither a verifier detection nor an execution error; expected-invalid rows are handled separately from precision/recall."
+          },
+          "valid_update_acceptance": {
+            "accepted": 7,
+            "cases": 7,
+            "rate": {
+              "numerator": 7,
+              "denominator": 7,
+              "rate": 1.0
+            }
+          },
+          "decision_counts": {
+            "ACCEPT": 7,
+            "HOLD": 6,
+            "INVALID_INPUT": 5,
+            "ERROR": 0
+          },
+          "reason_code_counts": {
+            "fail": {
+              "CONTRADICTED_CLAIM": 1,
+              "PRIOR_RECORD_UNAUTHORIZED_CHANGE": 2,
+              "REQUIRED_CLAIM_OMITTED": 4,
+              "UNSUPPORTED_CLAIM": 4
+            },
+            "uncertain": {},
+            "invalid_input_rows": 5,
+            "checks_observed": 39
+          },
+          "verifier_errors": 0,
+          "execution_errors": 0
+        }
+      }
+    },
+    "text": {
+      "case_count": 36,
+      "timing_ms": {
+        "latency_ms": {
+          "mean": 0.29330555555555554,
+          "case_count": 36
+        },
+        "preparation_ms": {
+          "mean": 0.05746153846153846,
+          "case_count": 26
+        },
+        "verification_ms": {
+          "mean": 0.10026923076923076,
+          "case_count": 26
+        },
+        "graph_node_count": {
+          "mean": null,
+          "case_count": 0
+        },
+        "graph_edge_count": {
+          "mean": null,
+          "case_count": 0
+        }
+      },
+      "timing_breakdown": {
+        "end_to_end_ms_mean": 0.29330555555555554,
+        "preparation_ms_mean": 0.05746153846153846,
+        "verification_ms_mean": 0.10026923076923076,
+        "graph_build_separated_from_verification": true,
+        "note": "preparation_ms is representation construction (graph build / text serialization); verification_ms is verifier execution only; latency_ms is end-to-end per case. Values are means over rows where instrumentation was recorded."
+      },
+      "llm_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "api_attempts": 0,
+        "json_retries": 0,
+        "response_count": 0,
+        "usage_reported_count": 0,
+        "model_counts": {}
+      },
+      "token_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "api_attempts": 0,
+        "json_retries": 0,
+        "response_count": 0,
+        "usage_reported_count": 0,
+        "model_counts": {}
+      },
+      "estimated_cost": {
+        "estimated_cost_usd": 0.0,
+        "estimated": true,
+        "billing_data_available": false,
+        "basis": "rules_only_no_paid_calls",
+        "note": "No paid model calls were made for this condition (rules verifier). Estimated monetary cost is 0.00 USD for the run and no token usage was incurred."
+      },
+      "as_completed": {
+        "faulty": {
+          "completed": 12,
+          "flagged": 10,
+          "detection_rate": {
+            "numerator": 10,
+            "denominator": 12,
+            "rate": 0.8333333333333334
+          },
+          "false_accepts": 2,
+          "false_accept_rate": {
+            "numerator": 2,
+            "denominator": 12,
+            "rate": 0.16666666666666666
+          }
+        },
+        "valid": {
+          "completed": 14,
+          "accepted": 14,
+          "acceptance_rate": {
+            "numerator": 14,
+            "denominator": 14,
+            "rate": 1.0
+          },
+          "held": 0,
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 14,
+            "rate": 0.0
+          }
+        }
+      },
+      "fail_closed_itt": {
+        "faulty": {
+          "cases": 12,
+          "held_with_decision": 10,
+          "error_holds": 0,
+          "accepted": 2,
+          "false_accept_rate": {
+            "numerator": 2,
+            "denominator": 12,
+            "rate": 0.16666666666666666
+          },
+          "detection_rate": {
+            "numerator": 10,
+            "denominator": 12,
+            "rate": 0.8333333333333334
+          },
+          "not_accepted_rate": {
+            "numerator": 10,
+            "denominator": 12,
+            "rate": 0.8333333333333334
+          }
+        },
+        "valid": {
+          "cases": 14,
+          "accepted": 14,
+          "error_holds": 0,
+          "not_accepted": 0,
+          "acceptance_rate": {
+            "numerator": 14,
+            "denominator": 14,
+            "rate": 1.0
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 14,
+            "rate": 0.0
+          }
+        }
+      },
+      "faulty_detection": {
+        "gold_faulty_cases": 22,
+        "evaluated_cases": 36,
+        "error_rows": 0,
+        "true_positives": 20,
+        "false_positives": 0,
+        "false_negatives": 2,
+        "precision": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1.0
+        },
+        "recall": {
+          "numerator": 20,
+          "denominator": 22,
+          "rate": 0.9090909090909091
+        },
+        "false_accept_rate": {
+          "numerator": 2,
+          "denominator": 22,
+          "rate": 0.09090909090909091
+        },
+        "fail_closed_recall": {
+          "numerator": 20,
+          "denominator": 22,
+          "rate": 0.9090909090909091
+        },
+        "note": "Precision/recall are over cases with an available decision (completed or invalid_input); execution/verifier errors are excluded from precision/recall and reported as error_rows. fail_closed_recall treats error rows as non-detections. Faulty means expected_decision is HOLD or INVALID_INPUT."
+      },
+      "invalid_input": {
+        "expected_invalid_cases": 10,
+        "handled_invalid_cases": 10,
+        "handled_rate": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0
+        },
+        "schema_accepted_expected_invalid": 0,
+        "unexpected_invalid_rows": 0,
+        "unexpected_invalid_rate": {
+          "numerator": 0,
+          "denominator": 26,
+          "rate": 0.0
+        },
+        "rows_with_invalid_input_status": 10,
+        "expected_invalid_case_ids": [
+          "DEV-14",
+          "DEV-15",
+          "DEV-16",
+          "DEV-17",
+          "DEV-18",
+          "HELD-14",
+          "HELD-15",
+          "HELD-16",
+          "HELD-17",
+          "HELD-18"
+        ],
+        "note": "INVALID_INPUT is a construction failure recorded before verification: no ACCEPT/HOLD decision and no memory write. It is neither a verifier detection nor an execution error; expected-invalid rows are handled separately from precision/recall."
+      },
+      "valid_update_acceptance": {
+        "accepted": 14,
+        "cases": 14,
+        "rate": {
+          "numerator": 14,
+          "denominator": 14,
+          "rate": 1.0
+        }
+      },
+      "decision_counts": {
+        "ACCEPT": 16,
+        "HOLD": 10,
+        "INVALID_INPUT": 10,
+        "ERROR": 0
+      },
+      "reason_code_counts": {
+        "fail": {
+          "PRIOR_RECORD_UNAUTHORIZED_CHANGE": 4,
+          "REQUIRED_CLAIM_OMITTED": 8,
+          "UNSUPPORTED_CLAIM": 8
+        },
+        "uncertain": {},
+        "invalid_input_rows": 10,
+        "checks_observed": 78
+      },
+      "verifier_errors": 0,
+      "execution_errors": 0,
+      "splits": {
+        "dev": {
+          "case_count": 18,
+          "timing_ms": {
+            "latency_ms": {
+              "mean": 0.2687222222222222,
+              "case_count": 18
+            },
+            "preparation_ms": {
+              "mean": 0.057923076923076924,
+              "case_count": 13
+            },
+            "verification_ms": {
+              "mean": 0.10307692307692308,
+              "case_count": 13
+            },
+            "graph_node_count": {
+              "mean": null,
+              "case_count": 0
+            },
+            "graph_edge_count": {
+              "mean": null,
+              "case_count": 0
+            }
+          },
+          "timing_breakdown": {
+            "end_to_end_ms_mean": 0.2687222222222222,
+            "preparation_ms_mean": 0.057923076923076924,
+            "verification_ms_mean": 0.10307692307692308,
+            "graph_build_separated_from_verification": true,
+            "note": "preparation_ms is representation construction (graph build / text serialization); verification_ms is verifier execution only; latency_ms is end-to-end per case. Values are means over rows where instrumentation was recorded."
+          },
+          "llm_usage": {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+            "api_attempts": 0,
+            "json_retries": 0,
+            "response_count": 0,
+            "usage_reported_count": 0,
+            "model_counts": {}
+          },
+          "token_usage": {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+            "api_attempts": 0,
+            "json_retries": 0,
+            "response_count": 0,
+            "usage_reported_count": 0,
+            "model_counts": {}
+          },
+          "estimated_cost": {
+            "estimated_cost_usd": 0.0,
+            "estimated": true,
+            "billing_data_available": false,
+            "basis": "rules_only_no_paid_calls",
+            "note": "No paid model calls were made for this condition (rules verifier). Estimated monetary cost is 0.00 USD for the run and no token usage was incurred."
+          },
+          "as_completed": {
+            "faulty": {
+              "completed": 6,
+              "flagged": 5,
+              "detection_rate": {
+                "numerator": 5,
+                "denominator": 6,
+                "rate": 0.8333333333333334
+              },
+              "false_accepts": 1,
+              "false_accept_rate": {
+                "numerator": 1,
+                "denominator": 6,
+                "rate": 0.16666666666666666
+              }
+            },
+            "valid": {
+              "completed": 7,
+              "accepted": 7,
+              "acceptance_rate": {
+                "numerator": 7,
+                "denominator": 7,
+                "rate": 1.0
+              },
+              "held": 0,
+              "false_hold_rate": {
+                "numerator": 0,
+                "denominator": 7,
+                "rate": 0.0
+              }
+            }
+          },
+          "fail_closed_itt": {
+            "faulty": {
+              "cases": 6,
+              "held_with_decision": 5,
+              "error_holds": 0,
+              "accepted": 1,
+              "false_accept_rate": {
+                "numerator": 1,
+                "denominator": 6,
+                "rate": 0.16666666666666666
+              },
+              "detection_rate": {
+                "numerator": 5,
+                "denominator": 6,
+                "rate": 0.8333333333333334
+              },
+              "not_accepted_rate": {
+                "numerator": 5,
+                "denominator": 6,
+                "rate": 0.8333333333333334
+              }
+            },
+            "valid": {
+              "cases": 7,
+              "accepted": 7,
+              "error_holds": 0,
+              "not_accepted": 0,
+              "acceptance_rate": {
+                "numerator": 7,
+                "denominator": 7,
+                "rate": 1.0
+              },
+              "false_hold_rate": {
+                "numerator": 0,
+                "denominator": 7,
+                "rate": 0.0
+              }
+            }
+          },
+          "faulty_detection": {
+            "gold_faulty_cases": 11,
+            "evaluated_cases": 18,
+            "error_rows": 0,
+            "true_positives": 10,
+            "false_positives": 0,
+            "false_negatives": 1,
+            "precision": {
+              "numerator": 10,
+              "denominator": 10,
+              "rate": 1.0
+            },
+            "recall": {
+              "numerator": 10,
+              "denominator": 11,
+              "rate": 0.9090909090909091
+            },
+            "false_accept_rate": {
+              "numerator": 1,
+              "denominator": 11,
+              "rate": 0.09090909090909091
+            },
+            "fail_closed_recall": {
+              "numerator": 10,
+              "denominator": 11,
+              "rate": 0.9090909090909091
+            },
+            "note": "Precision/recall are over cases with an available decision (completed or invalid_input); execution/verifier errors are excluded from precision/recall and reported as error_rows. fail_closed_recall treats error rows as non-detections. Faulty means expected_decision is HOLD or INVALID_INPUT."
+          },
+          "invalid_input": {
+            "expected_invalid_cases": 5,
+            "handled_invalid_cases": 5,
+            "handled_rate": {
+              "numerator": 5,
+              "denominator": 5,
+              "rate": 1.0
+            },
+            "schema_accepted_expected_invalid": 0,
+            "unexpected_invalid_rows": 0,
+            "unexpected_invalid_rate": {
+              "numerator": 0,
+              "denominator": 13,
+              "rate": 0.0
+            },
+            "rows_with_invalid_input_status": 5,
+            "expected_invalid_case_ids": [
+              "DEV-14",
+              "DEV-15",
+              "DEV-16",
+              "DEV-17",
+              "DEV-18"
+            ],
+            "note": "INVALID_INPUT is a construction failure recorded before verification: no ACCEPT/HOLD decision and no memory write. It is neither a verifier detection nor an execution error; expected-invalid rows are handled separately from precision/recall."
+          },
+          "valid_update_acceptance": {
+            "accepted": 7,
+            "cases": 7,
+            "rate": {
+              "numerator": 7,
+              "denominator": 7,
+              "rate": 1.0
+            }
+          },
+          "decision_counts": {
+            "ACCEPT": 8,
+            "HOLD": 5,
+            "INVALID_INPUT": 5,
+            "ERROR": 0
+          },
+          "reason_code_counts": {
+            "fail": {
+              "PRIOR_RECORD_UNAUTHORIZED_CHANGE": 2,
+              "REQUIRED_CLAIM_OMITTED": 4,
+              "UNSUPPORTED_CLAIM": 4
+            },
+            "uncertain": {},
+            "invalid_input_rows": 5,
+            "checks_observed": 39
+          },
+          "verifier_errors": 0,
+          "execution_errors": 0
+        },
+        "heldout": {
+          "case_count": 18,
+          "timing_ms": {
+            "latency_ms": {
+              "mean": 0.3178888888888889,
+              "case_count": 18
+            },
+            "preparation_ms": {
+              "mean": 0.057,
+              "case_count": 13
+            },
+            "verification_ms": {
+              "mean": 0.09746153846153846,
+              "case_count": 13
+            },
+            "graph_node_count": {
+              "mean": null,
+              "case_count": 0
+            },
+            "graph_edge_count": {
+              "mean": null,
+              "case_count": 0
+            }
+          },
+          "timing_breakdown": {
+            "end_to_end_ms_mean": 0.3178888888888889,
+            "preparation_ms_mean": 0.057,
+            "verification_ms_mean": 0.09746153846153846,
+            "graph_build_separated_from_verification": true,
+            "note": "preparation_ms is representation construction (graph build / text serialization); verification_ms is verifier execution only; latency_ms is end-to-end per case. Values are means over rows where instrumentation was recorded."
+          },
+          "llm_usage": {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+            "api_attempts": 0,
+            "json_retries": 0,
+            "response_count": 0,
+            "usage_reported_count": 0,
+            "model_counts": {}
+          },
+          "token_usage": {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+            "api_attempts": 0,
+            "json_retries": 0,
+            "response_count": 0,
+            "usage_reported_count": 0,
+            "model_counts": {}
+          },
+          "estimated_cost": {
+            "estimated_cost_usd": 0.0,
+            "estimated": true,
+            "billing_data_available": false,
+            "basis": "rules_only_no_paid_calls",
+            "note": "No paid model calls were made for this condition (rules verifier). Estimated monetary cost is 0.00 USD for the run and no token usage was incurred."
+          },
+          "as_completed": {
+            "faulty": {
+              "completed": 6,
+              "flagged": 5,
+              "detection_rate": {
+                "numerator": 5,
+                "denominator": 6,
+                "rate": 0.8333333333333334
+              },
+              "false_accepts": 1,
+              "false_accept_rate": {
+                "numerator": 1,
+                "denominator": 6,
+                "rate": 0.16666666666666666
+              }
+            },
+            "valid": {
+              "completed": 7,
+              "accepted": 7,
+              "acceptance_rate": {
+                "numerator": 7,
+                "denominator": 7,
+                "rate": 1.0
+              },
+              "held": 0,
+              "false_hold_rate": {
+                "numerator": 0,
+                "denominator": 7,
+                "rate": 0.0
+              }
+            }
+          },
+          "fail_closed_itt": {
+            "faulty": {
+              "cases": 6,
+              "held_with_decision": 5,
+              "error_holds": 0,
+              "accepted": 1,
+              "false_accept_rate": {
+                "numerator": 1,
+                "denominator": 6,
+                "rate": 0.16666666666666666
+              },
+              "detection_rate": {
+                "numerator": 5,
+                "denominator": 6,
+                "rate": 0.8333333333333334
+              },
+              "not_accepted_rate": {
+                "numerator": 5,
+                "denominator": 6,
+                "rate": 0.8333333333333334
+              }
+            },
+            "valid": {
+              "cases": 7,
+              "accepted": 7,
+              "error_holds": 0,
+              "not_accepted": 0,
+              "acceptance_rate": {
+                "numerator": 7,
+                "denominator": 7,
+                "rate": 1.0
+              },
+              "false_hold_rate": {
+                "numerator": 0,
+                "denominator": 7,
+                "rate": 0.0
+              }
+            }
+          },
+          "faulty_detection": {
+            "gold_faulty_cases": 11,
+            "evaluated_cases": 18,
+            "error_rows": 0,
+            "true_positives": 10,
+            "false_positives": 0,
+            "false_negatives": 1,
+            "precision": {
+              "numerator": 10,
+              "denominator": 10,
+              "rate": 1.0
+            },
+            "recall": {
+              "numerator": 10,
+              "denominator": 11,
+              "rate": 0.9090909090909091
+            },
+            "false_accept_rate": {
+              "numerator": 1,
+              "denominator": 11,
+              "rate": 0.09090909090909091
+            },
+            "fail_closed_recall": {
+              "numerator": 10,
+              "denominator": 11,
+              "rate": 0.9090909090909091
+            },
+            "note": "Precision/recall are over cases with an available decision (completed or invalid_input); execution/verifier errors are excluded from precision/recall and reported as error_rows. fail_closed_recall treats error rows as non-detections. Faulty means expected_decision is HOLD or INVALID_INPUT."
+          },
+          "invalid_input": {
+            "expected_invalid_cases": 5,
+            "handled_invalid_cases": 5,
+            "handled_rate": {
+              "numerator": 5,
+              "denominator": 5,
+              "rate": 1.0
+            },
+            "schema_accepted_expected_invalid": 0,
+            "unexpected_invalid_rows": 0,
+            "unexpected_invalid_rate": {
+              "numerator": 0,
+              "denominator": 13,
+              "rate": 0.0
+            },
+            "rows_with_invalid_input_status": 5,
+            "expected_invalid_case_ids": [
+              "HELD-14",
+              "HELD-15",
+              "HELD-16",
+              "HELD-17",
+              "HELD-18"
+            ],
+            "note": "INVALID_INPUT is a construction failure recorded before verification: no ACCEPT/HOLD decision and no memory write. It is neither a verifier detection nor an execution error; expected-invalid rows are handled separately from precision/recall."
+          },
+          "valid_update_acceptance": {
+            "accepted": 7,
+            "cases": 7,
+            "rate": {
+              "numerator": 7,
+              "denominator": 7,
+              "rate": 1.0
+            }
+          },
+          "decision_counts": {
+            "ACCEPT": 8,
+            "HOLD": 5,
+            "INVALID_INPUT": 5,
+            "ERROR": 0
+          },
+          "reason_code_counts": {
+            "fail": {
+              "PRIOR_RECORD_UNAUTHORIZED_CHANGE": 2,
+              "REQUIRED_CLAIM_OMITTED": 4,
+              "UNSUPPORTED_CLAIM": 4
+            },
+            "uncertain": {},
+            "invalid_input_rows": 5,
+            "checks_observed": 39
+          },
+          "verifier_errors": 0,
+          "execution_errors": 0
+        }
+      }
+    },
+    "unguarded": {
+      "case_count": 36,
+      "timing_ms": {
+        "latency_ms": {
+          "mean": 0.1308888888888889,
+          "case_count": 36
+        },
+        "preparation_ms": {
+          "mean": null,
+          "case_count": 0
+        },
+        "verification_ms": {
+          "mean": null,
+          "case_count": 0
+        },
+        "graph_node_count": {
+          "mean": null,
+          "case_count": 0
+        },
+        "graph_edge_count": {
+          "mean": null,
+          "case_count": 0
+        }
+      },
+      "timing_breakdown": {
+        "end_to_end_ms_mean": 0.1308888888888889,
+        "preparation_ms_mean": null,
+        "verification_ms_mean": null,
+        "graph_build_separated_from_verification": true,
+        "note": "preparation_ms is representation construction (graph build / text serialization); verification_ms is verifier execution only; latency_ms is end-to-end per case. Values are means over rows where instrumentation was recorded."
+      },
+      "applied_count": 26,
+      "raw_effect": {
+        "gold_faulty_cases": 12,
+        "faulty_updates_applied": 12,
+        "false_accept_equivalent_rate": {
+          "numerator": 12,
+          "denominator": 12,
+          "rate": 1.0
+        },
+        "note": "Unguarded applies every constructible candidate without verification; it has no ACCEPT/HOLD decisions. The false-accept-equivalent rate is a raw-effect baseline over gold HOLD cases only (schema-invalid inputs cannot be applied)."
+      },
+      "decision_counts": {
+        "APPLIED": 26,
+        "INVALID_INPUT": 10
+      },
+      "execution_errors": 0,
+      "splits": {
+        "dev": {
+          "case_count": 18,
+          "timing_ms": {
+            "latency_ms": {
+              "mean": 0.13877777777777778,
+              "case_count": 18
+            },
+            "preparation_ms": {
+              "mean": null,
+              "case_count": 0
+            },
+            "verification_ms": {
+              "mean": null,
+              "case_count": 0
+            },
+            "graph_node_count": {
+              "mean": null,
+              "case_count": 0
+            },
+            "graph_edge_count": {
+              "mean": null,
+              "case_count": 0
+            }
+          },
+          "timing_breakdown": {
+            "end_to_end_ms_mean": 0.13877777777777778,
+            "preparation_ms_mean": null,
+            "verification_ms_mean": null,
+            "graph_build_separated_from_verification": true,
+            "note": "preparation_ms is representation construction (graph build / text serialization); verification_ms is verifier execution only; latency_ms is end-to-end per case. Values are means over rows where instrumentation was recorded."
+          },
+          "applied_count": 13,
+          "raw_effect": {
+            "gold_faulty_cases": 6,
+            "faulty_updates_applied": 6,
+            "false_accept_equivalent_rate": {
+              "numerator": 6,
+              "denominator": 6,
+              "rate": 1.0
+            },
+            "note": "Unguarded applies every constructible candidate without verification; it has no ACCEPT/HOLD decisions. The false-accept-equivalent rate is a raw-effect baseline over gold HOLD cases only (schema-invalid inputs cannot be applied)."
+          },
+          "decision_counts": {
+            "APPLIED": 13,
+            "INVALID_INPUT": 5
+          },
+          "execution_errors": 0
+        },
+        "heldout": {
+          "case_count": 18,
+          "timing_ms": {
+            "latency_ms": {
+              "mean": 0.123,
+              "case_count": 18
+            },
+            "preparation_ms": {
+              "mean": null,
+              "case_count": 0
+            },
+            "verification_ms": {
+              "mean": null,
+              "case_count": 0
+            },
+            "graph_node_count": {
+              "mean": null,
+              "case_count": 0
+            },
+            "graph_edge_count": {
+              "mean": null,
+              "case_count": 0
+            }
+          },
+          "timing_breakdown": {
+            "end_to_end_ms_mean": 0.123,
+            "preparation_ms_mean": null,
+            "verification_ms_mean": null,
+            "graph_build_separated_from_verification": true,
+            "note": "preparation_ms is representation construction (graph build / text serialization); verification_ms is verifier execution only; latency_ms is end-to-end per case. Values are means over rows where instrumentation was recorded."
+          },
+          "applied_count": 13,
+          "raw_effect": {
+            "gold_faulty_cases": 6,
+            "faulty_updates_applied": 6,
+            "false_accept_equivalent_rate": {
+              "numerator": 6,
+              "denominator": 6,
+              "rate": 1.0
+            },
+            "note": "Unguarded applies every constructible candidate without verification; it has no ACCEPT/HOLD decisions. The false-accept-equivalent rate is a raw-effect baseline over gold HOLD cases only (schema-invalid inputs cannot be applied)."
+          },
+          "decision_counts": {
+            "APPLIED": 13,
+            "INVALID_INPUT": 5
+          },
+          "execution_errors": 0
+        }
+      }
+    }
+  },
+  "paired_differences": {
+    "graph_vs_text": {
+      "differing_case_count": 2,
+      "differing_case_ids": [
+        "DEV-13",
+        "HELD-13"
+      ],
+      "differing_cases": {
+        "DEV-13": {
+          "graph": "HOLD",
+          "text": "ACCEPT",
+          "expected": "HOLD"
+        },
+        "HELD-13": {
+          "graph": "HOLD",
+          "text": "ACCEPT",
+          "expected": "HOLD"
+        }
+      },
+      "note": "Counts and lists only; with 36 single-reviewed synthetic cases no statistical superiority claim is made. Differences indicate verifier-construction differences on identical inputs."
+    }
+  },
+  "interpretation": "Exploratory case-level rates on a small synthetic single-reviewer set; not population estimates. Labels were authored by one reviewer and second human review is pending. Condition rates are reported both as-completed (verifier errors excluded from numerator and denominator) and as fail-closed intention-to-treat (non-accepting error outcomes retained; explicit HOLD detection and error-hold counts reported separately). Precision/recall for faulty detection and the invalid-input section are additive views; INVALID_INPUT rows are construction failures, not verifier decisions. No statistical superiority claim is supported by this set."
+}

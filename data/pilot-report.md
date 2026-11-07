@@ -41,3 +41,25 @@ Successful model decisions were graph: 3 ACCEPT / 4 HOLD, text: 4 ACCEPT / 4 HOL
 The 9 verifier-error rows (5 graph, 4 text) were rerun with `scripts/rerun_failed.py` under the same model, prompt policy, and committed manifest. All 9 completed on rerun (24,407 reported tokens; 11 request attempts; 0 cache hits, since failed rows had no cache entries). Replacing the original failed rows with the rerun rows yields 24/24 completed decisions: both conditions match all gold decisions (5 ACCEPT / 7 HOLD), detect 7/7 faulty transitions, accept 5/5 valid updates, and produce 0 false accepts and 0 false holds. Artifacts: `data/results/deepseek-rerun-v1/rerun-summary.json`, `data/results/deepseek-rerun-v1/merged-pilot-summary.json`, and `data/results/evaluation-v1-deepseek-rerun-metrics.json`. This remains a 12-case single-reviewer synthetic pilot and shows no graph-vs-text difference.
 
 **Limitations:** All runs remain exploratory and do not demonstrate production reliability or graph superiority. The evaluation set has one reviewer and is synthetic, small, and not representative. Downstream QA utility and billed cost remain unmeasured. The earlier deterministic pilot used the label `local-working-tree`; the DeepSeek run records a source-package working-tree SHA-256. Preserve its summary, metrics, audit logs, and exact configuration for any reproduction.
+
+## Expanded v2 rules-only comparison (single reviewer; second review pending)
+
+The frozen 36-case v2 set (`data/manifests/evaluation-v2.json`, 18 dev / 18 held-out, SHA-256 pinned) was run through all three conditions with the **rules verifier only** — no paid API calls, zero tokens, zero cost. Graph now dispatches to the structural graph verifier; text remains the claim-set baseline. The runner records schema-invalid transitions (`expected_invalid`) as `INVALID_INPUT` without aborting and without writing memory. Artifacts: `data/results/evaluation-v2/pilot-summary.json`, `metrics.json`, `run-config.json`, and per-condition audit logs/stores. Reproduce with:
+
+```bash
+PYTHONPATH=src .venv/bin/python scripts/run_evaluation_v2.py
+```
+
+Exact pooled results (36 cases: 14 gold ACCEPT, 12 gold HOLD, 10 expected INVALID_INPUT):
+
+| Condition | ACCEPT | HOLD | INVALID_INPUT | Errors |
+|---|---:|---:|---:|---:|
+| Graph (structural) | 14 | 12 | 10 | 0 |
+| Text (claim-set baseline) | 16 | 10 | 10 | 0 |
+| Unguarded (raw apply) | 26 applied | — | 10 | 0 |
+
+Faulty detection including expected-invalid cases as correct rejections: graph precision 22/22, recall 22/22, false accepts 0/22; text precision 20/20, recall 20/22, false accepts 2/22 (0.0909). Restricted to gold-HOLD cases only (invalid inputs excluded): both conditions detect 12/12, false accepts 0/12, and accept all 14/14 valid updates with false holds 0/14; there were zero verifier/execution errors. Unguarded applied all 12/12 constructible gold-HOLD candidates — a raw false-accept-equivalent rate of 12/12. The expected-invalid set (10 cases: unauthorized DELETE, bad DELETE authorization target/evidence, undeclared insertion/modification/removal) was handled 10/10 in every condition with zero unexpected invalid rows.
+
+Dev and held-out splits are identical by construction: graph 7 ACCEPT / 6 HOLD / 5 INVALID_INPUT per split, text 8 ACCEPT / 5 HOLD / 5 INVALID_INPUT per split; text false accepts are 1/11 per split, graph 0/11. Mean rules-only timings are sub-millisecond and dominated by process/timer noise: graph preparation 0.043 ms, verification 0.111 ms, end-to-end 0.250 ms over 36 end-to-end and 26 constructible cases (invalid-input rows have no preparation/verification timing); text preparation 0.058 ms, verification 0.100 ms, end-to-end 0.293 ms. Estimated monetary cost is 0.00 USD (rules-only; no billing was involved). Graph and text made different decisions on exactly 2 of 36 cases, both the deliberately authored unresolved-contradiction cases (`DEV-13`, `HELD-13`): graph HOLD, text ACCEPT. This difference is attributable to verifier construction — the text claim-set baseline is deliberately not aware of the new `evidence.contradicts` annotation, while the graph verifier reads the contradiction edge. It is **not** evidence of general graph superiority: 34/36 decisions were identical, the set is synthetic and single-reviewed, and the two differing cases were designed to exercise the graph-only contradiction field.
+
+**Limitations for the v2 run:** all labels are single-reviewer annotations; a second independent human review is pending (`data/review/README.md`, blank sheet `data/review/review-sheet-v2.md`, template `data/review/adjudication-template.md`), so no inter-annotator agreement exists. The 36 cases were authored together and frozen before the run; the dev/held-out split is descriptive, not a power analysis. Rules-only timing numbers are not meaningful performance measurements. No graph-superiority or production-reliability claim is supported.

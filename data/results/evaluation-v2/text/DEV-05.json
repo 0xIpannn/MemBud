@@ -1,0 +1,12 @@
+{
+  "schema_version": 2,
+  "version": 1,
+  "records": [
+    {
+      "id": "r1",
+      "claims": [
+        "tinggal di Bandung"
+      ]
+    }
+  ]
+}

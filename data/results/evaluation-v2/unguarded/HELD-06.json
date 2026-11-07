@@ -1,0 +1,20 @@
+[
+  {
+    "id": "r1",
+    "claims": [
+      "tinggal di Bekasi"
+    ]
+  },
+  {
+    "id": "r2",
+    "claims": [
+      "bekerja di Pertamina"
+    ]
+  },
+  {
+    "id": "r3",
+    "claims": [
+      "menjadi anggota koperasi"
+    ]
+  }
+]
