@@ -390,3 +390,31 @@ The plan adopts coverage, preservation, and faithfulness as criteria discussed i
 Mem0, A-Mem, and Zep/Graphiti are candidate host systems, not guaranteed integrations. The graph-versus-textual-verifier comparison is the central hypothesis. The claim that graph structure improves verification must be established by controlled results and a sufficiently careful literature review, not stated as a fact in advance.
 
 Before submission, verify bibliographic details and implementation claims against the actual papers, repositories, and versions used.
+
+
+---
+
+## Milestone 2 implementation status (2026-11-07)
+
+This appendix records what was actually delivered after the original plan; the body above remains the original proposal and is not a status report.
+
+### Delivered
+
+- **Strict transition schema v2**: operation-coverage invariants (added records need WRITE/SUPERSEDE, changed records need a real REVISE, removed records need DELETE/SUPERSEDE), single-targeting rules, reference validation, structured DELETE authorization, and optional `evidence[].contradicts`. Version 1 input remains loadable for frozen archival data; v2 is the enforced default.
+- **Structural graph verification**: `membud.graph_verification` derives coverage/preservation/faithfulness from graph adjacency (provenance paths, required-claim reachability, operation edges, contradiction edges, connectivity, operation/authorization consistency). `verify(t, "graph")` dispatches to it; `verify(t, "text")` remains the exact-claim-set baseline.
+- **Semantic verification**: `membud.semantic` provides a comparator protocol and an LLM-backed comparator with fail-safe uncertainty; `verify_with_semantics` appends one optional `semantic` check and never changes the deterministic baseline.
+- **Storage reliability**: versioned stores with legacy migration, optimistic concurrency (`expected_version`), POSIX `flock`, atomic ACCEPT-only writes, stray-temp recovery, and audit metadata for versions/locks.
+- **Reference backend**: `membud.adapters.reference` demonstrates actual write interception with byte-identical HOLD behavior; Mem0 `2.2.1` source inspection found no safe public pre-commit hook, so no third-party compatibility is claimed.
+- **Evaluation**: 36-case hash-pinned v2 set (18 dev / 18 held-out) with 14 ACCEPT / 12 HOLD / 10 INVALID_INPUT; reproducible rules-only three-condition run; precision/recall, false accepts/holds, valid acceptance, invalid-input handling, latency overhead, paired graph-vs-text differences, and per-split metrics. A second-review process is prepared but the human second review is pending.
+
+### Evidence and limitations
+
+The rules-only v2 run shows graph and text agreeing on 34/36 decisions; the two differences are constructed unresolved-contradiction cases where graph verification consumes `evidence.contradicts` and the claim-set baseline cannot. This validates that the harness can measure graph-vs-text differences on equivalent inputs, but it does **not** establish graph superiority: the dataset is synthetic and single-reviewed, authored alongside the verifier, and has no statistical power. No graph-superiority claim is made anywhere in the repository.
+
+### Next plan of record
+
+1. Independent second human review/adjudication of v2 labels, then a larger powered held-out evaluation.
+2. Optional semantic/LLM conditions with bounded spend, calibration/abstention reporting, and billed-cost accounting.
+3. Checkpoint/resume and longer-running experiment support.
+4. Real backend integration via host-owned staged-write/fork once a safe pre-commit boundary is demonstrated.
+5. Stable versioned interchange format with cross-release migration tests.

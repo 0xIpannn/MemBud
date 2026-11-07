@@ -52,3 +52,24 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [ ] Measure billed cost using provider billing data and downstream QA utility where supported.
 - [ ] Review false positives and false negatives independently; report missing runs and limitations.
 - [x] Update the README and pilot report with what has actually been tested; make no graph-superiority claim without comparative results.
+
+
+## Milestone 2 — architecture-agnostic safety layer (complete)
+
+- [x] Strict operation-coverage invariants: undeclared insertions, modifications, and removals are rejected; every operation must map to a real state change; prior/candidate references are validated.
+- [x] Structured DELETE authorization (`source`, `evidence_id`, `target_id`, `rationale`); DELETE without it is rejected, and the evidence reference/target are validated.
+- [x] Structural graph verifier over actual adjacency (provenance paths, required-claim reachability, operation edges, contradiction edges, orphan claims, structural consistency); retained independent claim-set text baseline.
+- [x] Separate semantic verification (`membud.semantic`) with fail-safe `UNCERTAIN`; deterministic baseline unchanged.
+- [x] Versioned store (`schema_version`/`version`), legacy migration, optimistic `expected_version`, POSIX flock, atomic ACCEPT-only writes, stray-temp recovery, optional semantic check at commit.
+- [x] Reference-backend write interception demonstrated with byte-identical HOLD behavior; Mem0 source inspection documented (no safe public pre-commit hook; no compatibility claimed).
+- [x] 36-case hash-pinned v2 evaluation set with 18 dev / 18 held-out cases, 14 ACCEPT / 12 HOLD / 10 INVALID_INPUT; rules-only three-condition run and metrics (precision/recall, false accepts/holds, valid acceptance, latency overhead, invalid-input handling, paired differences, per-split breakdown).
+- [x] Second-review process prepared (review sheet generator + adjudication template); no independence fabricated.
+- [x] Updated README/PLAN/TODO and added `docs/technical-report-milestone-2.md`.
+
+### Remaining after Milestone 2
+
+- [ ] Collect the pending independent second human review and adjudicate v2 labels.
+- [ ] Run the optional semantic/LLM conditions on the v2 held-out split under a bounded spend approval; report calibration and abstention.
+- [ ] Add checkpoint/resume, provider-billing cost accounting, and a powered evaluation with a justified sample size.
+- [ ] Implement a real third-party backend integration through a host-owned staged-write/fork after a safe pre-commit boundary is demonstrated.
+- [ ] Stabilize transition/store formats as a versioned interchange protocol with migration tests across releases.
