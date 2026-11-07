@@ -14,6 +14,14 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 
+class LLMRequestError(RuntimeError):
+    """Provider request failed after a bounded number of attempts."""
+
+    def __init__(self, message: str, *, attempts: int) -> None:
+        super().__init__(message)
+        self.attempts = attempts
+
+
 @dataclass(frozen=True)
 class JSONCompletion:
     """Validated JSON response plus provider usage and request metadata."""
@@ -65,6 +73,8 @@ class OpenAICompatibleChatClient:
             raise ValueError("api_key must be non-empty")
         if not model.strip():
             raise ValueError("model must be non-empty")
+        if not base_url.startswith("https://"):
+            raise ValueError("base_url must use https")
         if timeout <= 0 or max_attempts < 1 or max_json_retries < 0 or backoff_seconds < 0:
             raise ValueError("invalid timeout, retry count, or backoff configuration")
         self._api_key = api_key
@@ -220,10 +230,26 @@ class OpenAICompatibleChatClient:
         encoded = json.dumps(material, ensure_ascii=False, sort_keys=True).encode("utf-8")
         return hashlib.sha256(encoded).hexdigest()
 
+    def _ensure_cache_dir(self) -> None:
+        parent = self.cache_path.parent
+        created = not parent.exists()
+        parent.mkdir(parents=True, exist_ok=True)
+        if created:
+            try:
+                parent.chmod(0o700)
+            except OSError:
+                pass
+
+    def _chmod_cache_file(self) -> None:
+        try:
+            self.cache_path.chmod(0o600)
+        except OSError:
+            pass
+
     def _load_cache(self, key: str) -> dict[str, Any] | None:
         if self.cache_path is None:
             return None
-        self.cache_path.parent.mkdir(parents=True, exist_ok=True)
+        self._ensure_cache_dir()
         with sqlite3.connect(self.cache_path, timeout=30) as connection:
             connection.execute(
                 "CREATE TABLE IF NOT EXISTS completions (cache_key TEXT PRIMARY KEY, payload TEXT NOT NULL)"
@@ -231,12 +257,20 @@ class OpenAICompatibleChatClient:
             row = connection.execute(
                 "SELECT payload FROM completions WHERE cache_key = ?", (key,)
             ).fetchone()
-        return json.loads(row[0]) if row else None
+        self._chmod_cache_file()
+        if not row:
+            return None
+        try:
+            return json.loads(row[0])
+        except json.JSONDecodeError:
+            # A corrupt cache row must degrade to a cache miss, not a HOLD loop.
+            self._delete_cache(key)
+            return None
 
     def _save_cache(self, key: str, completion: JSONCompletion) -> None:
         if self.cache_path is None:
             return
-        self.cache_path.parent.mkdir(parents=True, exist_ok=True)
+        self._ensure_cache_dir()
         payload = {
             "json": completion.json,
             "content": completion.content,
@@ -257,6 +291,7 @@ class OpenAICompatibleChatClient:
                 "INSERT OR REPLACE INTO completions(cache_key, payload) VALUES (?, ?)",
                 (key, json.dumps(payload, ensure_ascii=False, sort_keys=True)),
             )
+        self._chmod_cache_file()
 
     def _delete_cache(self, key: str) -> None:
         if self.cache_path is None:
@@ -303,28 +338,40 @@ class OpenAICompatibleChatClient:
             except urllib.error.HTTPError as exc:
                 status = exc.code
                 body_text = exc.read().decode("utf-8", "replace")
-                if status not in {429, 500, 502, 503, 504} or attempt == self.max_attempts:
+                retryable = status in {429, 500, 502, 503, 504}
+                if not retryable or attempt == self.max_attempts:
                     detail = self._error_message(body_text)
-                    raise RuntimeError(f"{self.provider_name} API HTTP {status}: {detail}") from exc
+                    suffix = f" after {attempt} attempts" if retryable else ""
+                    raise LLMRequestError(
+                        f"{self.provider_name} API HTTP {status}{suffix}: {detail}",
+                        attempts=attempt,
+                    ) from exc
                 retry_after = exc.headers.get("Retry-After") if exc.headers else None
                 delay = self._retry_delay(attempt, retry_after)
             except (urllib.error.URLError, TimeoutError, socket.timeout) as exc:
                 if attempt == self.max_attempts:
-                    raise RuntimeError(
-                        f"{self.provider_name} API request failed after {attempt} attempts"
+                    raise LLMRequestError(
+                        f"{self.provider_name} API request failed after {attempt} attempts",
+                        attempts=attempt,
                     ) from exc
                 delay = self._retry_delay(attempt, None)
-            except json.JSONDecodeError as exc:
-                raise ValueError("provider returned a non-JSON Chat Completions response") from exc
-            except (KeyError, IndexError, TypeError) as exc:
-                raise ValueError(f"provider returned a malformed Chat Completions response: {exc}") from exc
+            except (json.JSONDecodeError, KeyError, IndexError, TypeError, ValueError) as exc:
+                # Provider-side truncation or a malformed envelope is treated as
+                # transient: retry within the same bound before failing closed.
+                if attempt == self.max_attempts:
+                    raise LLMRequestError(
+                        f"{self.provider_name} API returned a malformed Chat Completions "
+                        f"response after {attempt} attempts: {exc}",
+                        attempts=attempt,
+                    ) from exc
+                delay = self._retry_delay(attempt, None)
             self._sleep(delay)
         raise AssertionError("unreachable")
 
     def _retry_delay(self, attempt: int, retry_after: str | None) -> float:
         if retry_after is not None:
             try:
-                return max(0.0, float(retry_after))
+                return min(max(0.0, float(retry_after)), 60.0)
             except ValueError:
                 pass
         return self.backoff_seconds * (2 ** (attempt - 1))

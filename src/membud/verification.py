@@ -177,7 +177,8 @@ def verify_with_llm(
             )
             for name in _REQUIRED_CHECKS
         ]
-        usage = {}
+        attempts = getattr(exc, "attempts", None)
+        usage = {"api_attempts": attempts, "cache_hit": 0} if isinstance(attempts, int) else {}
         verifier = model
         latency_ms = None
         raw_response = None

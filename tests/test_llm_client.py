@@ -236,3 +236,103 @@ def test_client_from_environment_requires_key_and_pins_model(monkeypatch):
     client = OpenAICompatibleChatClient.from_env()
     assert client.model == "deepseek/deepseek-v4.1-flash"
     assert client.base_url == "https://api.commandcode.ai/provider/v1"
+
+
+def test_malformed_envelope_is_retried(monkeypatch):
+    replies = [FakeResponse(b"not json"), FakeResponse(api_response('{"decision":"HOLD"}'))]
+    calls = []
+
+    def fake_urlopen(request, timeout):
+        calls.append(request)
+        return replies.pop(0)
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    client = OpenAICompatibleChatClient(
+        api_key="secret", model="deepseek/deepseek-v4.1-flash", sleeper=lambda _: None
+    )
+    result = client.complete_json([{"role": "user", "content": "Assess transition"}])
+
+    assert result.json == {"decision": "HOLD"}
+    assert result.request_attempts == 2
+    assert len(calls) == 2
+
+
+def test_malformed_envelope_exhausts_bounded_retries(monkeypatch):
+    from membud.llm.client import LLMRequestError
+
+    def fake_urlopen(request, timeout):
+        return FakeResponse(b"<html>bad gateway</html>")
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    client = OpenAICompatibleChatClient(
+        api_key="secret", model="deepseek/deepseek-v4.1-flash", max_attempts=2,
+        sleeper=lambda _: None,
+    )
+    with pytest.raises(LLMRequestError, match="malformed") as info:
+        client.complete_json([{"role": "user", "content": "Assess transition"}])
+    assert info.value.attempts == 2
+
+
+def test_missing_choices_field_is_retried(monkeypatch):
+    replies = [FakeResponse({"choices": []}), FakeResponse(api_response('{"decision":"HOLD"}'))]
+
+    def fake_urlopen(request, timeout):
+        return replies.pop(0)
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    client = OpenAICompatibleChatClient(
+        api_key="secret", model="deepseek/deepseek-v4.1-flash", sleeper=lambda _: None
+    )
+    result = client.complete_json([{"role": "user", "content": "Assess transition"}])
+    assert result.request_attempts == 2
+
+
+def test_client_rejects_non_https_base_url():
+    with pytest.raises(ValueError, match="https"):
+        OpenAICompatibleChatClient(
+            api_key="secret", model="deepseek/deepseek-v4.1-flash",
+            base_url="http://api.example.com",
+        )
+
+
+def test_corrupt_cache_entry_is_treated_as_a_miss(monkeypatch, tmp_path):
+    import sqlite3
+
+    cache_path = tmp_path / "responses.sqlite3"
+    client = OpenAICompatibleChatClient(
+        api_key="secret", model="deepseek/deepseek-v4.1-flash", cache_path=cache_path
+    )
+    key = client._cache_key([{"role": "user", "content": "Assess transition"}])
+    with sqlite3.connect(cache_path) as connection:
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS completions (cache_key TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+        )
+        connection.execute(
+            "INSERT OR REPLACE INTO completions(cache_key, payload) VALUES (?, ?)",
+            (key, "this is not json"),
+        )
+
+    calls = []
+
+    def fake_urlopen(request, timeout):
+        calls.append(request)
+        return FakeResponse(api_response('{"decision":"HOLD"}'))
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    result = client.complete_json([{"role": "user", "content": "Assess transition"}])
+    assert result.cached is False
+    assert len(calls) == 1
+
+
+def test_cache_file_is_private(monkeypatch, tmp_path):
+    cache_path = tmp_path / "responses.sqlite3"
+    client = OpenAICompatibleChatClient(
+        api_key="secret", model="deepseek/deepseek-v4.1-flash", cache_path=cache_path
+    )
+
+    def fake_urlopen(request, timeout):
+        return FakeResponse(api_response('{"decision":"HOLD"}'))
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    client.complete_json([{"role": "user", "content": "Assess transition"}])
+    assert cache_path.stat().st_mode & 0o777 == 0o600

@@ -135,3 +135,21 @@ def test_run_case_can_commit_from_llm_verification_callback(tmp_path):
     event = json.loads((tmp_path / "audit.jsonl").read_text())
     assert event["result"]["usage"]["total_tokens"] == 150
     assert event["result"]["raw_response"] == {"checks": CHECKS}
+
+
+def test_llm_failure_metadata_preserves_attempt_count():
+    from membud.llm.client import LLMRequestError
+
+    class FailingClient:
+        model = "deepseek-flash"
+
+        def complete_json(self, messages, validator=None):
+            raise LLMRequestError(
+                "deepseek-openai-compatible API HTTP 500 after 3 attempts: server error",
+                attempts=3,
+            )
+
+    result = verify_with_llm(transition(), FailingClient(), representation="text")
+    assert result.decision == "HOLD"
+    assert result.usage["api_attempts"] == 3
+    assert result.usage["cache_hit"] == 0

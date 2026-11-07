@@ -14,7 +14,7 @@ The run produced 33 case-condition rows and zero runner errors. Results were:
 | Graph guarded | 6 | 5 | 0 | 0 |
 | Text guarded | 6 | 5 | 0 | 0 |
 
-The output directory contains isolated condition stores, JSONL audit events, and a summary JSON. Tests verify that guarded stores retain prior state on HOLD and unguarded stores apply the same candidates. The full test suite passed (104 tests as of the guarded-store hardening change) after the pilot-runner changes.
+The output directory contains isolated condition stores, JSONL audit events, and a summary JSON. Tests verify that guarded stores retain prior state on HOLD and unguarded stores apply the same candidates. The full test suite passed (111 tests as of the guarded-store and client hardening changes) after the pilot-runner changes.
 
 ## Frozen exploratory set run
 

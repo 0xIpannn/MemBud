@@ -16,7 +16,7 @@ MemBud is an experimental local prototype, not a production memory service.
 
 ### Still to do
 
-1. Diagnose the 9 DeepSeek verifier errors (HTTP 500s and malformed completion envelopes), improve failure metadata/retries, then rerun only failed cases using the persistent response cache. Confirm actual spend in the provider dashboard before further paid calls; token usage alone is not a bill.
+1. Rerun the 9 DeepSeek verifier errors (6 HTTP 500s and 3 malformed completion envelopes) using the persistent response cache; the client now retries malformed envelopes and records attempt counts on failed verifier rows. Confirm actual spend in the provider dashboard before further paid calls; token usage alone is not a bill.
 2. Independently review false positives/negatives and missing/error cases. Add a second reviewer/adjudication before describing any labels as benchmark ground truth; the present set is single-reviewed and synthetic.
 3. Add checkpoint/resume, stronger cost accounting, and a broader held-out evaluation with a justified sample size. Measure downstream QA utility only where the dataset supports it.
 4. Add a Pi Code integration only through a safe staged-write/pre-commit boundary. There is currently no Pi Code extension or automatic write interception; the provider API failure on the Command Code plan also remains documented.

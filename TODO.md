@@ -31,7 +31,8 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [x] Add persistent SQLite response caching keyed by provider/model, prompt/input, and request settings.
 - [x] Add append-only run logging for inputs, outputs, decisions, resulting state, run ID, optional code revision, timing, provider token usage, retry counts, and failure events. Provider responses do not report billed monetary cost; pin a source revision/hash for reproducible model runs.
 - [x] Add a local 3-condition development pilot runner (`python -m membud.experiment`) with an explicitly selected optional LLM verifier.
-- [ ] Harden the DeepSeek client against malformed completion envelopes and record attempt/request metadata on failures; rerun the 9 failed graph/text rows (5 graph, 4 text) using the successful-response cache.
+- [x] Harden the DeepSeek client: retry bounded malformed completion envelopes, cap provider retry delays, and record attempt counts on failed verifier rows.
+- [ ] Rerun the 9 failed graph/text rows (5 graph, 4 text) using the successful-response cache.
 - [ ] Add checkpoint/resume support before external/model calls.
 - [x] Record/report graph preparation time and verifier time separately, plus graph node/edge counts. Successful LLM responses include token usage and retries; failed response attempts still need more complete provider-attempt metadata. The provider completion response does not report billed cost.
 
