@@ -6,6 +6,8 @@
 **Tests:** [tests/test_llm_false_hold_analysis.py](../tests/test_llm_false_hold_analysis.py)
 **Status:** descriptive post-hoc analysis of one cached run. Not a controlled experiment, no causal claim, no superiority claim. **Zero network or paid calls were made.** This document does not change [docs/llm-heldout.md](llm-heldout.md).
 
+> **Follow-up (same day):** the semantic `HELD-13` false accept noted here was subsequently fixed (the semantic verifier now consumes `evidence.contradicts`) and the held-out conditions were replayed from cache with no provider calls; see the follow-up section in [docs/llm-heldout.md](llm-heldout.md) and `data/results/llm-heldout-v2-rerun/`. This analysis still describes the original committed `data/results/llm-heldout-v2/` run, and its four graph false holds are unchanged by that fix.
+
 ## Scope and method
 
 The held-out v2 run held 4 of the 7 valid updates in the `graph` (LLM) condition

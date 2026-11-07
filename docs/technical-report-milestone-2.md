@@ -162,3 +162,15 @@ A one-shot DeepSeek `deepseek-flash` run on the 18-case held-out split (13 valid
 | semantic (text + semantic check) | 8 | 5 | 5 | 1/6 (HELD-13) | 0/7 | 7/7 |
 
 101,231 reported tokens, 59 attempts, 0 verifier errors, no budget abort; estimated upper bound ≈$0.40 at the top published per-token rate (billing unavailable). The LLM graph condition was markedly over-conservative; the semantic condition accepted HELD-13 because `verify_with_semantics` does not consume `evidence.contradicts` — the same annotation-access gap documented in §11. The held-out set is too small (7 valid, 6 faulty) and single-reviewed for any superiority claim; this run establishes that the harness can execute equivalent-information LLM/semantic comparisons under a hard spend cap. Details: `docs/llm-heldout.md`.
+
+
+---
+
+## 13. Post-milestone software follow-up addendum (2026-11-07)
+
+- **Semantic annotation gap closed.** `membud.semantic` now consumes `evidence.contradicts` deterministically: a candidate-state claim listed in an evidence contradiction makes the appended `semantic` check FAIL with `CONTRADICTED_CLAIM`, before and independent of comparator calls; the LLM comparator prompt/version is unchanged so response-cache keys stay valid.
+- **Cache-only held-out replay.** `data/results/llm-heldout-v2-rerun/` replays all three held-out conditions with `--require-cache`: 0 provider attempts, 0 new tokens, 51 cache hits, 0 misses. Graph/text decisions are unchanged; semantic `HELD-13` flips ACCEPT -> HOLD, so semantic false accepts go 1/6 -> 0/6 and faulty detection 5/6 -> 6/6. This is a replay plus a deterministic fix, not a new paid run.
+- **Graph-LLM false-hold attribution.** A cache-only analysis attributes all 52 cached completions 1:1 to the run; the four graph false holds fail preservation with model reasons citing null authorization / missing authorizing edges on evidence-backed `REVISE`/`SUPERSEDE` (3/4 graph-only, 1/4 shared with text). Serialization length/token asymmetry is not supported as a cause, and 7/52 calls retried once. See `docs/graph-llm-false-holds.md`; the proposed G1/G2 ablation needs explicit spend approval.
+- **Phase 0 productization.** A stdlib localhost `/verify` sidecar (`membud.service`) and a no-build opencode `tool.execute.before` guard plugin (`integrations/opencode/`) demonstrate fail-closed tool-call denial against a mock memory tool, with 39 sidecar tests, a node/bun harness, a real opencode 1.19.5 module-load smoke under an offline network namespace, and measured loopback latency (hook p50 ≈2-3 ms, p95 ≈3.7-5.4 ms on tiny fixtures). Not production software.
+- **Mem0 groundwork.** `membud.adapters.mem0_bridge` implements a host-owned staged-proposal path with ACCEPT-only reference-backend persistence and byte-identical HOLD tests; `mem0ai==2.2.1` still has no safe public pre-commit hook, so no compatibility is claimed (`data/mem0-bridge.md`).
+- **Verification.** Full test suite: 367 passing. No paid model calls were made in any of these follow-ups.

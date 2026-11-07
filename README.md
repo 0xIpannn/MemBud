@@ -28,16 +28,24 @@ MemBud is an experimental local prototype, not a production memory service.
 
 A one-shot DeepSeek run on the 18 held-out cases (13 schema-valid + 5 expected-invalid; 39 executed rows) produced, per condition: graph LLM 3 ACCEPT / 10 HOLD / 0 false accepts / 4 false holds (valid accepted 3/7); text LLM 6 / 7 / 0 false accepts / 1 false hold (6/7); semantic (deterministic text + semantic check) 8 / 5 / 1 false accept (HELD-13) / 0 false holds (7/7). It reported 101,231 tokens (59 request attempts, 0 verifier errors, 0 cache hits), estimated at **≤ ≈$0.40** at DeepSeek's top published rate (billed amount unavailable; confirm the provider dashboard).
 
-The LLM graph condition was over-conservative (4 false holds); the semantic condition matched all valid updates but accepted HELD-13, whose contradiction is annotated only in `evidence.contradicts`, which the semantic module does not consume — the same blind spot the fairness audit found for plain text. With 7 valid + 6 faulty held-out cases this is descriptive only; no superiority claim is made. Details: `docs/llm-heldout.md`.
+The LLM graph condition was over-conservative (4 false holds); the semantic condition matched all valid updates but accepted HELD-13, whose contradiction is annotated only in `evidence.contradicts`, which the semantic module did not then consume — the same blind spot the fairness audit found for plain text. With 7 valid + 6 faulty held-out cases this is descriptive only; no superiority claim is made. Details: `docs/llm-heldout.md`.
+
+### Post-Milestone-2 software follow-ups (2026-11-07)
+
+- **Semantic verifier now consumes `evidence.contradicts`.** The appended semantic check deterministically fails with `CONTRADICTED_CLAIM` when a candidate-state claim appears in an evidence contradiction annotation, before and independent of comparator calls; the LLM comparator prompt/version is unchanged so cached responses stay valid. A cache-only rerun of the held-out conditions (0 provider attempts, 0 new tokens, 51 cache hits, 0 misses) leaves graph/text decisions unchanged and flips semantic HELD-13 from ACCEPT to HOLD, moving semantic false accepts 1/6 → 0/6 and faulty detection 5/6 → 6/6. Artifact: `data/results/llm-heldout-v2-rerun/`. No paid calls were made and no superiority claim is implied.
+- **Graph-LLM false holds investigated from cache only.** All 52 cached completions were attributed 1:1 to the held-out run; the four graph false holds fail preservation with model reasons citing a null authorization / missing authorizing edge on evidence-backed `REVISE`/`SUPERSEDE` (3/4 graph-only, 1/4 shared with text), and serialization length/token asymmetry is not supported as a cause. 7/52 calls did retry once, so retries affect accounting but not the holds. A small G1/G2 ablation is proposed but **requires explicit spend approval**. See `docs/graph-llm-false-holds.md`.
+- **Phase 0 productization.** A stdlib-only localhost `membud.service` `/verify` sidecar plus a no-build opencode `tool.execute.before` guard plugin are included in `integrations/opencode/`, with 39 sidecar tests, a node/bun harness against the real sidecar, and a real opencode 1.19.5 module-load smoke under an offline network namespace. The hook is awaited before tool execution, so a throw denies the call; measured end-to-end hook latency is ≈2–3 ms p50 / ≈3.7–5.4 ms p95 on tiny fixtures. This is a feasibility spike, not production software; the 1.18.30-typings vs 1.19.5-CLI gap and what is not proven are documented in its README.
+- **Mem0 groundwork.** `membud.adapters.mem0_bridge` implements a host-owned staged-proposal path (Mem0-style extracted proposals + prior snapshot → schema-v2 transition → ACCEPT-only reference-backend persistence) with byte-identical HOLD tests. `mem0ai==2.2.1` still has no safe public pre-commit hook, so **no Mem0 compatibility is claimed** (`data/mem0-bridge.md`).
+- Full test suite at this point: 367 passing.
 
 ### Still to do
 
 1. Confirm actual spend in the provider dashboard for the original run, the 9-row rerun, and the preliminary probe (reported tokens: 32,126 + 24,407 + 5,946; token counts are not a bill). The rerun resolved all 9 original verifier errors, so no error-diagnosis work remains.
 2. Collect an independent second human review and adjudicate the v2 labels (`data/review/` provides the review sheet and template); until then treat all labels as exploratory single-reviewer annotations. Add false-positive/false-negative case review.
 3. Add checkpoint/resume and stronger cost accounting; run a powered held-out evaluation with a justified sample size (the 18/18 dev-held-out split is a starting point) and measure downstream QA utility only where the dataset supports it.
-4. Add a Pi Code integration only through a safe staged-write/pre-commit boundary. There is currently no Pi Code extension or automatic write interception; the provider API failure on the Command Code plan also remains documented.
+4. Run a live model-originated opencode tool-call denial test, and decide whether to harden the Phase 0 sidecar (authentication, TLS, rate limiting, concurrency/version arbitration) before any productization; MCP and real memory-backend integration remain unimplemented. There is still no Pi Code integration or automatic write interception, and the Command Code provider API failure remains documented.
 5. Stabilize the versioned transition/store formats with an explicit migration policy before treating them as stable interchange protocols, and revisit third-party backend integration through a host-owned staged-write/fork only after a safe pre-commit boundary exists.
-6. Make the semantic verifier consume `evidence.contradicts` (it currently shares plain text's blind spot and accepted HELD-13), then rerun the cached held-out conditions.
+6. Approve or decline the proposed G1/G2 graph false-hold ablation (smallest ≈8 calls / ≈39k tokens, estimated ≤$0.08 at the harness placeholder) and any further paid held-out run; no paid calls beyond the previously approved capped run have been made.
 
 ### Research status
 
@@ -79,7 +87,9 @@ This writes isolated stores, append-only condition audit logs, and `pilot-summar
 - `membud.demo`: bundled fixtures and the local demonstration runner.
 - `membud.experiment`: paired unguarded/graph/text development pilot runner.
 - `membud.metrics`: explicit-denominator metrics for a hash-pinned manifest run.
-- `membud.adapters`: structural adapter contract for host memory backends.
+- `membud.adapters`: structural adapter contract for host memory backends. `membud.adapters.mem0_bridge` adds a host-owned staged-proposal bridge for a Mem0-style extractor (no Mem0 import, no Mem0 compatibility claim).
+- `membud.service`: localhost-only, stdlib `/verify` sidecar exposing the deterministic verifier over loopback; it persists nothing and fails closed.
+- `integrations/opencode/`: Phase 0 opencode `tool.execute.before` guard plugin, mock memory tool, node/bun harness, config snippet, and measured latency caveats.
 
 `membud.core` is a compatibility facade that re-exports the public API. New code should import from the focused modules directly.
 

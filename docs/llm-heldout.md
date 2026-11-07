@@ -38,3 +38,20 @@
 - Investigate the graph-LLM false-holds (prompt/graph-serialization length effects, retries) before comparing representations.
 - Collect the independent second human review of the held-out labels via the blind quiz (`data/review/quiz-v2.html`).
 - Repeat with a larger, better-powered held-out set before drawing any conclusion about representation.
+
+---
+
+## Follow-up: cache-only rerun after the semantic contradiction fix (2026-11-07)
+
+The semantic module now consumes `evidence[].contradicts` deterministically: if a claim in the candidate state appears in any evidence contradiction annotation, the appended `semantic` check fails with `CONTRADICTED_CLAIM` before and independent of comparator calls. The comparator prompt/version is unchanged, so every request keeps its cache key. All three held-out conditions were rerun from the private response cache with `--require-cache`, which aborts before any provider I/O on a cache miss.
+
+| Condition | ACCEPT | HOLD | INVALID_INPUT | False accepts | False holds | Valid accepted |
+|---|---:|---:|---:|---:|---:|---:|
+| graph (LLM) | 3 | 10 | 5 | 0/6 | 4/7 | 3/7 |
+| text (LLM) | 6 | 7 | 5 | 0/6 | 1/7 | 6/7 |
+| semantic (text + semantic check) | 7 | 6 | 5 | **0/6** | 0/7 | 7/7 |
+
+- **0 provider attempts, 0 new tokens, 51 cache hits, 0 misses, no budget abort**, and the private cache file was not modified.
+- Graph/text decisions and checks are unchanged. The only delta is semantic `HELD-13`: now HOLD with `semantic` FAIL `CONTRADICTED_CLAIM` on `["bekerja di Unilever"]` and **zero comparator calls**. Semantic false accepts move 1/6 -> 0/6 and faulty detection 5/6 -> 6/6.
+- Artifact: `data/results/llm-heldout-v2-rerun/`. This is a cache replay of the same one-shot run plus one deterministic fix, not a new paid evaluation, and it still supports no superiority claim.
+- The four graph-LLM false holds and the retry/accounting detail are analyzed separately in `docs/graph-llm-false-holds.md`; a discriminating follow-up ablation there requires explicit spend approval.

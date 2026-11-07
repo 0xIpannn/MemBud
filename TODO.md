@@ -41,6 +41,9 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [x] Define the structural adapter contract and atomicity/provenance requirements (`src/membud/adapters/`, `data/adapter-contract.md`).
 - [x] Inspect Mem0's proposed-update/write path; no supported safe pre-commit hook was found, so defer adapter/fork (`data/backend-feasibility.md`).
 - [x] Inspect A-Mem's note/evolution write path; safe guarding requires staging/forking, so defer integration (`data/backend-feasibility.md`).
+- [x] Phase 0 opencode productization spike: stdlib localhost `/verify` sidecar (`membud.service`) plus a no-build `tool.execute.before` guard plugin against a mock memory tool (`integrations/opencode/`); 39 sidecar tests, node/bun harness, real opencode 1.19.5 module-load smoke under an offline network namespace, and measured loopback latency. No live model-originated denial test, no MCP/memory-backend integration.
+- [x] Mem0 host-owned staged-proposal bridge (`membud.adapters.mem0_bridge`) with deterministic mapping and byte-identical HOLD tests; no Mem0 import and no compatibility claim (`data/mem0-bridge.md`).
+- [ ] Run a live model-originated opencode tool-call denial test; if productizing, decide on sidecar authentication/TLS/rate limiting/concurrency-version arbitration and integrate a real backend through a host-owned staged write.
 - [ ] Treat Zep/Graphiti as a stretch goal after the core evaluation is reproducible.
 
 ## Run and report the evaluation
@@ -72,8 +75,9 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [ ] Define and evaluate a graph hypothesis where relational structure supplies detection capability a fair text verifier cannot reconstruct from the same facts (multi-hop provenance/derivation, entity-relation contradictions across records, temporal ordering), and compare against a fair-text control with identical information.
 - [ ] Collect the pending independent second human review and adjudicate v2 labels.
 - [x] Run the optional semantic/LLM conditions on the v2 held-out split under the approved $2 cap (101,231 reported tokens, ~$0.40 upper-bound estimate, no abort): graph LLM 3/10/5, text LLM 6/7/5, semantic 8/5/5; no superiority claim. See `docs/llm-heldout.md`.
-- [ ] Make the semantic verifier consume `evidence.contradicts` (it inherited plain text's blind spot and accepted HELD-13), then rerun the cached held-out conditions.
-- [ ] Investigate the graph-LLM false holds (4/7 valid held; prompt/serialization effects, retries) before any representation comparison.
+- [x] Make the semantic verifier consume `evidence.contradicts` (it inherited plain text's blind spot and accepted HELD-13), then rerun the cached held-out conditions: cache-only rerun with 0 provider attempts / 0 new tokens / 51 cache hits / 0 misses; graph and text unchanged, semantic HELD-13 ACCEPT→HOLD (`CONTRADICTED_CLAIM`), semantic false accepts 1/6→0/6, faulty detection 5/6→6/6 (`data/results/llm-heldout-v2-rerun/`).
+- [x] Investigate the graph-LLM false holds (4/7 valid held; prompt/serialization effects, retries) from the response cache only: all 52 completions attributed 1:1; all four fail preservation with reasons citing null/absent authorization on evidence-backed `REVISE`/`SUPERSEDE`; length/token asymmetry not supported; 7/52 calls retried once. See `docs/graph-llm-false-holds.md`. No paid calls.
+- [ ] Obtain explicit spend approval and run the proposed G1/G2 graph-rendering ablation (smallest ≈8 calls / ≈39k tokens, estimated ≤$0.08 at the harness placeholder) before comparing representations.
 - [ ] Use the blind quiz (`data/review/quiz-v2.html`) to collect the independent second review of the v2 labels.
 - [ ] Add checkpoint/resume, provider-billing cost accounting, and a powered evaluation with a justified sample size.
 - [ ] Implement a real third-party backend integration through a host-owned staged-write/fork after a safe pre-commit boundary is demonstrated.
