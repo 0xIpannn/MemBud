@@ -148,3 +148,19 @@ The manifest's `review.review_sheet_tool` still names `scripts/review_cases.py`;
 the blind quiz workflow above uses `scripts/review_quiz.py` for building and
 grading. Changing the manifest while review is pending would require a new
 manifest version, so the README records the newer tool here.
+
+
+## Quiz usability aids
+
+`data/review/quiz-v2.html` now includes (all label-free):
+
+- a **“How to read a case”** glossary explaining prior state, candidate state, claim,
+  evidence (supports/contradicts), required claims, declared operations, and DELETE
+  authorization, with short Indonesian translations;
+- a **30-second decision checklist** and plain-language hints next to each decision option;
+- numbered per-case sections and a **derived state diff** (“What changes”) showing added,
+  modified, and removed records. The diff is computed only from the two public states and
+  explicitly does not indicate whether a change is authorized;
+- a “Jump to first unanswered” control in addition to autosave/progress.
+
+None of these aids contain labels, expected decisions, categories, or reviewer notes.

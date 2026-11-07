@@ -497,3 +497,80 @@ def test_build_drops_unknown_fields_and_rejects_label_fields(quiz, tmp_path):
         quiz.build_quiz(
             _copied_package(tmp_path / "label", add_label), tmp_path / "quiz2.html"
         )
+
+
+def test_quiz_explains_concepts_bilingually(quiz, tmp_path):
+    output = tmp_path / "quiz-v2.html"
+    quiz.build_quiz(MANIFEST_PATH, output)
+    quiz_html = output.read_text(encoding="utf-8")
+
+    for term in (
+        "How to read a case",
+        "Prior state",
+        "Candidate state",
+        "Claim",
+        "Evidence",
+        "Required claims",
+        "Declared operations",
+        "Delete authorization",
+        "What changes",
+        "How to decide",
+        "Klaim wajib",
+        "Operasi",
+        "otorisasi",
+    ):
+        assert term in quiz_html, f"missing explained concept: {term}"
+
+    # Plain-language decision hints appear with the options.
+    assert "safe" in quiz_html
+    assert "unsafe or unsure" in quiz_html
+    assert "malformed" in quiz_html
+
+
+def test_case_sections_are_numbered_and_show_a_derived_diff(quiz, tmp_path):
+    output = tmp_path / "quiz-v2.html"
+    quiz.build_quiz(MANIFEST_PATH, output)
+    quiz_html = output.read_text(encoding="utf-8")
+    cases = cases_by_id()
+
+    def signature(records):
+        return [(record["id"], tuple(record["claims"])) for record in records]
+
+    added_id = next(
+        case_id
+        for case_id, case in cases.items()
+        if set(record["id"] for record in case["candidate"])
+        - set(record["id"] for record in case["before"])
+    )
+    noop_id = next(
+        case_id
+        for case_id, case in cases.items()
+        if signature(case["before"]) == signature(case["candidate"])
+    )
+    modified_id = next(
+        case_id
+        for case_id, case in cases.items()
+        if any(
+            before["id"] == candidate["id"] and tuple(before["claims"]) != tuple(candidate["claims"])
+            for before in case["before"]
+            for candidate in case["candidate"]
+        )
+    )
+
+    added_section = case_section(quiz_html, added_id)
+    assert 'class="step"' in added_section
+    assert "What changes (derived)" in added_section
+    assert "added" in added_section
+    assert "not whether the change is authorized" in added_section
+    assert "Keadaan memori saat ini" in added_section
+    added_record_id = (
+        set(record["id"] for record in cases[added_id]["candidate"])
+        - set(record["id"] for record in cases[added_id]["before"])
+    ).pop()
+    assert f'<code class="rid">{added_record_id}</code>' in added_section
+
+    noop_section = case_section(quiz_html, noop_id)
+    assert "No state change" in noop_section
+
+    modified_section = case_section(quiz_html, modified_id)
+    assert "modified" in modified_section

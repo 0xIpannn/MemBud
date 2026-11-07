@@ -287,6 +287,66 @@ def _render_operations(operations: list[dict[str, Any]]) -> str:
     return "".join(parts)
 
 
+def _render_claim_delta(added: list[str], removed: list[str]) -> str:
+    parts: list[str] = []
+    for claim in added:
+        parts.append(f'<span class="delta delta-add">+ {_esc(claim)}</span>')
+    for claim in removed:
+        parts.append(f'<span class="delta delta-remove">&minus; {_esc(claim)}</span>')
+    return " ".join(parts) if parts else '<span class="muted">(claims unchanged)</span>'
+
+
+def _render_state_diff(
+    before: list[dict[str, Any]], candidate: list[dict[str, Any]]
+) -> str:
+    """Render a neutral diff derived only from the two public states."""
+    before_by = {
+        str(record.get("id", "")): [str(claim) for claim in record.get("claims") or []]
+        for record in before
+    }
+    candidate_by = {
+        str(record.get("id", "")): [str(claim) for claim in record.get("claims") or []]
+        for record in candidate
+    }
+    added = sorted(set(candidate_by) - set(before_by))
+    removed = sorted(set(before_by) - set(candidate_by))
+    modified = []
+    for record_id in sorted(set(before_by) & set(candidate_by)):
+        old_claims, new_claims = set(before_by[record_id]), set(candidate_by[record_id])
+        if old_claims != new_claims:
+            modified.append(
+                (record_id, sorted(new_claims - old_claims), sorted(old_claims - new_claims))
+            )
+
+    if not added and not removed and not modified:
+        return '<p class="empty">No state change: the candidate equals the prior state.</p>'
+
+    parts = ['<ul class="diff-list">']
+    for record_id in added:
+        parts.append(
+            '<li><span class="tag tag-add">added</span> '
+            f'<code class="rid">{_esc(record_id)}</code> &mdash; new record with '
+            f'{len(candidate_by[record_id])} claim(s)</li>'
+        )
+    for record_id in removed:
+        parts.append(
+            '<li><span class="tag tag-remove">removed</span> '
+            f'<code class="rid">{_esc(record_id)}</code> &mdash; record disappears from the candidate state</li>'
+        )
+    for record_id, added_claims, removed_claims in modified:
+        parts.append(
+            '<li><span class="tag tag-mod">modified</span> '
+            f'<code class="rid">{_esc(record_id)}</code> &mdash; '
+            f'{_render_claim_delta(added_claims, removed_claims)}</li>'
+        )
+    parts.append("</ul>")
+    parts.append(
+        '<p class="hint">Derived only by comparing the two states above. It shows what would '
+        'change, not whether the change is authorized.</p>'
+    )
+    return "".join(parts)
+
+
 def _render_case(case: dict[str, Any], index: int, total: int) -> str:
     case_id = str(case["case_id"])
     # Whitelist the transition fields so an unexpected extra key (for example a
@@ -294,11 +354,21 @@ def _render_case(case: dict[str, Any], index: int, total: int) -> str:
     transition = {field: case[field] for field in TRANSITION_FIELDS}
     raw = json.dumps(transition, ensure_ascii=False, indent=2)
     radio_name = f"decision-{case_id}"
+    decision_hints = {
+        "ACCEPT": ("safe", "schema-valid and no verification problem — commit it"),
+        "HOLD": ("unsafe or unsure", "schema-valid input, but do not commit"),
+        "INVALID_INPUT": ("malformed", "broken before verification — reject it"),
+    }
     options = "".join(
         f'<label class="option"><input class="decision-input" type="radio" '
         f'name="{_esc(radio_name)}" value="{decision}" data-case="{_esc(case_id)}">'
-        f"<span>{decision}</span></label>"
+        f'<span class="opt-main">{decision}</span>'
+        f'<span class="opt-hint">{decision_hints[decision][0]} &middot; {decision_hints[decision][1]}</span>'
+        f"</label>"
         for decision in DECISIONS
+    )
+    diff_html = _render_state_diff(
+        transition.get("before") or [], transition.get("candidate") or []
     )
     return f"""
 <article class="case" id="case-{_esc(case_id)}">
@@ -310,29 +380,48 @@ def _render_case(case: dict[str, Any], index: int, total: int) -> str:
     <p class="case-note">Transition inputs only — no label is present in this file.</p>
   </header>
 
+  <p class="case-tip">Read it in order: 1) prior state, 2) candidate state, 3) what changes,
+  4) evidence, 5) required claims, 6) declared operations. Then choose a decision.</p>
+
   <div class="grid two">
     <section class="panel">
-      <h3>Prior state (before)</h3>
+      <h3><span class="step">1</span> Prior state (before)</h3>
+      <p class="help">The memory the agent currently has, before the update. Each record is an ID plus the claims (facts) it holds.</p>
+      <p class="help idn">Keadaan memori saat ini, sebelum usulan perubahan.</p>
       {_render_records(transition.get("before") or [])}
     </section>
     <section class="panel">
-      <h3>Candidate state</h3>
+      <h3><span class="step">2</span> Candidate state</h3>
+      <p class="help">The full proposed memory if this update is accepted. Compare it with the prior state.</p>
+      <p class="help idn">Keadaan memori yang diusulkan setelah perubahan.</p>
       {_render_records(transition.get("candidate") or [])}
     </section>
   </div>
 
+  <section class="panel panel-diff">
+    <h3><span class="step">3</span> What changes (derived)</h3>
+    <p class="help">A reading aid computed from the two states above.</p>
+    {diff_html}
+  </section>
+
   <section class="panel">
-    <h3>Evidence</h3>
+    <h3><span class="step">4</span> Evidence</h3>
+    <p class="help"><strong>Supports</strong> = claims this evidence backs. <strong>Contradicts</strong> = claims it conflicts with. New or changed claims should be backed by supplied evidence or valid prior memory.</p>
+    <p class="help idn">Bukti: <em>supports</em> = klaim yang didukung; <em>contradicts</em> = klaim yang bertentangan.</p>
     {_render_evidence(transition.get("evidence") or [])}
   </section>
 
   <section class="panel">
-    <h3>Required claims <span class="sub">(verifier input)</span></h3>
+    <h3><span class="step">5</span> Required claims <span class="sub">(verifier input)</span></h3>
+    <p class="help">Facts that must survive this update. If any is missing from the candidate state, that is a verification problem.</p>
+    <p class="help idn">Klaim wajib: fakta yang harus tetap ada setelah perubahan.</p>
     <p class="claims-line">{_render_claim_list(transition.get("required_claims") or [])}</p>
   </section>
 
   <section class="panel">
-    <h3>Declared operations</h3>
+    <h3><span class="step">6</span> Declared operations</h3>
+    <p class="help">Explicit change declarations (<code>WRITE</code> new, <code>REVISE</code> modify, <code>DELETE</code> remove, <code>SUPERSEDE</code> replace, <code>NOOP</code> no change). They must match the derived diff; a <code>DELETE</code> needs structured authorization.</p>
+    <p class="help idn">Operasi: deklarasi perubahan yang eksplisit. Harus sesuai dengan diff; DELETE membutuhkan otorisasi terstruktur.</p>
     {_render_operations(transition.get("operations") or [])}
   </section>
 
@@ -343,6 +432,7 @@ def _render_case(case: dict[str, Any], index: int, total: int) -> str:
 
   <fieldset class="answer-block">
     <legend>Your decision for <code>{_esc(case_id)}</code></legend>
+    <p class="help">Pick the decision a safe verifier should return for this transition.</p>
     <div class="options">{options}</div>
   </fieldset>
 
@@ -518,6 +608,37 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   .note-wrap label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; }
   textarea { resize: vertical; min-height: 58px; }
   .footer { color: var(--muted); font-size: 0.85rem; text-align: center; margin-top: 26px; }
+  .help { margin: 4px 0 8px; color: var(--muted); font-size: 0.88rem; }
+  .help.idn { font-style: italic; opacity: 0.92; }
+  .step {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.5em; height: 1.5em; margin-right: 8px; border-radius: 999px;
+    background: var(--accent); color: #fff; font-size: 0.78em; font-weight: 700;
+  }
+  .case-tip {
+    margin: 10px 0 2px; padding: 8px 12px; border-radius: 8px;
+    background: #eef4fc; color: #24425f; font-size: 0.9rem;
+  }
+  .glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 10px; }
+  .term { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #fbfcfe; }
+  .term h3 { display: block; margin: 0 0 6px; }
+  .term p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+  .term .idn { margin-top: 6px; font-style: italic; }
+  .checklist { margin: 8px 0 0; padding-left: 22px; }
+  .checklist li { margin: 6px 0; }
+  .panel-diff { background: #f4f9f4; border-color: #cfe3cf; }
+  .diff-list { list-style: none; padding-left: 0; margin: 0; }
+  .diff-list li { padding: 5px 0; border-bottom: 1px dashed #dde7dd; }
+  .diff-list li:last-child { border-bottom: 0; }
+  .delta { border-radius: 5px; padding: 1px 6px; font-size: 0.88em; }
+  .delta-add { background: #e2f2e8; color: #1d6b45; }
+  .delta-remove { background: #fbe5e5; color: #9b2c2c; }
+  .tag-add { background: #e2f2e8; color: #1d6b45; }
+  .tag-remove { background: #fbe5e5; color: #9b2c2c; }
+  .tag-mod { background: #fdf0dd; color: var(--warn); }
+  .opt-main { font-weight: 700; }
+  .opt-hint { flex-basis: 100%; font-weight: 400; font-size: 0.78rem; color: var(--muted); }
+  .option { flex-wrap: wrap; }
   @media (max-width: 620px) {
     .wrap { padding: 14px 10px 48px; }
     .hero, .card, .case { padding: 18px 15px; }
@@ -570,6 +691,79 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     verification.
   </p>
 
+  <h2>How to read a case</h2>
+  <div class="glossary">
+    <div class="term">
+      <h3>Prior state <span class="sub">(before)</span></h3>
+      <p>The memory the agent already has, before the proposed update. Each record has an
+      ID and a list of claims (facts it holds).</p>
+      <p class="idn">Keadaan memori saat ini, sebelum perubahan diusulkan.</p>
+    </div>
+    <div class="term">
+      <h3>Candidate state</h3>
+      <p>The full proposed memory if this update is accepted. Compare it with the prior
+      state to see what would change.</p>
+      <p class="idn">Keadaan memori yang diusulkan setelah perubahan.</p>
+    </div>
+    <div class="term">
+      <h3>Claim <span class="sub">(klaim)</span></h3>
+      <p>A short fact stored on a record, e.g. "tinggal di Bandung". The deterministic
+      baseline compares claims as exact strings, so wording matters.</p>
+      <p class="idn">Fakta singkat pada sebuah catatan; perbandingan baseline bersifat
+      exact-string, jadi pilihan kata penting.</p>
+    </div>
+    <div class="term">
+      <h3>Evidence <span class="sub">(bukti)</span></h3>
+      <p>Source text supplied to justify the change. <strong>Supports</strong> lists claims
+      it backs; <strong>Contradicts</strong> lists claims it conflicts with.</p>
+      <p class="idn">Teks sumber pendukung: <em>supports</em> = klaim yang didukung,
+      <em>contradicts</em> = klaim yang bertentangan.</p>
+    </div>
+    <div class="term">
+      <h3>Required claims <span class="sub">(klaim wajib)</span></h3>
+      <p>Facts that must survive the update. If any is missing from the candidate state,
+      that is a verification problem.</p>
+      <p class="idn">Fakta yang wajib tetap ada setelah perubahan.</p>
+    </div>
+    <div class="term">
+      <h3>Declared operations <span class="sub">(operasi)</span></h3>
+      <p>Explicit change declarations: <code>WRITE</code> adds a record, <code>REVISE</code>
+      modifies one, <code>DELETE</code> removes one, <code>SUPERSEDE</code> replaces one,
+      <code>NOOP</code> means no change. They must match the actual state change.</p>
+      <p class="idn">Deklarasi perubahan eksplisit; harus sesuai dengan perubahan state.</p>
+    </div>
+    <div class="term">
+      <h3>Delete authorization <span class="sub">(otorisasi)</span></h3>
+      <p>Schema v2 requires a structured authorization for <code>DELETE</code>:
+      source, evidence_id, target_id, and rationale. Missing or mismatched details make
+      the input invalid.</p>
+      <p class="idn">DELETE wajib punya otorisasi terstruktur: sumber, evidence, target,
+      dan alasan.</p>
+    </div>
+    <div class="term">
+      <h3>What changes <span class="sub">(diff)</span></h3>
+      <p>A derived comparison of the two states — added, modified, and removed records. It
+      shows what would change, not whether the change is authorized.</p>
+      <p class="idn">Perbandingan turunan dari kedua state; menunjukkan apa yang berubah,
+      bukan apakah perubahan itu sah.</p>
+    </div>
+  </div>
+
+  <h2>How to decide (30-second checklist)</h2>
+  <ol class="checklist">
+    <li>Compare <strong>prior state</strong> with <strong>candidate state</strong>; use
+    <strong>What changes (derived)</strong> as a reading aid.</li>
+    <li>Are all <strong>required claims</strong> still present in the candidate? If not → HOLD.</li>
+    <li>Is every new or changed claim supported by supplied <strong>evidence</strong> or by
+    valid prior memory? If not → HOLD.</li>
+    <li>Does every state change have a matching <strong>operation</strong>, and does every
+    DELETE have valid structured <strong>authorization</strong>? If not → INVALID_INPUT.</li>
+    <li>Is any candidate claim <strong>contradicted</strong> by supplied evidence? If yes → HOLD.</li>
+    <li>If none of the above problems applies → ACCEPT.</li>
+  </ol>
+  <p class="hint idn">Ringkasan: bandingkan kedua state, cek klaim wajib, cek dukungan
+  bukti, cek operasi/otorisasi, lalu cek kontradiksi.</p>
+
   <h2>Decision rubric</h2>
   <div class="rubric">
     <div class="rubric-item">
@@ -578,12 +772,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       candidate claim is supported by the supplied evidence or valid prior memory, declared
       operations match the state change, any DELETE has valid structured authorization, and
       no contradiction remains unresolved.</p>
+      <p class="idn">Aman: lolos semua pemeriksaan → commit.</p>
     </div>
     <div class="rubric-item">
       <h3><span class="pill hold">HOLD</span></h3>
       <p>The transition is schema-valid but has a material verification problem: an omitted
       required claim, an unsupported or contradicted claim, an unjustified change/removal,
       unsupported provenance, or an unresolved contradiction against a retained claim.</p>
+      <p class="idn">Tidak aman atau meragukan → jangan commit.</p>
     </div>
     <div class="rubric-item">
       <h3><span class="pill invalid">INVALID_INPUT</span></h3>
@@ -591,6 +787,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       valid structured authorization, an authorization that references missing evidence or
       the wrong target, or a candidate state change not declared by a matching operation.
       Invalid input is never verified or written.</p>
+      <p class="idn">Input tidak valid → ditolak sebelum verifikasi, tidak pernah ditulis.</p>
     </div>
   </div>
 </section>
@@ -616,6 +813,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <div class="actions">
     <button type="button" class="js-download" id="download">Download answers JSON</button>
     <button type="button" class="secondary" id="reset">Clear saved answers</button>
+    <button type="button" class="secondary" id="jump-unanswered">Jump to first unanswered</button>
   </div>
   <p id="save-status" role="status" aria-live="polite"></p>
 </section>
@@ -827,6 +1025,22 @@ __CASES_HTML__
     var message = "Downloaded answers JSON for " + reviewer + ".";
     if (unanswered > 0) message += " " + unanswered + " case(s) are still blank.";
     setStatus(message, unanswered > 0);
+  }
+
+  var jumpButton = document.getElementById("jump-unanswered");
+  if (jumpButton) {
+    jumpButton.addEventListener("click", function () {
+      for (var index = 0; index < CASE_IDS.length; index += 1) {
+        var caseId = CASE_IDS[index];
+        var entry = state.answers[caseId];
+        if (!entry || !entry.decision) {
+          var target = document.getElementById("case-" + caseId);
+          if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+      }
+      setStatus("All cases are answered.", false);
+    });
   }
 
   Array.prototype.forEach.call(downloadButtons, function (button) {
