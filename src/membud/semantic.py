@@ -12,6 +12,16 @@ backends can supply deterministic fakes without touching the LLM client:
 
 * ``SemanticComparator.name`` -- a short identifier used in the Result.
 * ``SemanticComparator.compare(a, b)`` -- return a :class:`SemanticRelation`.
+
+Contradiction annotations are consumed deterministically, before any comparator
+call: if a claim in the candidate state also appears in an ``evidence.contradicts``
+list, the appended ``semantic`` check fails with reason code
+``CONTRADICTED_CLAIM``.  This mirrors
+:func:`membud.fairness.contradicted_candidate_claims` without importing the
+research control module, so the semantic verifier sees the same annotation
+information the structural graph verifier uses.  The marker
+``verifier_config["reads_contradicts"] = True`` records that capability in
+artifacts; it is additive telemetry and is not part of any cache key.
 """
 from __future__ import annotations
 
@@ -52,6 +62,38 @@ class SemanticComparator(Protocol):
 
 
 _RELATION_BY_VALUE = {relation.value: relation for relation in SemanticRelation}
+
+
+def contradicted_candidate_claims(transition: Transition) -> list[str]:
+    """Return sorted candidate claims listed in any ``evidence.contradicts``.
+
+    This deliberately mirrors :func:`membud.fairness.contradicted_candidate_claims`
+    (same candidate-claim set, same sorted output) while keeping this module
+    self-contained and independent of the research control module: only claims
+    that actually appear in the candidate state count, so a contradiction
+    annotation about a dropped claim cannot block an otherwise clean update.
+    """
+    candidate_claims = {claim for record in transition.candidate for claim in record.claims}
+    contradicted = {
+        claim
+        for evidence in transition.evidence
+        for claim in evidence.contradicts
+        if claim in candidate_claims
+    }
+    return sorted(contradicted)
+
+
+def _is_cache_only_miss(exc: BaseException) -> bool:
+    """True for the offline client's cache-miss guard exception.
+
+    The LLM client marks its cache-only miss exception with ``cache_miss = True``.
+    That condition is a run-level safety abort, not a comparator failure, so it
+    must propagate through the semantic layer instead of degrading to
+    ``UNCERTAIN``; using a marker attribute keeps this module independent of the
+    client package while preserving the fail-safe contract for every other
+    exception.
+    """
+    return bool(getattr(exc, "cache_miss", False))
 
 
 def _validate_semantic_payload(payload: Any) -> None:
@@ -176,7 +218,11 @@ class LLMSemanticComparator:
             # Re-validate locally: a fake/custom client might ignore its validator.
             _validate_semantic_payload(completion.json)
             relation = _RELATION_BY_VALUE[completion.json["relation"]]
-        except Exception:
+        except Exception as exc:
+            if _is_cache_only_miss(exc):
+                # Cache-only safety abort: never downgrade a paid-call guard to a
+                # comparator abstention.
+                raise
             return SemanticRelation.UNCERTAIN
         self._record_usage(completion)
         return relation
@@ -223,7 +269,9 @@ def _try_compare(
         return cached
     try:
         relation = comparator.compare(first, second)
-    except Exception:
+    except Exception as exc:
+        if _is_cache_only_miss(exc):
+            raise
         relation = SemanticRelation.UNCERTAIN
     if not isinstance(relation, SemanticRelation):
         try:
@@ -235,6 +283,21 @@ def _try_compare(
 
 
 def _semantic_check(transition: Transition, comparator: SemanticComparator) -> Check:
+    # Deterministic annotation check first: contradiction annotations are part of
+    # the transition's evidence, not a model judgement, so they must be consumed
+    # without any comparator call (and must win over any model verdict).  This
+    # mirrors the structural graph verifier's use of evidence.contradicts.
+    contradicted = contradicted_candidate_claims(transition)
+    if contradicted:
+        return Check(
+            SEMANTIC_CHECK_NAME,
+            False,
+            "candidate claims contradicted by evidence: " + "; ".join(contradicted),
+            contradicted,
+            status="FAIL",
+            reason_code="CONTRADICTED_CLAIM",
+        )
+
     candidate_claims = {c for record in transition.candidate for c in record.claims}
     before_claims = {c for record in transition.before for c in record.claims}
     evidence_claims = {c for evidence in transition.evidence for c in evidence.supports}
@@ -348,6 +411,10 @@ def verify_with_semantics(
         raw_config = None
     if isinstance(raw_config, dict):
         verifier_config = dict(raw_config)
+    # Additive telemetry: records that this verifier deterministically consumes
+    # evidence.contradicts.  It is not part of any comparator cache key (those
+    # cover the request messages only), so cached responses stay valid.
+    verifier_config["reads_contradicts"] = True
     prompt_version = ""
     try:
         prompt_version = str(getattr(comparator, "prompt_version", "") or "")

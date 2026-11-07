@@ -14,6 +14,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from membud.llm.client import CacheMissError
 from membud.semantic import SemanticRelation
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -634,3 +635,149 @@ def test_cli_writes_outputs_and_console_summary(tmp_path, monkeypatch, capsys):
     assert "ESTIMATE" in captured.out
     assert "does not establish or claim superiority" in captured.out
 
+
+
+# ---------------------------------------------------------------------------
+# Cache-only / offline mode
+# ---------------------------------------------------------------------------
+
+
+class CacheMissClient(FakeClient):
+    """Fake client that reports a cache-only miss on every completion.
+
+    Mirrors the real client's miss counter as well as its exception, because
+    fail-closed verifier layers (``verify_with_llm``) swallow the exception and
+    the harness must still abort loudly.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.cache_misses = 0
+
+    def complete_json(self, messages, validator=None):
+        self.calls += 1
+        self.cache_misses += 1
+        raise CacheMissError("cache-only mode: no cached completion")
+
+
+def test_cli_require_cache_flags_parse():
+    parser = harness.build_parser()
+    assert parser.parse_args(["--output", "out"]).require_cache is False
+    assert parser.parse_args(["--output", "out", "--require-cache"]).require_cache is True
+    assert parser.parse_args(["--output", "out", "--offline"]).require_cache is True
+
+
+def test_build_client_forwards_require_cache(monkeypatch, tmp_path):
+    created = {}
+
+    class RecordingClient:
+        def __init__(self, **kwargs):
+            created.update(kwargs)
+            for name, value in kwargs.items():
+                setattr(self, name, value)
+            self.max_attempts = None
+            self.cache_path = None
+
+        @classmethod
+        def from_deepseek_env(cls, **kwargs):
+            return cls(**kwargs)
+
+    monkeypatch.setattr(harness, "OpenAICompatibleChatClient", RecordingClient)
+    cache_path = tmp_path / "cache.sqlite3"
+    client = harness.build_client(
+        max_attempts=2, cache_path=str(cache_path), require_cache=True
+    )
+
+    assert created == {"require_cache": True}
+    assert client.require_cache is True
+    assert client.max_attempts == 2
+    assert client.cache_path == cache_path
+
+
+def test_cli_passes_require_cache_flag_to_build_client(tmp_path, monkeypatch):
+    manifest_path = _write_manifest(
+        tmp_path, [_valid_raw()], [_label("HELD-01", "ACCEPT")]
+    )
+    captured = {}
+
+    def fake_build_client(**kwargs):
+        captured.update(kwargs)
+        return FakeClient()
+
+    monkeypatch.setattr(harness, "build_client", fake_build_client)
+    harness.main(
+        [
+            "--manifest", str(manifest_path),
+            "--output", str(tmp_path / "out-require-cache"),
+            "--conditions", "graph",
+            "--require-cache",
+        ]
+    )
+    assert captured["require_cache"] is True
+
+    captured.clear()
+    harness.main(
+        [
+            "--manifest", str(manifest_path),
+            "--output", str(tmp_path / "out-default"),
+            "--conditions", "graph",
+        ]
+    )
+    assert captured["require_cache"] is False
+
+
+def test_cache_miss_aborts_run_before_next_row(tmp_path):
+    client = CacheMissClient()
+    with pytest.raises(CacheMissError):
+        _run(
+            tmp_path,
+            cases=[_valid_raw("HELD-01"), _valid_raw("HELD-11")],
+            labels=[_label("HELD-01", "ACCEPT"), _label("HELD-11", "ACCEPT")],
+            conditions=("graph",),
+            client=client,
+        )
+
+    assert client.calls == 1  # aborted on the miss instead of trying the next row
+    assert client.cache_misses == 1
+    assert not (tmp_path / "out" / "summary.json").exists()
+
+
+def test_cache_miss_in_semantic_condition_is_not_swallowed(tmp_path):
+    client = CacheMissClient()
+    with pytest.raises(CacheMissError):
+        _run(
+            tmp_path,
+            cases=[_valid_raw()],
+            labels=[_label("HELD-01", "ACCEPT")],
+            conditions=("semantic",),
+            client=client,
+            comparator_factory=harness.LLMSemanticComparator,
+        )
+
+    assert client.calls == 1
+
+
+def test_require_cache_flag_recorded_in_summary(tmp_path):
+    cached_client = FakeClient()
+    cached_client.require_cache = True
+    cached_client.cache_path = "cache.sqlite3"
+    summary, _, _ = _run(
+        tmp_path,
+        cases=[_valid_raw()],
+        labels=[_label("HELD-01", "ACCEPT")],
+        conditions=("graph",),
+        client=cached_client,
+        output_name="out-cache-only",
+    )
+    assert summary["require_cache"] is True
+    assert summary["cache_path"] == "cache.sqlite3"
+    assert summary["cache_misses"] == 0
+
+    default_summary, _, _ = _run(
+        tmp_path,
+        cases=[_valid_raw()],
+        labels=[_label("HELD-01", "ACCEPT")],
+        conditions=("graph",),
+        output_name="out-default",
+    )
+    assert default_summary["require_cache"] is False

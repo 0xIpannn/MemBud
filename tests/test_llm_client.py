@@ -3,7 +3,7 @@ import urllib.error
 
 import pytest
 
-from membud.llm.client import OpenAICompatibleChatClient
+from membud.llm.client import CacheMissError, OpenAICompatibleChatClient
 
 
 class FakeResponse:
@@ -358,3 +358,189 @@ def test_unwritable_cache_degrades_to_a_miss(monkeypatch):
     result = client.complete_json([{"role": "user", "content": "Assess transition"}])
     assert result.json == {"decision": "HOLD"}
     assert result.cached is False
+
+
+# ---------------------------------------------------------------------------
+# Cache-only / offline mode
+# ---------------------------------------------------------------------------
+
+
+def _no_network(monkeypatch):
+    calls = []
+
+    def fake_urlopen(request, timeout):
+        calls.append(request)
+        raise AssertionError("cache-only mode must not perform network I/O")
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    return calls
+
+
+def _offline_client(tmp_path, **overrides):
+    options = dict(
+        api_key="offline",
+        model="deepseek-flash",
+        base_url="https://api.deepseek.com",
+        provider_name="deepseek-openai-compatible",
+        cache_path=tmp_path / "cache.sqlite3",
+        require_cache=True,
+    )
+    options.update(overrides)
+    return OpenAICompatibleChatClient(**options)
+
+
+def test_require_cache_requires_an_explicit_cache_path():
+    with pytest.raises(ValueError, match="cache_path"):
+        OpenAICompatibleChatClient(
+            api_key="offline", model="deepseek-flash", require_cache=True
+        )
+
+
+def test_require_cache_miss_raises_before_any_network_io(monkeypatch, tmp_path):
+    calls = _no_network(monkeypatch)
+    client = _offline_client(tmp_path)
+    messages = [{"role": "user", "content": "uncached transition"}]
+
+    with pytest.raises(CacheMissError, match="cache-only") as info:
+        client.complete_json(messages)
+
+    assert calls == []
+    assert info.value.cache_key == client._cache_key(messages)
+    # The message must not leak prompt content into logs.
+    assert "uncached transition" not in str(info.value)
+    # Telemetry lets fail-closed verifier layers still surface the miss loudly.
+    assert client.cache_misses == 1
+    assert client.last_cache_miss_key == info.value.cache_key
+
+    with pytest.raises(CacheMissError):
+        client.complete_json(messages)
+    assert client.cache_misses == 2
+
+
+def test_require_cache_hit_replays_normally_without_network(monkeypatch, tmp_path):
+    calls = []
+
+    def fake_urlopen(request, timeout):
+        calls.append(request)
+        return FakeResponse(api_response('{"decision":"ACCEPT"}'))
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    cache_path = tmp_path / "cache.sqlite3"
+    messages = [{"role": "user", "content": "cached transition"}]
+    online = OpenAICompatibleChatClient(
+        api_key="secret", model="deepseek-flash", base_url="https://api.deepseek.com",
+        cache_path=cache_path,
+    )
+    first = online.complete_json(messages)
+    assert first.cached is False
+    assert len(calls) == 1
+
+    offline = OpenAICompatibleChatClient(
+        api_key="offline", model="deepseek-flash", base_url="https://api.deepseek.com",
+        cache_path=cache_path, require_cache=True,
+    )
+    second = offline.complete_json(messages)
+
+    assert second.cached is True
+    assert second.json == first.json
+    assert second.content == first.content
+    assert second.input_tokens is None
+    assert second.total_tokens is None
+    assert second.request_attempts == 0
+    assert len(calls) == 1  # replay performed no additional request
+
+
+def test_require_cache_treats_unusable_cached_payload_as_miss(monkeypatch, tmp_path):
+    from membud.llm.client import JSONCompletion
+
+    cache_path = tmp_path / "cache.sqlite3"
+    messages = [{"role": "user", "content": "cached but stale schema"}]
+    seed = OpenAICompatibleChatClient(
+        api_key="secret", model="deepseek-flash", base_url="https://api.deepseek.com",
+        cache_path=cache_path,
+    )
+    key = seed._cache_key(messages)
+    seed._save_cache(
+        key,
+        JSONCompletion(
+            json={"answer": 1},
+            content='{"answer": 1}',
+            model="deepseek-flash",
+            input_tokens=1,
+            output_tokens=1,
+            total_tokens=2,
+            request_id=None,
+            latency_ms=1.0,
+            request_attempts=1,
+            json_retries=0,
+        ),
+    )
+
+    calls = _no_network(monkeypatch)
+    offline = _offline_client(tmp_path)
+
+    def validate(payload):
+        if "decision" not in payload:
+            raise ValueError("missing decision field")
+
+    with pytest.raises(CacheMissError):
+        offline.complete_json(messages, validator=validate)
+
+    assert calls == []
+    # The unusable row is invalidated, but never replaced by a paid response.
+    assert offline._load_cache(key) is None
+
+
+def test_require_cache_corrupt_entry_raises_instead_of_dialing_out(monkeypatch, tmp_path):
+    import sqlite3
+
+    client = _offline_client(tmp_path)
+    messages = [{"role": "user", "content": "corrupt cached row"}]
+    key = client._cache_key(messages)
+    with sqlite3.connect(client.cache_path) as connection:
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS completions (cache_key TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+        )
+        connection.execute(
+            "INSERT OR REPLACE INTO completions(cache_key, payload) VALUES (?, ?)",
+            (key, "this is not json"),
+        )
+
+    calls = _no_network(monkeypatch)
+    with pytest.raises(CacheMissError):
+        client.complete_json(messages)
+    assert calls == []
+
+
+def test_require_cache_does_not_change_cache_key_material(tmp_path):
+    messages = [{"role": "user", "content": "same request"}]
+    online = OpenAICompatibleChatClient(
+        api_key="secret", model="deepseek-flash", base_url="https://api.deepseek.com",
+        cache_path=tmp_path / "online.sqlite3",
+    )
+    offline = OpenAICompatibleChatClient(
+        api_key="offline", model="deepseek-flash", base_url="https://api.deepseek.com",
+        cache_path=tmp_path / "offline.sqlite3", require_cache=True,
+    )
+    assert online._cache_key(messages) == offline._cache_key(messages)
+
+
+def test_require_cache_configuration_marks_cache_only_mode(tmp_path):
+    client = _offline_client(tmp_path)
+    assert client.configuration["require_cache"] is True
+    assert client.configuration["persistent_cache"] is True
+    assert client.require_cache is True
+
+
+def test_require_cache_refuses_direct_provider_request(tmp_path):
+    client = _offline_client(tmp_path)
+    with pytest.raises(CacheMissError):
+        client._request_json_object([{"role": "user", "content": "x"}])
+
+
+def test_from_deepseek_env_can_enable_require_cache(monkeypatch, tmp_path):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "offline")
+    monkeypatch.setenv("DEEPSEEK_CACHE_PATH", str(tmp_path / "cache.sqlite3"))
+    client = OpenAICompatibleChatClient.from_deepseek_env(require_cache=True)
+    assert client.require_cache is True
+    assert client.cache_path == tmp_path / "cache.sqlite3"

@@ -1,0 +1,424 @@
+{
+  "run_id": "llm-heldout-20261107T144510Z",
+  "manifest_id": "membud-evaluation-v2",
+  "manifest_sha256": "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a",
+  "code_revision": "working-tree-sha256:f5f7035a172d467f2640db3c81ed0f40f25b27d48d0fb0ab2f26170c0de256ed",
+  "split": "heldout",
+  "conditions": [
+    "graph",
+    "text",
+    "semantic"
+  ],
+  "generated_at": "2026-11-07T14:45:10.892185+00:00",
+  "condition_metrics": {
+    "graph": {
+      "condition": "graph",
+      "row_count": 18,
+      "invalid_input_rows": 5,
+      "executed_rows": 13,
+      "planned_non_invalid_cases": 13,
+      "case_coverage": {
+        "numerator": 13,
+        "denominator": 13,
+        "rate": 1.0
+      },
+      "decision_counts": {
+        "ACCEPT": 3,
+        "HOLD": 10,
+        "INVALID_INPUT": 5
+      },
+      "faulty_detection_hold_only": {
+        "numerator": 6,
+        "denominator": 6,
+        "rate": 1.0,
+        "case_ids": [
+          "HELD-08",
+          "HELD-09",
+          "HELD-10",
+          "HELD-11",
+          "HELD-12",
+          "HELD-13"
+        ]
+      },
+      "faulty_detection_combined": {
+        "numerator": 11,
+        "denominator": 11,
+        "rate": 1.0,
+        "case_ids": [
+          "HELD-08",
+          "HELD-09",
+          "HELD-10",
+          "HELD-11",
+          "HELD-12",
+          "HELD-13",
+          "HELD-14",
+          "HELD-15",
+          "HELD-16",
+          "HELD-17",
+          "HELD-18"
+        ],
+        "note": "Combined safe-rejection view: HOLD or INVALID_INPUT across expected HOLD cases plus recorded expected-invalid (INVALID_INPUT) cases. Denominators use rows actually attempted (plus always-recorded expected-invalid rows); see case_coverage for split coverage."
+      },
+      "false_accepts": {
+        "numerator": 0,
+        "denominator": 6,
+        "rate": 0.0,
+        "case_ids": []
+      },
+      "false_holds": {
+        "numerator": 4,
+        "denominator": 7,
+        "rate": 0.5714285714285714,
+        "case_ids": [
+          "HELD-01",
+          "HELD-02",
+          "HELD-03",
+          "HELD-07"
+        ]
+      },
+      "valid_acceptance": {
+        "numerator": 3,
+        "denominator": 7,
+        "rate": 0.42857142857142855,
+        "case_ids": [
+          "HELD-04",
+          "HELD-05",
+          "HELD-06"
+        ]
+      },
+      "verifier_error_rate": {
+        "numerator": 0,
+        "denominator": 13,
+        "rate": 0.0,
+        "case_ids": []
+      },
+      "semantic_abstention_rate": null,
+      "cache_hit_rate": {
+        "numerator": 13,
+        "denominator": 13,
+        "rate": 1.0,
+        "cache_hits": 13
+      },
+      "attempts": 0,
+      "mean_latency_ms": 0.8306923076923076,
+      "usage": {
+        "reported": {
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "rows_with_reported_usage": 0
+        },
+        "estimated": {
+          "accounted_tokens": 0,
+          "rows": 0,
+          "basis": "2500 tokens/attempt when usage is absent and the row is not a cache hit"
+        },
+        "accounted_total_tokens": 0
+      },
+      "estimated_cost_range_usd": {
+        "low_usd": 0.0,
+        "high_usd": 0.0,
+        "estimated": true,
+        "billing_data_available": false,
+        "accounted_tokens": 0,
+        "assumption": {
+          "low_usd_per_million_tokens": 0.1,
+          "high_usd_per_million_tokens": 2.0,
+          "note": "Estimated cost range, not a billed amount: the provider did not report monetary cost and no verified account price is recorded. The range applies $0.10-$2.00 USD per 1,000,000 accounted tokens to reported plus conservatively estimated tokens (2500 tokens/attempt where usage is absent). Token counts are telemetry, not a billing record."
+        }
+      }
+    },
+    "text": {
+      "condition": "text",
+      "row_count": 18,
+      "invalid_input_rows": 5,
+      "executed_rows": 13,
+      "planned_non_invalid_cases": 13,
+      "case_coverage": {
+        "numerator": 13,
+        "denominator": 13,
+        "rate": 1.0
+      },
+      "decision_counts": {
+        "ACCEPT": 6,
+        "HOLD": 7,
+        "INVALID_INPUT": 5
+      },
+      "faulty_detection_hold_only": {
+        "numerator": 6,
+        "denominator": 6,
+        "rate": 1.0,
+        "case_ids": [
+          "HELD-08",
+          "HELD-09",
+          "HELD-10",
+          "HELD-11",
+          "HELD-12",
+          "HELD-13"
+        ]
+      },
+      "faulty_detection_combined": {
+        "numerator": 11,
+        "denominator": 11,
+        "rate": 1.0,
+        "case_ids": [
+          "HELD-08",
+          "HELD-09",
+          "HELD-10",
+          "HELD-11",
+          "HELD-12",
+          "HELD-13",
+          "HELD-14",
+          "HELD-15",
+          "HELD-16",
+          "HELD-17",
+          "HELD-18"
+        ],
+        "note": "Combined safe-rejection view: HOLD or INVALID_INPUT across expected HOLD cases plus recorded expected-invalid (INVALID_INPUT) cases. Denominators use rows actually attempted (plus always-recorded expected-invalid rows); see case_coverage for split coverage."
+      },
+      "false_accepts": {
+        "numerator": 0,
+        "denominator": 6,
+        "rate": 0.0,
+        "case_ids": []
+      },
+      "false_holds": {
+        "numerator": 1,
+        "denominator": 7,
+        "rate": 0.14285714285714285,
+        "case_ids": [
+          "HELD-03"
+        ]
+      },
+      "valid_acceptance": {
+        "numerator": 6,
+        "denominator": 7,
+        "rate": 0.8571428571428571,
+        "case_ids": [
+          "HELD-01",
+          "HELD-02",
+          "HELD-04",
+          "HELD-05",
+          "HELD-06",
+          "HELD-07"
+        ]
+      },
+      "verifier_error_rate": {
+        "numerator": 0,
+        "denominator": 13,
+        "rate": 0.0,
+        "case_ids": []
+      },
+      "semantic_abstention_rate": null,
+      "cache_hit_rate": {
+        "numerator": 13,
+        "denominator": 13,
+        "rate": 1.0,
+        "cache_hits": 13
+      },
+      "attempts": 0,
+      "mean_latency_ms": 1.0265384615384616,
+      "usage": {
+        "reported": {
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "rows_with_reported_usage": 0
+        },
+        "estimated": {
+          "accounted_tokens": 0,
+          "rows": 0,
+          "basis": "2500 tokens/attempt when usage is absent and the row is not a cache hit"
+        },
+        "accounted_total_tokens": 0
+      },
+      "estimated_cost_range_usd": {
+        "low_usd": 0.0,
+        "high_usd": 0.0,
+        "estimated": true,
+        "billing_data_available": false,
+        "accounted_tokens": 0,
+        "assumption": {
+          "low_usd_per_million_tokens": 0.1,
+          "high_usd_per_million_tokens": 2.0,
+          "note": "Estimated cost range, not a billed amount: the provider did not report monetary cost and no verified account price is recorded. The range applies $0.10-$2.00 USD per 1,000,000 accounted tokens to reported plus conservatively estimated tokens (2500 tokens/attempt where usage is absent). Token counts are telemetry, not a billing record."
+        }
+      }
+    },
+    "semantic": {
+      "condition": "semantic",
+      "row_count": 18,
+      "invalid_input_rows": 5,
+      "executed_rows": 13,
+      "planned_non_invalid_cases": 13,
+      "case_coverage": {
+        "numerator": 13,
+        "denominator": 13,
+        "rate": 1.0
+      },
+      "decision_counts": {
+        "ACCEPT": 7,
+        "HOLD": 6,
+        "INVALID_INPUT": 5
+      },
+      "faulty_detection_hold_only": {
+        "numerator": 6,
+        "denominator": 6,
+        "rate": 1.0,
+        "case_ids": [
+          "HELD-08",
+          "HELD-09",
+          "HELD-10",
+          "HELD-11",
+          "HELD-12",
+          "HELD-13"
+        ]
+      },
+      "faulty_detection_combined": {
+        "numerator": 11,
+        "denominator": 11,
+        "rate": 1.0,
+        "case_ids": [
+          "HELD-08",
+          "HELD-09",
+          "HELD-10",
+          "HELD-11",
+          "HELD-12",
+          "HELD-13",
+          "HELD-14",
+          "HELD-15",
+          "HELD-16",
+          "HELD-17",
+          "HELD-18"
+        ],
+        "note": "Combined safe-rejection view: HOLD or INVALID_INPUT across expected HOLD cases plus recorded expected-invalid (INVALID_INPUT) cases. Denominators use rows actually attempted (plus always-recorded expected-invalid rows); see case_coverage for split coverage."
+      },
+      "false_accepts": {
+        "numerator": 0,
+        "denominator": 6,
+        "rate": 0.0,
+        "case_ids": []
+      },
+      "false_holds": {
+        "numerator": 0,
+        "denominator": 7,
+        "rate": 0.0,
+        "case_ids": []
+      },
+      "valid_acceptance": {
+        "numerator": 7,
+        "denominator": 7,
+        "rate": 1.0,
+        "case_ids": [
+          "HELD-01",
+          "HELD-02",
+          "HELD-03",
+          "HELD-04",
+          "HELD-05",
+          "HELD-06",
+          "HELD-07"
+        ]
+      },
+      "verifier_error_rate": {
+        "numerator": 0,
+        "denominator": 13,
+        "rate": 0.0,
+        "case_ids": []
+      },
+      "semantic_abstention_rate": {
+        "numerator": 0,
+        "denominator": 13,
+        "rate": 0.0,
+        "case_ids": []
+      },
+      "cache_hit_rate": {
+        "numerator": 9,
+        "denominator": 13,
+        "rate": 0.6923076923076923,
+        "cache_hits": 25
+      },
+      "attempts": 0,
+      "mean_latency_ms": 1.4591538461538462,
+      "usage": {
+        "reported": {
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "rows_with_reported_usage": 13
+        },
+        "estimated": {
+          "accounted_tokens": 0,
+          "rows": 0,
+          "basis": "2500 tokens/attempt when usage is absent and the row is not a cache hit"
+        },
+        "accounted_total_tokens": 0
+      },
+      "estimated_cost_range_usd": {
+        "low_usd": 0.0,
+        "high_usd": 0.0,
+        "estimated": true,
+        "billing_data_available": false,
+        "accounted_tokens": 0,
+        "assumption": {
+          "low_usd_per_million_tokens": 0.1,
+          "high_usd_per_million_tokens": 2.0,
+          "note": "Estimated cost range, not a billed amount: the provider did not report monetary cost and no verified account price is recorded. The range applies $0.10-$2.00 USD per 1,000,000 accounted tokens to reported plus conservatively estimated tokens (2500 tokens/attempt where usage is absent). Token counts are telemetry, not a billing record."
+        }
+      }
+    }
+  },
+  "run": {
+    "row_count": 54,
+    "executed_rows": 39,
+    "invalid_input_rows": 15,
+    "usage": {
+      "reported": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "rows_with_reported_usage": 28
+      },
+      "estimated": {
+        "accounted_tokens": 0,
+        "rows": 0,
+        "basis": "2500 tokens/attempt when usage is absent and the row is not a cache hit"
+      },
+      "accounted_total_tokens": 0
+    },
+    "budget": {
+      "max_total_tokens": 250000,
+      "accounted_tokens_used": 0,
+      "reported_tokens_used": 0,
+      "estimated_tokens_used": 0,
+      "aborted": false,
+      "abort_reason": "",
+      "overshoot_tokens": 0,
+      "planned_non_invalid_rows": 39,
+      "executed_non_invalid_rows": 39,
+      "note": "The cap is checked after each row and before the next row starts. Because token usage is only known after a provider response, one in-flight row can overshoot the cap; overshoot_tokens reports it. Rows without reported usage are charged 2500 tokens/attempt (marked estimated)."
+    },
+    "estimated_cost_range_usd": {
+      "low_usd": 0.0,
+      "high_usd": 0.0,
+      "estimated": true,
+      "billing_data_available": false,
+      "accounted_tokens": 0,
+      "assumption": {
+        "low_usd_per_million_tokens": 0.1,
+        "high_usd_per_million_tokens": 2.0,
+        "note": "Estimated cost range, not a billed amount: the provider did not report monetary cost and no verified account price is recorded. The range applies $0.10-$2.00 USD per 1,000,000 accounted tokens to reported plus conservatively estimated tokens (2500 tokens/attempt where usage is absent). Token counts are telemetry, not a billing record."
+      }
+    }
+  },
+  "comparison_policy": "Descriptive held-out evaluation only. Conditions use different verifier constructions (structural graph LLM check, text LLM check, deterministic text baseline plus semantic LLM check); this run does not establish or claim superiority of any condition.",
+  "denominator_note": "Detection and error rates use rows actually attempted in this run (expected-invalid rows are always recorded); per-condition case_coverage reports how much of the planned held-out split ran.",
+  "labels_caveat": "Labels are single-reviewer exploratory annotations; a second independent human review is still pending. This is a small synthetic held-out split, not a representative benchmark.",
+  "cost_assumption": {
+    "estimated": true,
+    "billing_data_available": false,
+    "low_usd_per_million_tokens": 0.1,
+    "high_usd_per_million_tokens": 2.0,
+    "fallback_tokens_per_attempt": 2500,
+    "note": "Estimated cost range, not a billed amount: the provider did not report monetary cost and no verified account price is recorded. The range applies $0.10-$2.00 USD per 1,000,000 accounted tokens to reported plus conservatively estimated tokens (2500 tokens/attempt where usage is absent). Token counts are telemetry, not a billing record."
+  }
+}

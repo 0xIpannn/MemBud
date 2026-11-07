@@ -33,6 +33,15 @@ explicitly-labelled *estimate range* derived from the documented placeholder
 per-million-token assumptions below; they are not a bill and must not be
 reported as verified spend.
 
+Cache-only / offline mode
+-------------------------
+``--require-cache`` (alias ``--offline``) enables the client's cache-only mode.
+A cache miss raises :class:`membud.llm.client.CacheMissError` before any network
+I/O and aborts the run loudly: it never falls back to a paid provider request.
+Cache hits replay exactly as in a normal run and are reported with zero new
+token usage.  Cache key material is unchanged, so this flag can replay a
+previous paid run without altering cached entries.
+
 Usage (the Lead supplies the real key; never commit it)::
 
     set -a; source .env; set +a
@@ -75,6 +84,7 @@ from membud.experiment import (  # noqa: E402
     source_fingerprint,
 )
 from membud.llm import OpenAICompatibleChatClient  # noqa: E402
+from membud.llm.client import CacheMissError  # noqa: E402
 from membud.semantic import (  # noqa: E402
     LLMSemanticComparator,
     SEMANTIC_CHECK_NAME,
@@ -148,6 +158,19 @@ def _count(value: Any) -> int | None:
     if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
         return value
     return None
+
+
+def _cache_miss_count(client: Any) -> int:
+    """Cache-only misses observed by the client.
+
+    The client raises on every miss, but fail-closed layers (for example
+    ``verify_with_llm``) may convert that exception into UNCERTAIN checks.  The
+    counter lets the harness detect a swallowed miss and abort the run loudly.
+    """
+    value = getattr(client, "cache_misses", 0)
+    if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+        return value
+    return 0
 
 
 def _iso_now() -> str:
@@ -303,7 +326,12 @@ def _run_valid_row(
     manifest_sha256: str,
     max_attempts: int,
 ) -> dict[str, Any]:
-    """Run one non-invalid case/condition row; never lets a row abort the run."""
+    """Run one non-invalid case/condition row; never lets a row abort the run.
+
+    Cache-only misses are the one exception: they abort the whole run so a
+    missing cache entry can never fall back to a paid provider request.
+    """
+    misses_before = _cache_miss_count(client)
     base = output / condition
     store_path = base / (quote(transition.case_id, safe="") + ".json")
     audit_path = base / "audit.jsonl"
@@ -339,6 +367,10 @@ def _run_valid_row(
         decision = result.decision
         latency_ms = event.get("latency_ms")
         usage = result.usage or {}
+    except CacheMissError:
+        # Cache-only mode: a miss is a run-level safety abort, not a per-row
+        # error.  Let it propagate so the run fails loudly before any paid call.
+        raise
     except Exception as exc:  # noqa: BLE001 - recorded as a row, run continues
         error = f"{type(exc).__name__}: {exc}"
         event: dict[str, Any] = {}
@@ -354,6 +386,16 @@ def _run_valid_row(
         decision = (result_payload or {}).get("decision") or "ERROR"
         latency_ms = event.get("latency_ms")
         usage = (result_payload or {}).get("usage") or {}
+
+    # Some verifier layers fail closed on exceptions; detect a swallowed
+    # cache-only miss and turn it into a loud run-level abort.
+    misses_after = _cache_miss_count(client)
+    if misses_after > misses_before:
+        raise CacheMissError(
+            f"cache-only mode: {misses_after - misses_before} cache miss(es) while "
+            f"running {condition}/{transition.case_id}; aborting the run instead of "
+            "falling back to a provider request"
+        )
 
     accounting = account_usage(usage, max_attempts=max_attempts)
     checks = _check_summaries(result_payload)
@@ -848,6 +890,7 @@ def run_heldout(
             if getattr(client, "cache_path", None) is not None
             else None
         ),
+        "require_cache": bool(getattr(client, "require_cache", False)),
         "max_attempts": max_attempts,
         "estimated_tokens_per_attempt": ESTIMATED_TOKENS_PER_ATTEMPT,
         "prompt_versions": {
@@ -884,6 +927,7 @@ def run_heldout(
         "accounted_tokens_used": accounted_total,
         "attempts": attempts_total,
         "cache_hits": cache_hits_total,
+        "cache_misses": _cache_miss_count(client),
         "llm_verifier_errors": {
             "rows": verifier_errors,
             "case_ids": sorted(
@@ -909,9 +953,15 @@ def run_heldout(
 # ---------------------------------------------------------------------------
 
 
-def build_client(*, max_attempts: int, cache_path: str | None = None) -> Any:
-    """Build the paid DeepSeek client (only called from the CLI, never tests)."""
-    client = OpenAICompatibleChatClient.from_deepseek_env()
+def build_client(
+    *, max_attempts: int, cache_path: str | None = None, require_cache: bool = False
+) -> Any:
+    """Build the paid DeepSeek client (only called from the CLI, never tests).
+
+    ``require_cache=True`` enables the client's cache-only mode: a cache miss
+    raises :class:`membud.llm.client.CacheMissError` before any network I/O.
+    """
+    client = OpenAICompatibleChatClient.from_deepseek_env(require_cache=require_cache)
     client.max_attempts = max_attempts
     if cache_path:
         client.cache_path = Path(cache_path).expanduser()
@@ -961,6 +1011,16 @@ def build_parser() -> argparse.ArgumentParser:
             "~/.cache/membud/deepseek-cache.sqlite3"
         ),
     )
+    parser.add_argument(
+        "--require-cache",
+        "--offline",
+        dest="require_cache",
+        action="store_true",
+        help=(
+            "cache-only mode: a cache miss aborts the run before any provider "
+            "request instead of making a paid call"
+        ),
+    )
     return parser
 
 
@@ -974,7 +1034,11 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     run_id = args.run_id or (
         f"llm-heldout-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     )
-    client = build_client(max_attempts=args.max_attempts, cache_path=args.cache_path)
+    client = build_client(
+        max_attempts=args.max_attempts,
+        cache_path=args.cache_path,
+        require_cache=args.require_cache,
+    )
     summary = run_heldout(
         manifest_path=args.manifest,
         output=output,

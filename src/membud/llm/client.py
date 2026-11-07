@@ -22,6 +22,22 @@ class LLMRequestError(RuntimeError):
         self.attempts = attempts
 
 
+class CacheMissError(RuntimeError):
+    """Cache-only mode is active and no usable cached completion exists.
+
+    Raised before any network I/O so a cache-only run can never silently fall
+    back to a paid provider request.  ``cache_miss`` marks the exception so
+    layers that normally fail closed on transport errors (for example the
+    semantic comparator) can let this safety abort propagate instead.
+    """
+
+    cache_miss = True
+
+    def __init__(self, message: str, *, cache_key: str = "") -> None:
+        super().__init__(message)
+        self.cache_key = cache_key
+
+
 @dataclass(frozen=True)
 class JSONCompletion:
     """Validated JSON response plus provider usage and request metadata."""
@@ -67,6 +83,7 @@ class OpenAICompatibleChatClient:
         zero_data_retention: bool = False,
         cache_path: str | Path | None = None,
         provider_name: str = "openai-compatible",
+        require_cache: bool = False,
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         if not api_key.strip():
@@ -77,6 +94,8 @@ class OpenAICompatibleChatClient:
             raise ValueError("base_url must use https")
         if timeout <= 0 or max_attempts < 1 or max_json_retries < 0 or backoff_seconds < 0:
             raise ValueError("invalid timeout, retry count, or backoff configuration")
+        if require_cache and cache_path is None:
+            raise ValueError("require_cache mode requires an explicit cache_path")
         self._api_key = api_key
         self.model = model
         self.base_url = base_url.rstrip("/")
@@ -88,6 +107,13 @@ class OpenAICompatibleChatClient:
         self.zero_data_retention = zero_data_retention
         self.cache_path = Path(cache_path).expanduser() if cache_path is not None else None
         self.provider_name = provider_name
+        self.require_cache = require_cache
+        # Telemetry: cache-only misses observed on this client instance.  A miss
+        # always raises, but layers that fail closed on transport errors (e.g.
+        # verify_with_llm) may swallow the exception; the counter lets the harness
+        # still abort the run loudly.
+        self.cache_misses = 0
+        self.last_cache_miss_key = ""
         self._sleep = sleeper
 
     @property
@@ -105,10 +131,13 @@ class OpenAICompatibleChatClient:
             "response_format": "json_object",
             "zero_data_retention": self.zero_data_retention,
             "persistent_cache": self.cache_path is not None,
+            "require_cache": self.require_cache,
         }
 
     @classmethod
-    def from_env(cls) -> "OpenAICompatibleChatClient":
+    def from_env(
+        cls, *, require_cache: bool = False
+    ) -> "OpenAICompatibleChatClient":
         """Build a client from Command Code environment variables."""
         api_key = os.environ.get("CMD_API_KEY", "")
         if not api_key:
@@ -122,10 +151,13 @@ class OpenAICompatibleChatClient:
             cache_path=os.environ.get(
                 "CMD_CACHE_PATH", "~/.cache/membud/commandcode-cache.sqlite3"
             ),
+            require_cache=require_cache,
         )
 
     @classmethod
-    def from_deepseek_env(cls) -> "OpenAICompatibleChatClient":
+    def from_deepseek_env(
+        cls, *, require_cache: bool = False
+    ) -> "OpenAICompatibleChatClient":
         """Build a client for DeepSeek's official OpenAI-compatible API."""
         api_key = os.environ.get("DEEPSEEK_API_KEY", "")
         if not api_key:
@@ -138,6 +170,7 @@ class OpenAICompatibleChatClient:
                 "DEEPSEEK_CACHE_PATH", "~/.cache/membud/deepseek-cache.sqlite3"
             ),
             provider_name="deepseek-openai-compatible",
+            require_cache=require_cache,
         )
 
     def complete_json(
@@ -170,6 +203,17 @@ class OpenAICompatibleChatClient:
                 )
             except (ValueError, TypeError):
                 self._delete_cache(cache_key)
+                cached = None
+        if cached is None and self.require_cache:
+            # Cache-only safety guard: raise before any network I/O so a run can
+            # never turn a cache miss into a paid provider request.
+            self.cache_misses += 1
+            self.last_cache_miss_key = cache_key
+            raise CacheMissError(
+                "cache-only mode is enabled but the request has no usable cached "
+                f"completion (cache_key={cache_key}); refusing to contact the provider",
+                cache_key=cache_key,
+            )
         started = time.perf_counter()
         total_attempts = 0
         token_totals = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
@@ -315,6 +359,10 @@ class OpenAICompatibleChatClient:
     def _request_json_object(
         self, messages: Sequence[Mapping[str, str]]
     ) -> tuple[dict[str, Any], int]:
+        if self.require_cache:  # defense in depth: cache-only mode never dials out
+            raise CacheMissError(
+                "cache-only mode is enabled; provider request refused"
+            )
         body = json.dumps({
             "model": self.model,
             "messages": list(messages),
