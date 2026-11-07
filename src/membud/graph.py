@@ -5,7 +5,8 @@ from .schemas import Transition
 
 
 def build_graph(t: Transition) -> dict[str, Any]:
-    """Build a toy graph whose nodes preserve source text and edges are explicit."""
+    """Build a graph from a validated transition, preserving explicit relationships."""
+    t.validate()
     nodes = []
     edges = []
     transition_node = f"transition:{t.case_id}"
@@ -76,7 +77,10 @@ def to_mermaid(t: Transition) -> str:
     ids = {node["id"]: f"n{i}" for i, node in enumerate(graph["nodes"])}
     lines = ["flowchart LR"]
     for node in graph["nodes"]:
-        label = str(node.get("label", node["id"]))
+        label = str(node.get("label", node.get("text", node["id"])))
+        if node["type"] == "evidence":
+            provenance = " — ".join(value for value in (node.get("source", ""), node.get("text", "")) if value)
+            label = provenance or node["id"]
         label = label.replace('"', "'").replace("\r", " ").replace("\n", " ")
         shape = "([\"" + label + "\"])" if node["type"] == "evidence" else "[\"" + label + "\"]"
         lines.append(f"  {ids[node['id']]}{shape}")

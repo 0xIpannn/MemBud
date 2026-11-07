@@ -5,6 +5,21 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 
+def _string(value: Any, field: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError(f"{field} must be a string")
+    return value
+
+
+def _string_tuple(value: Any, field: str) -> tuple[str, ...]:
+    if isinstance(value, (str, bytes)) or not isinstance(value, (list, tuple)):
+        raise ValueError(f"{field} must be a list of strings")
+    items = tuple(value)
+    if any(not isinstance(item, str) for item in items):
+        raise ValueError(f"{field} must contain only strings")
+    return items
+
+
 @dataclass(frozen=True)
 class Record:
     id: str
@@ -12,7 +27,7 @@ class Record:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Record":
-        return cls(str(d["id"]), tuple(map(str, d["claims"])))
+        return cls(_string(d["id"], "record id"), _string_tuple(d["claims"], "record claims"))
 
 
 @dataclass(frozen=True)
@@ -25,10 +40,10 @@ class Evidence:
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Evidence":
         return cls(
-            str(d["id"]),
-            tuple(map(str, d["supports"])),
-            source=str(d.get("source", "")),
-            text=str(d.get("text", "")),
+            _string(d["id"], "evidence id"),
+            _string_tuple(d["supports"], "evidence supports"),
+            source=_string(d.get("source", ""), "evidence source"),
+            text=_string(d.get("text", ""), "evidence text"),
         )
 
 
@@ -42,11 +57,15 @@ class Operation:
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Operation":
         record_id, target_id = d.get("record_id"), d.get("target_id")
+        if record_id is not None and not isinstance(record_id, str):
+            raise ValueError("operation record_id must be a string or null")
+        if target_id is not None and not isinstance(target_id, str):
+            raise ValueError("operation target_id must be a string or null")
         return cls(
-            type=str(d["type"]).upper(),
-            record_id=None if record_id is None else str(record_id),
-            target_id=None if target_id is None else str(target_id),
-            reason=str(d.get("reason", "")),
+            type=_string(d["type"], "operation type").upper(),
+            record_id=record_id,
+            target_id=target_id,
+            reason=_string(d.get("reason", ""), "operation reason"),
         )
 
 
@@ -61,10 +80,16 @@ class Transition:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Transition":
+        if not isinstance(d.get("before"), list) or not isinstance(d.get("candidate"), list):
+            raise ValueError("before and candidate must be lists of records")
+        if not isinstance(d.get("evidence"), list):
+            raise ValueError("evidence must be a list")
+        if not isinstance(d.get("operations", []), list):
+            raise ValueError("operations must be a list")
         before = tuple(Record.from_dict(x) for x in d["before"])
         candidate = tuple(Record.from_dict(x) for x in d["candidate"])
         raw_operations = list(d.get("operations", []))
-        legacy_supersedes = tuple(map(str, d.get("supersedes", [])))
+        legacy_supersedes = _string_tuple(d.get("supersedes", []), "supersedes")
         if legacy_supersedes:
             if raw_operations:
                 raise ValueError("use operations or legacy supersedes, not both")
@@ -82,7 +107,7 @@ class Transition:
             before=before,
             candidate=candidate,
             evidence=tuple(Evidence.from_dict(x) for x in d["evidence"]),
-            required_claims=tuple(map(str, d.get("required_claims", []))),
+            required_claims=_string_tuple(d.get("required_claims", []), "required_claims"),
             operations=tuple(Operation.from_dict(x) for x in raw_operations),
         )
         t.validate()
@@ -112,6 +137,7 @@ class Transition:
         before_state = {r.id: frozenset(r.claims) for r in self.before}
         candidate_state = {r.id: frozenset(r.claims) for r in self.candidate}
         seen_targets = set()
+        seen_candidate_records: set[str] = set()
         for operation in self.operations:
             kind = operation.type
             if kind not in {"WRITE", "REVISE", "DELETE", "NOOP", "SUPERSEDE"}:
@@ -129,6 +155,9 @@ class Transition:
                     raise ValueError("WRITE record_id must reference a candidate record")
                 if operation.record_id in before_by_id:
                     raise ValueError("WRITE must reference a new record; use REVISE for an existing record")
+                if operation.record_id in seen_candidate_records:
+                    raise ValueError("a candidate record can only be proposed by one operation")
+                seen_candidate_records.add(operation.record_id)
                 continue
 
             if not operation.target_id or operation.target_id not in before_by_id:
@@ -154,25 +183,54 @@ class Transition:
                     raise ValueError("SUPERSEDE requires a distinct replacement record ID")
                 if operation.target_id in candidate_by_id:
                     raise ValueError("SUPERSEDE target must be absent from candidate state")
+                if operation.record_id in before_by_id:
+                    raise ValueError("SUPERSEDE requires a new replacement record")
+            if operation.record_id in seen_candidate_records:
+                raise ValueError("a candidate record can only be proposed by one operation")
+            seen_candidate_records.add(operation.record_id)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Check:
     name: str
     passed: bool
     reason: str
     affected_ids: list[str] = field(default_factory=list)
+    status: str | None = None
+    reason_code: str = ""
+
+    def __post_init__(self) -> None:
+        if self.status is None:
+            object.__setattr__(self, "status", "PASS" if self.passed else "FAIL")
+        if self.status not in {"PASS", "FAIL", "UNCERTAIN"}:
+            raise ValueError("check status must be PASS, FAIL, or UNCERTAIN")
+        if self.passed != (self.status == "PASS"):
+            raise ValueError("passed must be true exactly when check status is PASS")
 
 
-@dataclass
+@dataclass(frozen=True)
 class Result:
     case_id: str
     decision: str
     checks: list[Check]
+    verifier: str = "rules"
+    prompt_version: str = ""
+    verifier_config: dict[str, Any] = field(default_factory=dict)
+    usage: dict[str, int | None] = field(default_factory=dict)
+    latency_ms: float | None = None
+    raw_response: dict[str, Any] | None = None
+    provider_request_id: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "case_id": self.case_id,
             "decision": self.decision,
+            "verifier": self.verifier,
+            "prompt_version": self.prompt_version,
+            "verifier_config": self.verifier_config,
             "checks": [asdict(check) for check in self.checks],
+            "usage": self.usage,
+            "latency_ms": self.latency_ms,
+            "raw_response": self.raw_response,
+            "provider_request_id": self.provider_request_id,
         }

@@ -1,5 +1,9 @@
 .venv/
+.env
+.env.*
+!.env.example
 mvp-output/
+membud-output/
 __pycache__/
 *.py[cod]
 *.egg-info/

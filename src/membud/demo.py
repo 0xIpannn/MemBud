@@ -1,5 +1,6 @@
-"""Run the bundled 11-case Indonesian-themed local MVP demonstration."""
+"""Run the bundled 11-case Indonesian-themed MemBud demonstration."""
 from pathlib import Path
+from uuid import uuid4
 
 from .graph import to_mermaid
 from .schemas import Transition
@@ -112,8 +113,9 @@ def cases():
 
 
 def main():
-    output = Path("mvp-output")
+    output = Path("membud-output")
     output.mkdir(exist_ok=True)
+    run_id = str(uuid4())
     # Each case gets isolated state; both verifier paths are run and logged.
     for raw in cases():
         t = Transition.from_dict(raw)
@@ -127,7 +129,16 @@ def main():
                 encoding="utf-8",
             )
         for mode in ("graph", "text"):
-            run_case(t, output / f"{t.case_id}-{mode}.json", output / "audit.jsonl", mode)
+            # Stores are current state, not a log: reset before replaying a case.
+            store_file = output / f"{t.case_id}-{mode}.json"
+            store_file.unlink(missing_ok=True)
+            run_case(
+                t,
+                store_file,
+                output / "audit.jsonl",
+                mode,
+                run_id=run_id,
+            )
     print(f"Ran {len(cases())} cases through graph and text paths; audit: {output / 'audit.jsonl'}")
 
 
