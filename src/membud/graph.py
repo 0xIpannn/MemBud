@@ -93,6 +93,40 @@ def build_graph(t: Transition) -> dict[str, Any]:
     return {"nodes": nodes, "edges": edges}
 
 
+def build_llm_graph(
+    t: Transition,
+    *,
+    omit_null_authorization: bool = False,
+) -> dict[str, Any]:
+    """Return the graph serialization used by the optional LLM verifier.
+
+    ``build_graph`` stays the canonical graph for structural verification. This
+    helper exists for controlled LLM-ablation variants: with
+    ``omit_null_authorization=True`` every operation node whose ``authorization``
+    is ``None`` loses that key entirely. Structured authorizations are kept
+    unchanged, as are all nodes and edges (including ``AUTHORIZED_BY`` edges).
+
+    The variant was introduced to test whether the explicit ``"authorization":
+    null`` field is what makes an LLM read an evidence-backed ``REVISE`` /
+    ``SUPERSEDE`` as unauthorized; see ``docs/graph-llm-false-holds.md`` and
+    ``scripts/run_graph_false_hold_ablation.py``. It is not a new production
+    representation and is not used by the deterministic verifier.
+    """
+    graph = build_graph(t)
+    if not omit_null_authorization:
+        return graph
+    nodes = []
+    for node in graph["nodes"]:
+        if (
+            node.get("type") == "operation"
+            and "authorization" in node
+            and node.get("authorization") is None
+        ):
+            node = {key: value for key, value in node.items() if key != "authorization"}
+        nodes.append(node)
+    return {"nodes": nodes, "edges": graph["edges"]}
+
+
 def to_mermaid(t: Transition) -> str:
     """Render the transition graph as Mermaid flowchart source."""
     graph = build_graph(t)

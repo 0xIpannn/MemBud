@@ -2,12 +2,21 @@
 import json
 from typing import Any
 
-from .graph import build_graph
+from .graph import build_graph, build_llm_graph
 from .graph_verification import verify_graph
 from .schemas import Check, Result, Transition
 from .serialization import textual_representation
 
 LLM_PROMPT_VERSION = "membud-transition-checks-v1"
+#: Prompt variant used only by the controlled LLM ablation: it states the
+#: deterministic policy for prior-record changes (structured authorization is
+#: required for DELETE; an evidence-backed REVISE/SUPERSEDE is itself an
+#: explicit authorized change). The default prompt/version are unchanged.
+LLM_PROMPT_VERSION_POLICY_CLARIFIED = "membud-transition-checks-v1-policy-clarified"
+POLICY_CLARIFICATION_SENTENCE = (
+    "An evidence-backed REVISE or SUPERSEDE is itself an explicit authorized change; "
+    "structured authorization metadata is required only for DELETE. "
+)
 _REQUIRED_CHECKS = ("coverage", "preservation", "faithfulness")
 _CHECK_REASON_CODES = {
     "coverage": {"PASS": {"COVERAGE_OK"}, "FAIL": {"REQUIRED_CLAIM_OMITTED"}, "UNCERTAIN": {"CHECK_UNCERTAIN"}},
@@ -86,33 +95,16 @@ def _verify_claim_sets(t: Transition) -> Result:
     return Result(t.case_id, decision, checks)
 
 
-def verify_with_llm(
-    t: Transition,
-    client: Any,
-    representation: str = "graph",
-    *,
-    prepared_input: Any | None = None,
-) -> Result:
-    """Ask a JSON-mode chat model to assess the same three transition checks.
-
-    Model/provider failures, malformed output, or an invalid check structure
-    become UNCERTAIN checks and HOLD; they never authorize a commit. Graph and
-    text calls share one prompt/policy and differ only in the serialized input.
-    """
-    if representation not in {"graph", "text"}:
-        raise ValueError("representation must be 'graph' or 'text'")
-    t.validate()
-    if prepared_input is None:
-        prepared_input = build_graph(t) if representation == "graph" else textual_representation(t)
-    rendered_input = (
-        json.dumps(prepared_input, ensure_ascii=False, sort_keys=True)
-        if representation == "graph"
-        else str(prepared_input)
-    )
-    system_prompt = (
+def _llm_system_prompt(*, policy_clarification: bool = False) -> str:
+    """Return the shared system prompt, optionally with the ablation clarification."""
+    prompt = (
         "You are a cautious memory-transition verifier. Evaluate coverage, preservation, and faithfulness "
         "using only the transition input. required_claims are verifier inputs. Do not infer missing graph edges "
         "or use external facts. An explicit operation alone does not authorize an unsupported change. "
+    )
+    if policy_clarification:
+        prompt += POLICY_CLARIFICATION_SENTENCE
+    prompt += (
         "If evidence conflicts without ordering, or the available input is insufficient to judge a check, "
         "mark it UNCERTAIN. A valid transition requires all three checks to PASS. Return only a JSON object. "
         "For every check include name, status (PASS, FAIL, UNCERTAIN), reason, reason_code, and affected_ids. "
@@ -122,6 +114,44 @@ def verify_with_llm(
         "For all uncertain checks use reason_code=CHECK_UNCERTAIN. affected_ids should identify exact claims "
         "or record IDs; use an empty list if none."
     )
+    return prompt
+
+
+def verify_with_llm(
+    t: Transition,
+    client: Any,
+    representation: str = "graph",
+    *,
+    prepared_input: Any | None = None,
+    policy_clarification: bool = False,
+    omit_null_authorization: bool = False,
+) -> Result:
+    """Ask a JSON-mode chat model to assess the same three transition checks.
+
+    Model/provider failures, malformed output, or an invalid check structure
+    become UNCERTAIN checks and HOLD; they never authorize a commit. Graph and
+    text calls share one prompt/policy and differ only in the serialized input.
+
+    ``policy_clarification`` and ``omit_null_authorization`` select the
+    controlled ablation variants documented in ``docs/graph-llm-false-holds.md``;
+    the defaults reproduce the historical prompt/representation exactly, so
+    existing cached completions stay valid.
+    """
+    if representation not in {"graph", "text"}:
+        raise ValueError("representation must be 'graph' or 'text'")
+    t.validate()
+    if prepared_input is None:
+        prepared_input = (
+            build_llm_graph(t, omit_null_authorization=omit_null_authorization)
+            if representation == "graph"
+            else textual_representation(t)
+        )
+    rendered_input = (
+        json.dumps(prepared_input, ensure_ascii=False, sort_keys=True)
+        if representation == "graph"
+        else str(prepared_input)
+    )
+    system_prompt = _llm_system_prompt(policy_clarification=policy_clarification)
     messages = [
         {"role": "system", "content": system_prompt},
         {
@@ -198,12 +228,15 @@ def verify_with_llm(
         raw_response = None
         provider_request_id = None
     decision = "ACCEPT" if all(check.status == "PASS" for check in checks) else "HOLD"
+    prompt_version = (
+        LLM_PROMPT_VERSION_POLICY_CLARIFIED if policy_clarification else LLM_PROMPT_VERSION
+    )
     return Result(
         t.case_id,
         decision,
         checks,
         verifier=verifier,
-        prompt_version=LLM_PROMPT_VERSION,
+        prompt_version=prompt_version,
         verifier_config=verifier_config,
         usage=usage,
         latency_ms=latency_ms,

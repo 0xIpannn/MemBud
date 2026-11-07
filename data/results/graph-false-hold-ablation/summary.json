@@ -1,0 +1,1633 @@
+{
+  "run_id": "graph-ablation-20261107T155335Z",
+  "generated_at": "2026-11-07T15:55:16.027462+00:00",
+  "code_revision": "working-tree-sha256:7e6929ffe5f73bc0a109099067c831101e812446757a7ac3abe9ae5c12475fc2",
+  "manifest_id": "membud-evaluation-v2",
+  "manifest_sha256": "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a",
+  "manifest_path": "/home/ifan/Projects/MemBud/data/manifests/evaluation-v2.json",
+  "split": "heldout",
+  "cases": [
+    "HELD-01",
+    "HELD-02",
+    "HELD-03",
+    "HELD-07"
+  ],
+  "variants": [
+    "graph_cache",
+    "graph_no_null_auth",
+    "graph_policy_clarified"
+  ],
+  "comparison_policy": "Directional ablation on four hand-authored, single-reviewer held-out cases. One cached control (G0) plus two new-prompt/graph variants; descriptive only, no causal or representation-superiority claim.",
+  "budget": {
+    "max_total_tokens": 60000,
+    "accounted_tokens_used": 24829,
+    "aborted": false,
+    "abort_reason": ""
+  },
+  "variant_metrics": {
+    "graph_cache": {
+      "variant": "graph_cache",
+      "description": "G0 control: current graph + current prompt, cache-only replay",
+      "rows": 4,
+      "decisions": {
+        "ACCEPT": 0,
+        "HOLD": 4,
+        "ERROR": 0
+      },
+      "expected_accept_cases": 4,
+      "false_hold_conversions": 0,
+      "false_holds_remaining": 4,
+      "preservation_failure_rows": 4,
+      "authorization_reason_mentions": 4,
+      "accounted_tokens": 0,
+      "cache_hits": 4,
+      "estimated_cost_range_usd": {
+        "low_usd": 0.0,
+        "high_usd": 0.0,
+        "estimated": true,
+        "billing_data_available": false,
+        "accounted_tokens": 0
+      }
+    },
+    "graph_no_null_auth": {
+      "variant": "graph_no_null_auth",
+      "description": "G1: current graph/prompt; null authorization keys omitted",
+      "rows": 4,
+      "decisions": {
+        "ACCEPT": 2,
+        "HOLD": 2,
+        "ERROR": 0
+      },
+      "expected_accept_cases": 4,
+      "false_hold_conversions": 2,
+      "false_holds_remaining": 2,
+      "preservation_failure_rows": 2,
+      "authorization_reason_mentions": 2,
+      "accounted_tokens": 11949,
+      "cache_hits": 0,
+      "estimated_cost_range_usd": {
+        "low_usd": 0.001195,
+        "high_usd": 0.023898,
+        "estimated": true,
+        "billing_data_available": false,
+        "accounted_tokens": 11949
+      }
+    },
+    "graph_policy_clarified": {
+      "variant": "graph_policy_clarified",
+      "description": "G2: current graph; prompt states REVISE/SUPERSEDE authorization policy",
+      "rows": 4,
+      "decisions": {
+        "ACCEPT": 4,
+        "HOLD": 0,
+        "ERROR": 0
+      },
+      "expected_accept_cases": 4,
+      "false_hold_conversions": 4,
+      "false_holds_remaining": 0,
+      "preservation_failure_rows": 0,
+      "authorization_reason_mentions": 0,
+      "accounted_tokens": 12880,
+      "cache_hits": 0,
+      "estimated_cost_range_usd": {
+        "low_usd": 0.001288,
+        "high_usd": 0.02576,
+        "estimated": true,
+        "billing_data_available": false,
+        "accounted_tokens": 12880
+      }
+    }
+  },
+  "rows": [
+    {
+      "case_id": "HELD-01",
+      "variant": "graph_cache",
+      "expected_decision": "ACCEPT",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1",
+      "failed_checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED",
+          "reason": "The operation selects candidate record r2, which contains only \"bekerja di Gojek\". The required claim \"tinggal di Yogyakarta\" is not covered by the selected candidate, even though candidate r1 contains it."
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+          "reason": "The before record r1 contains \"tinggal di Yogyakarta\", but the selected candidate r2 omits it. The operation has null authorization and no authorization to drop the prior claim is present."
+        }
+      ],
+      "preservation_failed": true,
+      "authorization_mentions": 1,
+      "latency_ms": 0.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "cache_hit": 1,
+      "attempts": 0,
+      "result": {
+        "case_id": "HELD-01",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": true
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": false,
+            "reason": "The operation selects candidate record r2, which contains only \"bekerja di Gojek\". The required claim \"tinggal di Yogyakarta\" is not covered by the selected candidate, even though candidate r1 contains it.",
+            "affected_ids": [
+              "claim:tinggal di Yogyakarta",
+              "record:candidate:r2",
+              "operation:0:write"
+            ],
+            "status": "FAIL",
+            "reason_code": "REQUIRED_CLAIM_OMITTED"
+          },
+          {
+            "name": "preservation",
+            "passed": false,
+            "reason": "The before record r1 contains \"tinggal di Yogyakarta\", but the selected candidate r2 omits it. The operation has null authorization and no authorization to drop the prior claim is present.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:candidate:r2",
+              "claim:tinggal di Yogyakarta",
+              "operation:0:write"
+            ],
+            "status": "FAIL",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The selected candidate r2 contains \"bekerja di Gojek\", which is supported by evidence e1. No contradiction is present.",
+            "affected_ids": [
+              "claim:bekerja di Gojek",
+              "evidence:e1",
+              "record:candidate:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "api_attempts": 0,
+          "json_retries": 0,
+          "cache_hit": 1
+        },
+        "latency_ms": 0.0,
+        "raw_response": {
+          "checks": [
+            {
+              "affected_ids": [
+                "claim:tinggal di Yogyakarta",
+                "record:candidate:r2",
+                "operation:0:write"
+              ],
+              "name": "coverage",
+              "reason": "The operation selects candidate record r2, which contains only \"bekerja di Gojek\". The required claim \"tinggal di Yogyakarta\" is not covered by the selected candidate, even though candidate r1 contains it.",
+              "reason_code": "REQUIRED_CLAIM_OMITTED",
+              "status": "FAIL"
+            },
+            {
+              "affected_ids": [
+                "record:before:r1",
+                "record:candidate:r2",
+                "claim:tinggal di Yogyakarta",
+                "operation:0:write"
+              ],
+              "name": "preservation",
+              "reason": "The before record r1 contains \"tinggal di Yogyakarta\", but the selected candidate r2 omits it. The operation has null authorization and no authorization to drop the prior claim is present.",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+              "status": "FAIL"
+            },
+            {
+              "affected_ids": [
+                "claim:bekerja di Gojek",
+                "evidence:e1",
+                "record:candidate:r2"
+              ],
+              "name": "faithfulness",
+              "reason": "The selected candidate r2 contains \"bekerja di Gojek\", which is supported by evidence e1. No contradiction is present.",
+              "reason_code": "FAITHFULNESS_OK",
+              "status": "PASS"
+            }
+          ]
+        },
+        "provider_request_id": null
+      }
+    },
+    {
+      "case_id": "HELD-02",
+      "variant": "graph_cache",
+      "expected_decision": "ACCEPT",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1",
+      "failed_checks": [
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+          "reason": "Prior record r1's claim 'bekerja di Tokopedia' is changed to 'bekerja di Bukalapak' through a REVISE operation, but the operation authorization is null, so the prior-record change is unauthorized."
+        }
+      ],
+      "preservation_failed": true,
+      "authorization_mentions": 1,
+      "latency_ms": 0.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "cache_hit": 1,
+      "attempts": 0,
+      "result": {
+        "case_id": "HELD-02",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": true
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "Candidate record includes the required claim 'bekerja di Bukalapak'.",
+            "affected_ids": [
+              "claim:bekerja di Bukalapak"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": false,
+            "reason": "Prior record r1's claim 'bekerja di Tokopedia' is changed to 'bekerja di Bukalapak' through a REVISE operation, but the operation authorization is null, so the prior-record change is unauthorized.",
+            "affected_ids": [
+              "record:before:r1",
+              "claim:bekerja di Tokopedia",
+              "record:candidate:r1"
+            ],
+            "status": "FAIL",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "Candidate claim 'bekerja di Bukalapak' is supported by evidence e1 and no contradiction is present.",
+            "affected_ids": [
+              "claim:bekerja di Bukalapak"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "api_attempts": 0,
+          "json_retries": 0,
+          "cache_hit": 1
+        },
+        "latency_ms": 0.0,
+        "raw_response": {
+          "checks": [
+            {
+              "affected_ids": [
+                "claim:bekerja di Bukalapak"
+              ],
+              "name": "coverage",
+              "reason": "Candidate record includes the required claim 'bekerja di Bukalapak'.",
+              "reason_code": "COVERAGE_OK",
+              "status": "PASS"
+            },
+            {
+              "affected_ids": [
+                "record:before:r1",
+                "claim:bekerja di Tokopedia",
+                "record:candidate:r1"
+              ],
+              "name": "preservation",
+              "reason": "Prior record r1's claim 'bekerja di Tokopedia' is changed to 'bekerja di Bukalapak' through a REVISE operation, but the operation authorization is null, so the prior-record change is unauthorized.",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+              "status": "FAIL"
+            },
+            {
+              "affected_ids": [
+                "claim:bekerja di Bukalapak"
+              ],
+              "name": "faithfulness",
+              "reason": "Candidate claim 'bekerja di Bukalapak' is supported by evidence e1 and no contradiction is present.",
+              "reason_code": "FAITHFULNESS_OK",
+              "status": "PASS"
+            }
+          ]
+        },
+        "provider_request_id": null
+      }
+    },
+    {
+      "case_id": "HELD-03",
+      "variant": "graph_cache",
+      "expected_decision": "ACCEPT",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1",
+      "failed_checks": [
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+          "reason": "Operation:0:supersede changes prior record before:r1 by superseding its 'memiliki sepeda motor' claim, but the operation has authorization=null and no edge authorizes this prior-record change."
+        }
+      ],
+      "preservation_failed": true,
+      "authorization_mentions": 1,
+      "latency_ms": 0.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "cache_hit": 1,
+      "attempts": 0,
+      "result": {
+        "case_id": "HELD-03",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": true
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "Both required claims, 'memiliki mobil' and 'tinggal di Malang', are present in proposed candidate records r3 and r2 respectively.",
+            "affected_ids": [
+              "claim:memiliki mobil",
+              "claim:tinggal di Malang"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": false,
+            "reason": "Operation:0:supersede changes prior record before:r1 by superseding its 'memiliki sepeda motor' claim, but the operation has authorization=null and no edge authorizes this prior-record change.",
+            "affected_ids": [
+              "record:before:r1",
+              "operation:0:supersede",
+              "claim:memiliki sepeda motor"
+            ],
+            "status": "FAIL",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The proposed claim 'memiliki mobil' is supported by evidence:e1, and 'tinggal di Malang' is carried from before:r2 with no contradiction edge present.",
+            "affected_ids": [
+              "claim:memiliki mobil",
+              "claim:tinggal di Malang",
+              "evidence:e1"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "api_attempts": 0,
+          "json_retries": 0,
+          "cache_hit": 1
+        },
+        "latency_ms": 0.0,
+        "raw_response": {
+          "checks": [
+            {
+              "affected_ids": [
+                "claim:memiliki mobil",
+                "claim:tinggal di Malang"
+              ],
+              "name": "coverage",
+              "reason": "Both required claims, 'memiliki mobil' and 'tinggal di Malang', are present in proposed candidate records r3 and r2 respectively.",
+              "reason_code": "COVERAGE_OK",
+              "status": "PASS"
+            },
+            {
+              "affected_ids": [
+                "record:before:r1",
+                "operation:0:supersede",
+                "claim:memiliki sepeda motor"
+              ],
+              "name": "preservation",
+              "reason": "Operation:0:supersede changes prior record before:r1 by superseding its 'memiliki sepeda motor' claim, but the operation has authorization=null and no edge authorizes this prior-record change.",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+              "status": "FAIL"
+            },
+            {
+              "affected_ids": [
+                "claim:memiliki mobil",
+                "claim:tinggal di Malang",
+                "evidence:e1"
+              ],
+              "name": "faithfulness",
+              "reason": "The proposed claim 'memiliki mobil' is supported by evidence:e1, and 'tinggal di Malang' is carried from before:r2 with no contradiction edge present.",
+              "reason_code": "FAITHFULNESS_OK",
+              "status": "PASS"
+            }
+          ]
+        },
+        "provider_request_id": null
+      }
+    },
+    {
+      "case_id": "HELD-07",
+      "variant": "graph_cache",
+      "expected_decision": "ACCEPT",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1",
+      "failed_checks": [
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+          "reason": "Prior record r1 claim 'memiliki dua anak' is replaced by 'memiliki tiga anak'; the REVISE operation has authorization null, so the prior claim is not preserved with authorization."
+        }
+      ],
+      "preservation_failed": true,
+      "authorization_mentions": 1,
+      "latency_ms": 0.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "accounted_tokens": 0,
+      "usage_estimated": false,
+      "cache_hit": 1,
+      "attempts": 0,
+      "result": {
+        "case_id": "HELD-07",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": true
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "Candidate record r1 contains the required claim 'memiliki tiga anak'.",
+            "affected_ids": [
+              "claim:memiliki tiga anak",
+              "record:candidate:r1"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": false,
+            "reason": "Prior record r1 claim 'memiliki dua anak' is replaced by 'memiliki tiga anak'; the REVISE operation has authorization null, so the prior claim is not preserved with authorization.",
+            "affected_ids": [
+              "record:before:r1",
+              "claim:memiliki dua anak"
+            ],
+            "status": "FAIL",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "Candidate claim 'memiliki tiga anak' is supported by evidence e1.",
+            "affected_ids": [
+              "claim:memiliki tiga anak"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "api_attempts": 0,
+          "json_retries": 0,
+          "cache_hit": 1
+        },
+        "latency_ms": 0.0,
+        "raw_response": {
+          "checks": [
+            {
+              "affected_ids": [
+                "claim:memiliki tiga anak",
+                "record:candidate:r1"
+              ],
+              "name": "coverage",
+              "reason": "Candidate record r1 contains the required claim 'memiliki tiga anak'.",
+              "reason_code": "COVERAGE_OK",
+              "status": "PASS"
+            },
+            {
+              "affected_ids": [
+                "record:before:r1",
+                "claim:memiliki dua anak"
+              ],
+              "name": "preservation",
+              "reason": "Prior record r1 claim 'memiliki dua anak' is replaced by 'memiliki tiga anak'; the REVISE operation has authorization null, so the prior claim is not preserved with authorization.",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+              "status": "FAIL"
+            },
+            {
+              "affected_ids": [
+                "claim:memiliki tiga anak"
+              ],
+              "name": "faithfulness",
+              "reason": "Candidate claim 'memiliki tiga anak' is supported by evidence e1.",
+              "reason_code": "FAITHFULNESS_OK",
+              "status": "PASS"
+            }
+          ]
+        },
+        "provider_request_id": null
+      }
+    },
+    {
+      "case_id": "HELD-01",
+      "variant": "graph_no_null_auth",
+      "expected_decision": "ACCEPT",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1",
+      "failed_checks": [
+        {
+          "name": "coverage",
+          "status": "FAIL",
+          "reason_code": "REQUIRED_CLAIM_OMITTED",
+          "reason": "Required claim 'tinggal di Yogyakarta' is omitted from the candidate record written by operation:0:write; record:candidate:r2 contains only 'bekerja di Gojek'."
+        },
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+          "reason": "Prior record:before:r1 contains 'tinggal di Yogyakarta', but the operation writes candidate:r2 which does not contain it; no explicit authorization to drop this prior claim is present."
+        }
+      ],
+      "preservation_failed": true,
+      "authorization_mentions": 1,
+      "latency_ms": 20291.631,
+      "input_tokens": 965,
+      "output_tokens": 3401,
+      "total_tokens": 4366,
+      "accounted_tokens": 4366,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "HELD-01",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": false,
+            "reason": "Required claim 'tinggal di Yogyakarta' is omitted from the candidate record written by operation:0:write; record:candidate:r2 contains only 'bekerja di Gojek'.",
+            "affected_ids": [
+              "claim:tinggal di Yogyakarta",
+              "record:candidate:r2",
+              "operation:0:write"
+            ],
+            "status": "FAIL",
+            "reason_code": "REQUIRED_CLAIM_OMITTED"
+          },
+          {
+            "name": "preservation",
+            "passed": false,
+            "reason": "Prior record:before:r1 contains 'tinggal di Yogyakarta', but the operation writes candidate:r2 which does not contain it; no explicit authorization to drop this prior claim is present.",
+            "affected_ids": [
+              "record:before:r1",
+              "claim:tinggal di Yogyakarta",
+              "record:candidate:r2",
+              "operation:0:write"
+            ],
+            "status": "FAIL",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The newly written claim 'bekerja di Gojek' is supported by evidence:e1, and no contradicted claim is present.",
+            "affected_ids": [
+              "claim:bekerja di Gojek",
+              "evidence:e1"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 965,
+          "output_tokens": 3401,
+          "total_tokens": 4366,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 20291.631,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "FAIL",
+              "reason": "Required claim 'tinggal di Yogyakarta' is omitted from the candidate record written by operation:0:write; record:candidate:r2 contains only 'bekerja di Gojek'.",
+              "reason_code": "REQUIRED_CLAIM_OMITTED",
+              "affected_ids": [
+                "claim:tinggal di Yogyakarta",
+                "record:candidate:r2",
+                "operation:0:write"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "FAIL",
+              "reason": "Prior record:before:r1 contains 'tinggal di Yogyakarta', but the operation writes candidate:r2 which does not contain it; no explicit authorization to drop this prior claim is present.",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+              "affected_ids": [
+                "record:before:r1",
+                "claim:tinggal di Yogyakarta",
+                "record:candidate:r2",
+                "operation:0:write"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The newly written claim 'bekerja di Gojek' is supported by evidence:e1, and no contradicted claim is present.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:bekerja di Gojek",
+                "evidence:e1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "c0d91373-b57f-4cab-9022-7b6db927f0de"
+      }
+    },
+    {
+      "case_id": "HELD-02",
+      "variant": "graph_no_null_auth",
+      "expected_decision": "ACCEPT",
+      "decision": "HOLD",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1",
+      "failed_checks": [
+        {
+          "name": "preservation",
+          "status": "FAIL",
+          "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+          "reason": "Prior record r1 contains 'bekerja di Tokopedia'; the candidate replaces it with 'bekerja di Bukalapak' without a contradiction or authorization edge permitting removal of the prior claim. The REVISE operation alone does not authorize this unsupported change."
+        }
+      ],
+      "preservation_failed": true,
+      "authorization_mentions": 1,
+      "latency_ms": 9599.202,
+      "input_tokens": 883,
+      "output_tokens": 1547,
+      "total_tokens": 2430,
+      "accounted_tokens": 2430,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "HELD-02",
+        "decision": "HOLD",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "Required claim 'bekerja di Bukalapak' is present in the candidate record and supported by evidence e1.",
+            "affected_ids": [
+              "claim:bekerja di Bukalapak",
+              "record:candidate:r1"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": false,
+            "reason": "Prior record r1 contains 'bekerja di Tokopedia'; the candidate replaces it with 'bekerja di Bukalapak' without a contradiction or authorization edge permitting removal of the prior claim. The REVISE operation alone does not authorize this unsupported change.",
+            "affected_ids": [
+              "record:before:r1",
+              "claim:bekerja di Tokopedia"
+            ],
+            "status": "FAIL",
+            "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "Candidate claim 'bekerja di Bukalapak' is explicitly supported by evidence e1, and no contradiction edge is present.",
+            "affected_ids": [
+              "claim:bekerja di Bukalapak",
+              "evidence:e1",
+              "record:candidate:r1"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 883,
+          "output_tokens": 1547,
+          "total_tokens": 2430,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 9599.202,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "Required claim 'bekerja di Bukalapak' is present in the candidate record and supported by evidence e1.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:bekerja di Bukalapak",
+                "record:candidate:r1"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "FAIL",
+              "reason": "Prior record r1 contains 'bekerja di Tokopedia'; the candidate replaces it with 'bekerja di Bukalapak' without a contradiction or authorization edge permitting removal of the prior claim. The REVISE operation alone does not authorize this unsupported change.",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE",
+              "affected_ids": [
+                "record:before:r1",
+                "claim:bekerja di Tokopedia"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "Candidate claim 'bekerja di Bukalapak' is explicitly supported by evidence e1, and no contradiction edge is present.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:bekerja di Bukalapak",
+                "evidence:e1",
+                "record:candidate:r1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "b65d2dd3-eedf-4376-867c-9108d5d68514"
+      }
+    },
+    {
+      "case_id": "HELD-03",
+      "variant": "graph_no_null_auth",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 12288.993,
+      "input_tokens": 1119,
+      "output_tokens": 2131,
+      "total_tokens": 3250,
+      "accounted_tokens": 3250,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "HELD-03",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "Both required claims, 'memiliki mobil' and 'tinggal di Malang', are present in proposed candidate records r3 and r2 respectively.",
+            "affected_ids": [
+              "claim:memiliki mobil",
+              "claim:tinggal di Malang",
+              "record:candidate:r2",
+              "record:candidate:r3"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The only prior-record supersession is operation:0:supersede targeting r1 and proposing r3; prior record r2 is preserved by candidate r2. No unauthorized change to prior records is shown.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:before:r2",
+              "record:candidate:r2",
+              "record:candidate:r3",
+              "operation:0:supersede"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The new claim 'memiliki mobil' is supported by evidence e1, and 'tinggal di Malang' is carried over from prior record r2. The supersession reason 'kendaraan diganti' is consistent with e1. No unsupported or contradicted claim is present.",
+            "affected_ids": [
+              "claim:memiliki mobil",
+              "claim:tinggal di Malang",
+              "evidence:e1",
+              "record:candidate:r2",
+              "record:candidate:r3"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 1119,
+          "output_tokens": 2131,
+          "total_tokens": 3250,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 12288.993,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "Both required claims, 'memiliki mobil' and 'tinggal di Malang', are present in proposed candidate records r3 and r2 respectively.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:memiliki mobil",
+                "claim:tinggal di Malang",
+                "record:candidate:r2",
+                "record:candidate:r3"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The only prior-record supersession is operation:0:supersede targeting r1 and proposing r3; prior record r2 is preserved by candidate r2. No unauthorized change to prior records is shown.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "record:before:r2",
+                "record:candidate:r2",
+                "record:candidate:r3",
+                "operation:0:supersede"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The new claim 'memiliki mobil' is supported by evidence e1, and 'tinggal di Malang' is carried over from prior record r2. The supersession reason 'kendaraan diganti' is consistent with e1. No unsupported or contradicted claim is present.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:memiliki mobil",
+                "claim:tinggal di Malang",
+                "evidence:e1",
+                "record:candidate:r2",
+                "record:candidate:r3"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "9ef5dbfc-727d-4c48-9179-74927a57a1f6"
+      }
+    },
+    {
+      "case_id": "HELD-07",
+      "variant": "graph_no_null_auth",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 5933.163,
+      "input_tokens": 887,
+      "output_tokens": 1016,
+      "total_tokens": 1903,
+      "accounted_tokens": 1903,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "HELD-07",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "The required claim 'memiliki tiga anak' is present in the candidate record r1.",
+            "affected_ids": [
+              "claim:memiliki tiga anak",
+              "record:candidate:r1"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The prior claim 'memiliki dua anak' is revised under the REVISE operation, and evidence e1 contradicts it while supporting the candidate claim 'memiliki tiga anak', so the change is authorized.",
+            "affected_ids": [
+              "record:before:r1",
+              "claim:memiliki dua anak",
+              "record:candidate:r1"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The candidate claim 'memiliki tiga anak' is supported by evidence e1 and is required by the transition.",
+            "affected_ids": [
+              "claim:memiliki tiga anak",
+              "evidence:e1"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 887,
+          "output_tokens": 1016,
+          "total_tokens": 1903,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 5933.163,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "The required claim 'memiliki tiga anak' is present in the candidate record r1.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:memiliki tiga anak",
+                "record:candidate:r1"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The prior claim 'memiliki dua anak' is revised under the REVISE operation, and evidence e1 contradicts it while supporting the candidate claim 'memiliki tiga anak', so the change is authorized.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "claim:memiliki dua anak",
+                "record:candidate:r1"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The candidate claim 'memiliki tiga anak' is supported by evidence e1 and is required by the transition.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:memiliki tiga anak",
+                "evidence:e1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "4f120c9f-bf8c-4819-a07a-d45d528bdf2a"
+      }
+    },
+    {
+      "case_id": "HELD-01",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 23525.031,
+      "input_tokens": 998,
+      "output_tokens": 3739,
+      "total_tokens": 4737,
+      "accounted_tokens": 4737,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "HELD-01",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "Both required claims are represented in the transition's proposed candidate records: tinggal di Yogyakarta in candidate r1 and bekerja di Gojek in candidate r2.",
+            "affected_ids": [
+              "claim:bekerja di Gojek",
+              "claim:tinggal di Yogyakarta",
+              "record:candidate:r1",
+              "record:candidate:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The prior record before:r1 retains tinggal di Yogyakarta, and no operation changes or deletes that prior record.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:candidate:r1",
+              "claim:tinggal di Yogyakarta"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The newly introduced claim bekerja di Gojek is supported by evidence e1, and there is no contradicting evidence in the transition input.",
+            "affected_ids": [
+              "claim:bekerja di Gojek",
+              "evidence:e1"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 998,
+          "output_tokens": 3739,
+          "total_tokens": 4737,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 23525.031,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "Both required claims are represented in the transition's proposed candidate records: tinggal di Yogyakarta in candidate r1 and bekerja di Gojek in candidate r2.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:bekerja di Gojek",
+                "claim:tinggal di Yogyakarta",
+                "record:candidate:r1",
+                "record:candidate:r2"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The prior record before:r1 retains tinggal di Yogyakarta, and no operation changes or deletes that prior record.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "record:candidate:r1",
+                "claim:tinggal di Yogyakarta"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The newly introduced claim bekerja di Gojek is supported by evidence e1, and there is no contradicting evidence in the transition input.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:bekerja di Gojek",
+                "evidence:e1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "fa200d92-3e59-4f39-940c-a542cfb9abba"
+      }
+    },
+    {
+      "case_id": "HELD-02",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 8716.346,
+      "input_tokens": 916,
+      "output_tokens": 1587,
+      "total_tokens": 2503,
+      "accounted_tokens": 2503,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "HELD-02",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "Candidate record r1 contains the required claim 'bekerja di Bukalapak'.",
+            "affected_ids": [
+              "claim:bekerja di Bukalapak",
+              "record:candidate:r1"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The prior record claim 'bekerja di Tokopedia' is revised through explicit REVISE operation 0, which is evidence-backed by e1 supporting the candidate claim 'bekerja di Bukalapak'.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:candidate:r1",
+              "operation:0:revise",
+              "claim:bekerja di Tokopedia",
+              "claim:bekerja di Bukalapak"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The candidate claim 'bekerja di Bukalapak' is supported by evidence e1 ('Koreksi: saya bekerja di Bukalapak.') and no unsupported candidate claim is present.",
+            "affected_ids": [
+              "claim:bekerja di Bukalapak",
+              "evidence:e1"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 916,
+          "output_tokens": 1587,
+          "total_tokens": 2503,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 8716.346,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "Candidate record r1 contains the required claim 'bekerja di Bukalapak'.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:bekerja di Bukalapak",
+                "record:candidate:r1"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The prior record claim 'bekerja di Tokopedia' is revised through explicit REVISE operation 0, which is evidence-backed by e1 supporting the candidate claim 'bekerja di Bukalapak'.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "record:candidate:r1",
+                "operation:0:revise",
+                "claim:bekerja di Tokopedia",
+                "claim:bekerja di Bukalapak"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The candidate claim 'bekerja di Bukalapak' is supported by evidence e1 ('Koreksi: saya bekerja di Bukalapak.') and no unsupported candidate claim is present.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:bekerja di Bukalapak",
+                "evidence:e1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "eb8f1c6c-8b98-4efa-b66d-bbefcbb8f171"
+      }
+    },
+    {
+      "case_id": "HELD-03",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 13704.355,
+      "input_tokens": 1152,
+      "output_tokens": 2422,
+      "total_tokens": 3574,
+      "accounted_tokens": 3574,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "HELD-03",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "Both required claims are present in proposed candidate records: memiliki mobil in candidate r3 and tinggal di Malang in candidate r2.",
+            "affected_ids": [
+              "claim:memiliki mobil",
+              "claim:tinggal di Malang",
+              "record:candidate:r3",
+              "record:candidate:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The only prior-record change is the explicit SUPERSEDE of before-record r1 by candidate r3, backed by evidence e1 describing replacement of the motorcycle with a car; before-record r2's claim is preserved in candidate r2.",
+            "affected_ids": [
+              "record:before:r1",
+              "record:candidate:r3",
+              "operation:0:supersede",
+              "record:before:r2",
+              "record:candidate:r2"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The new claim memiliki mobil is supported by evidence e1; tinggal di Malang is carried over from the prior record and is not contradicted.",
+            "affected_ids": [
+              "claim:memiliki mobil",
+              "claim:tinggal di Malang",
+              "evidence:e1"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 1152,
+          "output_tokens": 2422,
+          "total_tokens": 3574,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 13704.355,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "Both required claims are present in proposed candidate records: memiliki mobil in candidate r3 and tinggal di Malang in candidate r2.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:memiliki mobil",
+                "claim:tinggal di Malang",
+                "record:candidate:r3",
+                "record:candidate:r2"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The only prior-record change is the explicit SUPERSEDE of before-record r1 by candidate r3, backed by evidence e1 describing replacement of the motorcycle with a car; before-record r2's claim is preserved in candidate r2.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "record:candidate:r3",
+                "operation:0:supersede",
+                "record:before:r2",
+                "record:candidate:r2"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The new claim memiliki mobil is supported by evidence e1; tinggal di Malang is carried over from the prior record and is not contradicted.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:memiliki mobil",
+                "claim:tinggal di Malang",
+                "evidence:e1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "46287727-8c56-4791-b90c-cb9fafd8f9aa"
+      }
+    },
+    {
+      "case_id": "HELD-07",
+      "variant": "graph_policy_clarified",
+      "expected_decision": "ACCEPT",
+      "decision": "ACCEPT",
+      "error": null,
+      "prompt_version": "membud-transition-checks-v1-policy-clarified",
+      "failed_checks": [],
+      "preservation_failed": false,
+      "authorization_mentions": 0,
+      "latency_ms": 6493.499,
+      "input_tokens": 920,
+      "output_tokens": 1146,
+      "total_tokens": 2066,
+      "accounted_tokens": 2066,
+      "usage_estimated": false,
+      "cache_hit": 0,
+      "attempts": 1,
+      "result": {
+        "case_id": "HELD-07",
+        "decision": "ACCEPT",
+        "verifier": "deepseek-flash",
+        "prompt_version": "membud-transition-checks-v1-policy-clarified",
+        "verifier_config": {
+          "provider": "deepseek-openai-compatible",
+          "base_url": "https://api.deepseek.com",
+          "model": "deepseek-flash",
+          "temperature": 0.0,
+          "timeout_seconds": 60.0,
+          "max_attempts": 3,
+          "max_json_retries": 1,
+          "backoff_seconds": 0.5,
+          "response_format": "json_object",
+          "zero_data_retention": false,
+          "persistent_cache": true,
+          "require_cache": false
+        },
+        "checks": [
+          {
+            "name": "coverage",
+            "passed": true,
+            "reason": "The required claim 'memiliki tiga anak' is present in the candidate record and is explicitly marked as required by the transition.",
+            "affected_ids": [
+              "claim:memiliki tiga anak",
+              "record:candidate:r1"
+            ],
+            "status": "PASS",
+            "reason_code": "COVERAGE_OK"
+          },
+          {
+            "name": "preservation",
+            "passed": true,
+            "reason": "The prior claim 'memiliki dua anak' is revised to 'memiliki tiga anak' through an explicit REVISE operation backed by evidence that contradicts the old claim and supports the new claim, so the prior-record change is authorized.",
+            "affected_ids": [
+              "record:before:r1",
+              "claim:memiliki dua anak",
+              "operation:0:revise"
+            ],
+            "status": "PASS",
+            "reason_code": "PRESERVATION_OK"
+          },
+          {
+            "name": "faithfulness",
+            "passed": true,
+            "reason": "The candidate claim 'memiliki tiga anak' is supported by evidence e1, and no candidate claim is unsupported or contradicted by the available evidence.",
+            "affected_ids": [
+              "claim:memiliki tiga anak",
+              "evidence:e1"
+            ],
+            "status": "PASS",
+            "reason_code": "FAITHFULNESS_OK"
+          }
+        ],
+        "usage": {
+          "input_tokens": 920,
+          "output_tokens": 1146,
+          "total_tokens": 2066,
+          "api_attempts": 1,
+          "json_retries": 0,
+          "cache_hit": 0
+        },
+        "latency_ms": 6493.499,
+        "raw_response": {
+          "checks": [
+            {
+              "name": "coverage",
+              "status": "PASS",
+              "reason": "The required claim 'memiliki tiga anak' is present in the candidate record and is explicitly marked as required by the transition.",
+              "reason_code": "COVERAGE_OK",
+              "affected_ids": [
+                "claim:memiliki tiga anak",
+                "record:candidate:r1"
+              ]
+            },
+            {
+              "name": "preservation",
+              "status": "PASS",
+              "reason": "The prior claim 'memiliki dua anak' is revised to 'memiliki tiga anak' through an explicit REVISE operation backed by evidence that contradicts the old claim and supports the new claim, so the prior-record change is authorized.",
+              "reason_code": "PRESERVATION_OK",
+              "affected_ids": [
+                "record:before:r1",
+                "claim:memiliki dua anak",
+                "operation:0:revise"
+              ]
+            },
+            {
+              "name": "faithfulness",
+              "status": "PASS",
+              "reason": "The candidate claim 'memiliki tiga anak' is supported by evidence e1, and no candidate claim is unsupported or contradicted by the available evidence.",
+              "reason_code": "FAITHFULNESS_OK",
+              "affected_ids": [
+                "claim:memiliki tiga anak",
+                "evidence:e1"
+              ]
+            }
+          ]
+        },
+        "provider_request_id": "c61f0759-cde9-4b59-bbbe-9dc096d6b1ec"
+      }
+    }
+  ]
+}

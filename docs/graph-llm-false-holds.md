@@ -270,3 +270,85 @@ ACCEPT; G0 must reproduce the current cache decisions exactly.
 3. Do not compare graph vs text representations on the current run; retest with
    the larger, better-powered held-out set and second human review already listed
    as follow-ups in [docs/llm-heldout.md](llm-heldout.md).
+
+---
+
+## Controlled ablation results (G0/G1/G2, 2026-11-07)
+
+The ranked causes above were tested with the smallest controlled probe
+(`scripts/run_graph_false_hold_ablation.py`). Variants use the same frozen
+held-out transitions, model (`deepseek-flash`), temperature 0, and JSON-mode
+validator; only the graph serialization or the shared system prompt changes:
+
+| Variant | Change | New calls? |
+| --- | --- | --- |
+| G0 `graph_cache` | none — current graph + current prompt, replayed from the response cache | no (cache only) |
+| G1 `graph_no_null_auth` | operation nodes omit `"authorization": null` | yes |
+| G2 `graph_policy_clarified` | prompt adds: an evidence-backed `REVISE`/`SUPERSEDE` is itself an explicit authorized change; structured authorization is required only for `DELETE` | yes |
+
+### Directional probe (the four original false holds)
+
+Artifact: `data/results/graph-false-hold-ablation/`.
+
+| Variant | Decisions | Converted to ACCEPT | Preservation failures | Authorization mentions |
+| --- | --- | ---: | ---: | ---: |
+| G0 control | 0 ACCEPT / 4 HOLD | 0/4 | 4/4 | 4 |
+| G1 no-null-auth | 2 ACCEPT / 2 HOLD | 2/4 (HELD-03, HELD-07) | 2/4 | 2 |
+| G2 policy-clarified | 4 ACCEPT / 0 HOLD | **4/4** | **0/4** | **0** |
+
+### Paired safety check (all 13 schema-valid held-out cases)
+
+Because a prompt that removes false holds could also remove true holds, the
+paired run checks the 7 valid and 6 faulty cases together.
+Artifact: `data/results/graph-false-hold-ablation-paired/`.
+
+| Variant | ACCEPT / HOLD | Valid accepted | False holds | False accepts | Label agreement |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| G0 control | 3 / 10 | 3/7 | 4/7 | 0/6 | 29/36 (matches the original run) |
+| G1 no-null-auth | 5 / 8 | 5/7 | 2/7 | **0/6** | 31/36 |
+| G2 policy-clarified | **7 / 6** | **7/7** | **0/7** | **0/6** | **36/36** |
+
+(G0's "label agreement" is over all 36 cases, including 5 expected-invalid per
+condition; the other rows are computed on the 13 valid cases. G2's two
+remaining preservation failures are true HOLDs HELD-09/10, not false holds.)
+
+### Interpretation
+
+- The explicit null-authorization field is **part** of the cause: removing it
+  (G1) fixes 2 of 4 false holds with no false accepts.
+- The shared prompt's ambiguity is the **larger** cause: one sentence stating
+  the deterministic policy (G2) fixes all 4 false holds and keeps every true
+  HOLD held.
+- G2 is consistent with the deterministic verifiers, where structured
+  authorization is required for `DELETE` and an evidence-backed
+  `REVISE`/`SUPERSEDE` is an authorized change. It is a legitimate policy
+  clarification, not a representation change.
+
+### Limitations (important)
+
+- **Development evidence, not a clean held-out result.** The held-out split was
+  used to diagnose the false holds *and* to select these variants. A prompt
+  tuned on that split must not be reported as generalizing to it; an independent
+  split or fresh cases is required before promoting G2 to the default prompt.
+- Single model, single run, single-reviewer labels (second review pending);
+  temperature-0 provider determinism is unproven.
+- G2 remains an **opt-in prompt variant** (`verify_with_llm(policy_clarification=True)`,
+  prompt version `membud-transition-checks-v1-policy-clarified`); the default
+  prompt and all deterministic verifiers are unchanged.
+- This still does not establish graph-vs-text superiority: it removes a
+  false-hold artifact inside the LLM graph condition.
+
+### Cost
+
+Both runs made **20 paid calls in total** (8 probe + 12 new paired; the rest
+were cache hits), accounted at **76,486 tokens** by the runner's conservative
+accounting. At the harness placeholder range that is **$0.0076-$0.153**; the
+provider's billing dashboard remains authoritative. The G0 controls used zero
+tokens (cache replay).
+
+### Recommended follow-up
+
+Replicate G2 on the dev split (or a fresh set) before changing the default
+prompt; if it holds, promote the clarification as a new default prompt version
+and re-run the held-out evaluation with a fresh cache. The G1 serialization
+change alone is not sufficient and should not replace the prompt fix.
