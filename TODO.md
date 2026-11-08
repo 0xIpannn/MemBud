@@ -6,14 +6,13 @@ Reconciled with `PLAN.md` §19 on 2026-11-08: the actionable list is at the top;
 the sections below are a historical work log (mostly complete) and the
 post-Milestone-2 log.
 
-## Next up (2026-11-08)
+## Next up (2026-11-08, updated after the format/infra round)
 
 1. [ ] Collect the independent second human review and adjudicate the v2 labels (`data/review/quiz-v2.html`).
-2. [ ] Run a genuinely independent, better-powered evaluation on fresh cases with tuning/final separation, paired bootstrap confidence intervals, and a sample-size rationale (deterministic rules and the v2 LLM prompt).
-3. [ ] Add checkpoint/resume for model runs and provider-billing cost accounting.
+2. [ ] Run a genuinely independent, better-powered evaluation on fresh cases with tuning/final separation; the paired-CI/sample-size machinery is delivered (`scripts/analyze_paired_metrics.py`, `docs/statistical-analysis.md`), but fresh cases, second-review labels, and spend approval remain.
+3. [ ] Confirm provider-billed cost. Checkpoint/resume and token-class estimate accounting are delivered, but the provider returns no bill and only a placeholder/explicit-rate estimate exists.
 4. [ ] Implement one real backend end-to-end (Mem0 or A-Mem) through a host-owned staged write/fork, proving HOLD mutates none of the host's write side effects; only then claim compatibility.
-5. [ ] Stabilize transition/store formats as a versioned interchange protocol with cross-release migration tests.
-6. [ ] If productizing: add concurrency/version arbitration to the opencode guard (TOCTOU between snapshot and write) and decide on sidecar auth/TLS/rate limits; extend live tests to unscripted agent behavior, other providers, and MCP/real backends.
+5. [ ] If productizing: add concurrency/version arbitration to the opencode guard (TOCTOU between snapshot and write) and decide on sidecar auth/TLS/rate limits; extend live tests to unscripted agent behavior, other providers, and MCP/real backends.
 
 ## Immediate: make the prototype robust
 
@@ -46,7 +45,7 @@ post-Milestone-2 log.
 - [x] Add a local 3-condition development pilot runner (`python -m membud.experiment`) with an explicitly selected optional LLM verifier.
 - [x] Harden the DeepSeek client: retry bounded malformed completion envelopes, cap provider retry delays, and record attempt counts on failed verifier rows.
 - [x] Rerun the 9 failed graph/text rows (5 graph, 4 text); all completed (24,407 reported tokens, 0 cache hits, no residual errors) and the combined decisions match the labels in both conditions.
-- [ ] Add checkpoint/resume support before external/model calls.
+- [x] Add checkpoint/resume support before external/model calls (`membud.checkpoint`, `--resume`; config-fingerprint validation, zero-call row replay, crash-tolerant JSONL, budget totals preserved; see also token-class cost accounting in `membud.cost`).
 - [x] Record/report graph preparation time and verifier time separately, plus graph node/edge counts. Successful LLM responses include token usage and retries; failed response attempts still need more complete provider-attempt metadata. The provider completion response does not report billed cost.
 
 ## Backend integrations
@@ -94,8 +93,11 @@ post-Milestone-2 log.
 - [x] Run the controlled G0/G1/G2 graph false-hold ablation under the approved spend: G0 (cache control) reproduced the 4 false holds; G1 (omit null authorization) converted 2/4; G2 (one-sentence policy clarification) converted 4/4 and on the 13 valid held-out cases accepted 7/7 valid with 0/6 false accepts and 0 false holds. 20 paid calls, 76,486 accounted tokens (≈$0.008–$0.15 placeholder estimate). Development evidence only: the split was used to select the variants. See `docs/graph-llm-false-holds.md`.
 - [x] Replicate the G2 policy-clarification prompt variant on the unused dev split: 7 ACCEPT / 6 HOLD, 7/7 valid accepted, 0/6 false accepts, 0 false holds (13/13 label agreement; 13 paid calls, 40,906 accounted tokens). Artifact `data/results/graph-false-hold-ablation-dev/`.
 - [x] Promote the clarified prompt to the default `membud-transition-checks-v2` (legacy v1 selectable) and re-run the held-out evaluation: graph/text/semantic each 7 ACCEPT / 6 HOLD / 5 INVALID, 0 false accepts, 0 false holds (24,265 new tokens, no abort; artifact `data/results/llm-heldout-v2-prompt-v2/`). Held-out was used for prompt selection, so this remains development evidence.
+- [x] Stabilize transition/store formats as a versioned interchange protocol: `membud.migrations` + `docs/format-policy.md` (registry, compatibility matrix, explicit v1->v2 transition migration, store migration on ACCEPT only, unknown-version rejection, release checklist) and 13 hand-written cross-version tests in `tests/test_format_migration.py`.
+- [x] Add checkpoint/resume for model runs: append-only JSONL checkpoint with a canonical config fingerprint, zero-call row replay (including `--require-cache`), torn-tail tolerance, and preserved budget/attempt/cache totals (`src/membud/checkpoint.py`, `scripts/run_llm_heldout.py --resume`).
+- [x] Add token-class cost accounting with mandatory pricing provenance and hard `verified_billed: false` (`src/membud/cost.py`; both runners accept `--price-*` flags; every figure labelled an estimate, never a bill).
+- [x] Deliver paired statistical-analysis infrastructure from committed artifacts: percentile bootstrap CIs over cases, exact McNemar, Wilson intervals, and a sample-size/precision rationale (`scripts/analyze_paired_metrics.py`, `data/results/statistical-analysis/report.json`, `docs/statistical-analysis.md`). Results remain exploratory; no superiority or equivalence claim.
 - [ ] Run a genuinely independent, better-powered evaluation on fresh cases before treating the v2 prompt as validated; collect the pending second human review.
 - [ ] Use the blind quiz (`data/review/quiz-v2.html`) to collect the independent second review of the v2 labels.
-- [ ] Add checkpoint/resume, provider-billing cost accounting, and a powered evaluation with a justified sample size.
+- [ ] Confirm provider-billed cost and run a powered evaluation with a justified sample size (checkpoint/resume and analysis machinery are delivered).
 - [ ] Implement a real third-party backend integration through a host-owned staged-write/fork after a safe pre-commit boundary is demonstrated.
-- [ ] Stabilize transition/store formats as a versioned interchange protocol with migration tests across releases.

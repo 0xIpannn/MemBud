@@ -461,8 +461,25 @@ report. Paper work remains deferred; `paper/` was not modified.
 - **Mem0 groundwork.** `membud.adapters.mem0_bridge` implements a host-owned
   staged-proposal path with deterministic mapping and byte-identical HOLD tests.
   No Mem0 import, no runtime Mem0 exercise, and **no compatibility claim**.
-- **Verification.** Full test suite: **405 passing**. No API keys, prompt text,
-  or private cache data was committed. `main` is 12 commits ahead of
+- **Format stabilization.** `membud.migrations` plus `docs/format-policy.md`
+  define the transition/store version registry, compatibility matrix, explicit
+  upgrade/refusal behavior, and release checklist; 13 hand-written cross-version
+  tests pin archival round-trips, explicit v1 -> v2 migration, HOLD byte
+  identity, and unknown-version rejection.
+- **Checkpoint/resume and cost accounting.** Model runs write an append-only
+  `checkpoint.jsonl`; `--resume` validates a config fingerprint, skips recorded
+  rows with zero client calls (including cache-only mode), tolerates a torn
+  final line, and preserves budget/attempt/cache totals. `membud.cost` reports
+  token-class estimates with mandatory pricing provenance and hard
+  `verified_billed: false`; every figure is labelled an estimate, never a bill.
+- **Paired statistical analysis.** `scripts/analyze_paired_metrics.py` produces
+  a deterministic paired report (percentile bootstrap CIs over cases, seed
+  20261108/10k resamples, exact McNemar, sample-size/precision rationale) from
+  committed artifacts only; results remain exploratory and support neither
+  superiority nor equivalence. Artifact: `data/results/statistical-analysis/`;
+  write-up: `docs/statistical-analysis.md`.
+- **Verification.** Full test suite: **542 passing**. No API keys, prompt text,
+  or private cache data was committed. `main` is 5 commits ahead of
   `origin/main`; nothing has been pushed.
 
 ### Plan compliance and deviations
@@ -483,9 +500,10 @@ report. Paper work remains deferred; `paper/` was not modified.
   plan's non-goals (feasibility spike; no production product, no third-party
   compatibility claim).
 - **Not yet met:** Definition of Done #5 (one real third-party backend
-  end-to-end), #7 billed cost (only token-based estimates), #8 downstream QA
-  utility; §9's paired bootstrap confidence intervals and sample-size rationale;
-  §11 checkpoint/resume.
+  end-to-end), #7 billed cost (only token-based estimates with provenance),
+  #8 downstream QA utility; the genuinely independent powered evaluation itself
+  (the paired-CI/sample-size machinery and checkpoint/resume are now delivered,
+  but fresh cases, second-review labels, and spend approval are still needed).
 
 ### Definition of Done (§16) status
 
@@ -497,7 +515,7 @@ report. Paper work remains deferred; `paper/` was not modified.
 | 4 | Unsafe/uncertain update cannot commit silently in the guarded path | met for the reference/service paths; no live third-party backend |
 | 5 | JSON baseline **and one real backend** run end-to-end | partial: JSON/reference only |
 | 6 | Fixed case manifest and saved configuration | met (v2 manifest; labels single-reviewer) |
-| 7 | Raw outputs, decisions, metrics, tokens, latency, cost logged | partial: billed cost unavailable; some latency is fixture-scale |
+| 7 | Raw outputs, decisions, metrics, tokens, latency, cost logged | partial: token-class cost estimates with provenance exist, but billed cost is unavailable; some latency is fixture-scale |
 | 8 | Compare reliability, false rejection, downstream utility, cost | partial: no downstream QA; descriptive statistics only |
 | 9 | Conclusions distinguish measured findings from limitations | met |
 
@@ -506,14 +524,15 @@ report. Paper work remains deferred; `paper/` was not modified.
 1. Collect the independent second human review and adjudicate the v2 labels
    (`data/review/quiz-v2.html`).
 2. Run a genuinely independent, better-powered evaluation on fresh cases with
-   tuning/final separation, paired bootstrap confidence intervals, and a
-   sample-size rationale (deterministic rules and the v2 LLM prompt).
-3. Add checkpoint/resume for model runs and provider-billing cost accounting.
+   tuning/final separation, using the delivered paired-CI/sample-size machinery
+   (requires fresh cases, second-review labels, and spend approval).
+3. Confirm provider-billed cost; checkpoint/resume and token-class estimate
+   accounting are delivered, but no billing data exists yet.
 4. Implement one real backend end-to-end (Mem0 or A-Mem) through a host-owned
    staged write/fork, proving HOLD mutates none of the host's write side
    effects; only then claim compatibility.
-5. Stabilize transition/store formats as a versioned interchange protocol with
-   cross-release migration tests.
+5. Maintain the delivered format policy (`docs/format-policy.md`) for any future
+   breaking version bump; no migration work is open today.
 6. If productizing: add concurrency/version arbitration to the opencode guard
    (TOCTOU between snapshot and write) and decide on sidecar auth/TLS/rate
    limits; extend live tests to unscripted agent behavior, other providers, and
