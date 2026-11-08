@@ -2,6 +2,19 @@
 
 Prioritized next steps from the current implementation and `PLAN.md`.
 
+Reconciled with `PLAN.md` §19 on 2026-11-08: the actionable list is at the top;
+the sections below are a historical work log (mostly complete) and the
+post-Milestone-2 log.
+
+## Next up (2026-11-08)
+
+1. [ ] Collect the independent second human review and adjudicate the v2 labels (`data/review/quiz-v2.html`).
+2. [ ] Run a genuinely independent, better-powered evaluation on fresh cases with tuning/final separation, paired bootstrap confidence intervals, and a sample-size rationale (deterministic rules and the v2 LLM prompt).
+3. [ ] Add checkpoint/resume for model runs and provider-billing cost accounting.
+4. [ ] Implement one real backend end-to-end (Mem0 or A-Mem) through a host-owned staged write/fork, proving HOLD mutates none of the host's write side effects; only then claim compatibility.
+5. [ ] Stabilize transition/store formats as a versioned interchange protocol with cross-release migration tests.
+6. [ ] If productizing: add concurrency/version arbitration to the opencode guard (TOCTOU between snapshot and write) and decide on sidecar auth/TLS/rate limits; extend live tests to unscripted agent behavior, other providers, and MCP/real backends.
+
 ## Immediate: make the prototype robust
 
 - [x] Review the canonical schema and public API; document schema/versioning and compatibility expectations.
@@ -41,7 +54,7 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [x] Define the structural adapter contract and atomicity/provenance requirements (`src/membud/adapters/`, `data/adapter-contract.md`).
 - [x] Inspect Mem0's proposed-update/write path; no supported safe pre-commit hook was found, so defer adapter/fork (`data/backend-feasibility.md`).
 - [x] Inspect A-Mem's note/evolution write path; safe guarding requires staging/forking, so defer integration (`data/backend-feasibility.md`).
-- [x] Phase 0 opencode productization spike: stdlib localhost `/verify` sidecar (`membud.service`) plus a no-build `tool.execute.before` guard plugin against a mock memory tool (`integrations/opencode/`); 39 sidecar tests, node/bun harness, real opencode 1.19.5 module-load smoke under an offline network namespace, and measured loopback latency. No live model-originated denial test, no MCP/memory-backend integration.
+- [x] Phase 0 opencode productization spike: stdlib localhost `/verify` sidecar (`membud.service`) plus a no-build `tool.execute.before` guard plugin against a mock memory tool (`integrations/opencode/`); 39 sidecar tests, node/bun harness, real opencode 1.19.5 module-load smoke under an offline network namespace, and measured loopback latency. The live model-originated denial test is recorded below; no MCP/memory-backend integration.
 - [x] Mem0 host-owned staged-proposal bridge (`membud.adapters.mem0_bridge`) with deterministic mapping and byte-identical HOLD tests; no Mem0 import and no compatibility claim (`data/mem0-bridge.md`).
 - [x] Live model-originated opencode denial test: a real `deepseek/deepseek-flash` session in opencode 1.19.5 called the plugin-registered `memory_write` tool; HOLD was denied before execution with byte-identical state and surfaced to the model, ACCEPT executed and persisted exactly the candidate. Reproducible via `scripts/run_live_opencode_denial.py --confirm-paid-call` (≈$0.0005 for the run); evidence in `integrations/opencode/live/EVIDENCE.md`.
 - [ ] If productizing: decide on sidecar authentication/TLS/rate limiting/concurrency-version arbitration; extend the live test to unscripted agent behavior, other providers/models, and a real backend/MCP tool through a host-owned staged write.
@@ -70,7 +83,7 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [x] Second-review process prepared (review sheet generator + adjudication template); no independence fabricated.
 - [x] Updated README/PLAN/TODO and added `docs/technical-report-milestone-2.md`.
 
-### Remaining after Milestone 2
+### Post-Milestone-2 work log (2026-11-07/08)
 
 - [x] Fairness/equivalence audit (plain text vs fair text with equal contradiction access vs structural graph): fair text matches graph on all 26 non-invalid cases; the earlier 2/36 graph advantage is explained by annotation access, not structural inference (`docs/fairness-audit.md`).
 - [ ] Define and evaluate a graph hypothesis where relational structure supplies detection capability a fair text verifier cannot reconstruct from the same facts (multi-hop provenance/derivation, entity-relation contradictions across records, temporal ordering), and compare against a fair-text control with identical information.
