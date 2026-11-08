@@ -54,6 +54,17 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from membud.cost import (  # noqa: E402
+    PLACEHOLDER_HIGH_USD_PER_MTOK,
+    PLACEHOLDER_LOW_USD_PER_MTOK,
+    PriceTable,
+    TokenCounts,
+    build_price_tables,
+    estimate_cost,
+    estimate_usage_cost,
+    extract_token_counts,
+    sum_token_counts,
+)
 from membud.experiment import (  # noqa: E402
     load_manifest_entries,
     load_manifest_labels,
@@ -73,8 +84,11 @@ DEFAULT_CASES = ("HELD-01", "HELD-02", "HELD-03", "HELD-07")
 DEFAULT_MAX_TOTAL_TOKENS = 60_000
 DEFAULT_MAX_ATTEMPTS = 3
 ESTIMATED_TOKENS_PER_ATTEMPT = 2500
-COST_LOW_USD_PER_MILLION_TOKENS = 0.10
-COST_HIGH_USD_PER_MILLION_TOKENS = 2.00
+# Placeholder cost envelope (USD per 1M tokens); membud.cost is the source of
+# truth.  Kept as module constants for backwards compatibility with earlier
+# analysis code.
+COST_LOW_USD_PER_MILLION_TOKENS = PLACEHOLDER_LOW_USD_PER_MTOK
+COST_HIGH_USD_PER_MILLION_TOKENS = PLACEHOLDER_HIGH_USD_PER_MTOK
 
 VARIANT_ORDER = ("graph_cache", "graph_no_null_auth", "graph_policy_clarified")
 VARIANT_CONFIG: dict[str, dict[str, Any]] = {
@@ -197,6 +211,7 @@ def preservation_failed(result_payload: Mapping[str, Any] | None) -> bool:
 
 
 def cost_range(accounted_tokens: int) -> dict[str, Any]:
+    """Legacy flat placeholder range over an accounted-token total."""
     return {
         "low_usd": round(accounted_tokens * COST_LOW_USD_PER_MILLION_TOKENS / 1_000_000, 6),
         "high_usd": round(accounted_tokens * COST_HIGH_USD_PER_MILLION_TOKENS / 1_000_000, 6),
@@ -206,7 +221,26 @@ def cost_range(accounted_tokens: int) -> dict[str, Any]:
     }
 
 
-def summarize_variant(rows: Iterable[Mapping[str, Any]], variant: str) -> dict[str, Any]:
+def variant_row_tokens(row: Mapping[str, Any]) -> TokenCounts:
+    """Token counts by billing class from a flat ablation row."""
+    return extract_token_counts(
+        {
+            "input_tokens": row.get("input_tokens"),
+            "output_tokens": row.get("output_tokens"),
+            "cached_tokens": row.get("cached_tokens"),
+            "reasoning_tokens": row.get("reasoning_tokens"),
+            "total_tokens": row.get("total_tokens"),
+        }
+    )
+
+
+def summarize_variant(
+    rows: Iterable[Mapping[str, Any]],
+    variant: str,
+    *,
+    price_tables: tuple[PriceTable, PriceTable] | None = None,
+) -> dict[str, Any]:
+    price_tables = price_tables or build_price_tables()
     variant_rows = [row for row in rows if row.get("variant") == variant]
     decisions = {"ACCEPT": 0, "HOLD": 0, "ERROR": 0}
     expected_accept = 0
@@ -216,6 +250,7 @@ def summarize_variant(rows: Iterable[Mapping[str, Any]], variant: str) -> dict[s
     auth_mentions = 0
     accounted = 0
     cache_hits = 0
+    token_counts = TokenCounts()
     for row in variant_rows:
         decision = str(row.get("decision") or "ERROR")
         decisions[decision] = decisions.get(decision, 0) + 1
@@ -230,6 +265,10 @@ def summarize_variant(rows: Iterable[Mapping[str, Any]], variant: str) -> dict[s
         auth_mentions += int(row.get("authorization_mentions") or 0)
         accounted += int(row.get("accounted_tokens") or 0)
         cache_hits += int(row.get("cache_hit") or 0)
+        token_counts = token_counts + variant_row_tokens(row)
+    cost_estimate = estimate_cost(
+        token_counts, price_tables, accounted_tokens=accounted
+    ).to_dict()
     return {
         "variant": variant,
         "description": VARIANT_CONFIG[variant]["description"],
@@ -242,7 +281,9 @@ def summarize_variant(rows: Iterable[Mapping[str, Any]], variant: str) -> dict[s
         "authorization_reason_mentions": auth_mentions,
         "accounted_tokens": accounted,
         "cache_hits": cache_hits,
-        "estimated_cost_range_usd": cost_range(accounted),
+        "tokens_by_class": token_counts.to_dict(),
+        "cost_estimate": cost_estimate,
+        "estimated_cost_range_usd": cost_estimate,
     }
 
 
@@ -348,10 +389,12 @@ def run_ablation(
     max_attempts: int,
     run_id: str | None = None,
     code_revision: str = "",
+    price_tables: tuple[PriceTable, PriceTable] | None = None,
 ) -> dict[str, Any]:
     """Run the selected variants over the selected cases and write artifacts."""
     cases = tuple(cases)
     variants = tuple(variants)
+    price_tables = price_tables or build_price_tables()
     if max_total_tokens <= 0:
         raise ValueError("--max-total-tokens must be positive")
     if max_attempts < 1:
@@ -400,6 +443,17 @@ def run_ablation(
                 max_attempts=max_attempts,
             )
             accounted_total += int(row.get("accounted_tokens") or 0)
+            row["cost_estimate"] = estimate_usage_cost(
+                {
+                    "input_tokens": row.get("input_tokens"),
+                    "output_tokens": row.get("output_tokens"),
+                    "cached_tokens": row.get("cached_tokens"),
+                    "reasoning_tokens": row.get("reasoning_tokens"),
+                    "total_tokens": row.get("total_tokens"),
+                },
+                price_tables,
+                accounted_tokens=int(row.get("accounted_tokens") or 0),
+            )
             rows.append(row)
             checks = ",".join(
                 f"{check['name']}={check['status']}({check['reason_code']})"
@@ -411,6 +465,10 @@ def run_ablation(
                 f"tokens={row['accounted_tokens']} checks={checks}"
             )
 
+    ablation_tokens = sum_token_counts(variant_row_tokens(row) for row in rows)
+    run_cost_estimate = estimate_cost(
+        ablation_tokens, price_tables, accounted_tokens=accounted_total
+    ).to_dict()
     summary = {
         "run_id": run_id,
         "generated_at": _iso_now(),
@@ -428,8 +486,13 @@ def run_ablation(
             "aborted": aborted,
             "abort_reason": abort_reason,
         },
+        "tokens_by_class": ablation_tokens.to_dict(),
+        "cost_estimate": run_cost_estimate,
         "variant_metrics": {
-            variant: summarize_variant(rows, variant) for variant in variants
+            variant: summarize_variant(
+                rows, variant, price_tables=price_tables
+            )
+            for variant in variants
         },
         "rows": rows,
     }
@@ -498,6 +561,34 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="required acknowledgement before running any non-cache-only variant",
     )
+    parser.add_argument(
+        "--price-input-per-mtok",
+        type=float,
+        default=None,
+        help="explicit input-token price per 1,000,000 tokens (with output price)",
+    )
+    parser.add_argument(
+        "--price-output-per-mtok",
+        type=float,
+        default=None,
+        help="explicit output-token price per 1,000,000 tokens (with input price)",
+    )
+    parser.add_argument(
+        "--price-cached-per-mtok",
+        type=float,
+        default=None,
+        help="explicit cached-input price per 1M tokens (default: input price)",
+    )
+    parser.add_argument(
+        "--price-source",
+        default="",
+        help="price provenance source, e.g. a quote URL",
+    )
+    parser.add_argument(
+        "--price-date",
+        default="",
+        help="price provenance date (ISO-8601); estimates are never billed amounts",
+    )
     return parser
 
 
@@ -514,6 +605,13 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | int:
         return 2
     output = Path(args.output)
     _require_fresh_output(output)
+    price_tables = build_price_tables(
+        input_per_mtok=args.price_input_per_mtok,
+        output_per_mtok=args.price_output_per_mtok,
+        cached_per_mtok=args.price_cached_per_mtok,
+        source=args.price_source,
+        date=args.price_date,
+    )
     clients = {
         variant: build_client(
             max_attempts=args.max_attempts,
@@ -532,11 +630,12 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | int:
         max_attempts=args.max_attempts,
         run_id=args.run_id or None,
         code_revision=args.code_revision,
+        price_tables=price_tables,
     )
     print()
     for variant in summary["variants"]:
         metrics = summary["variant_metrics"][variant]
-        cost = metrics["estimated_cost_range_usd"]
+        cost = metrics["cost_estimate"]
         print(
             f"{variant:24s} decisions={metrics['decisions']} "
             f"converted={metrics['false_hold_conversions']}/{metrics['expected_accept_cases']} "
@@ -549,6 +648,12 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | int:
     print(
         f"accounted_tokens={budget['accounted_tokens_used']} cap={budget['max_total_tokens']} "
         f"aborted={budget['aborted']}"
+    )
+    cost_run = summary["cost_estimate"]
+    print(
+        "cost: ESTIMATE ONLY, provider billing unavailable "
+        f"(source={cost_run['pricing']['source']!r}, date={cost_run['pricing']['date']}, "
+        f"verified_billed=False); {cost_run['basis']}"
     )
     print(f"wrote {output / 'summary.json'}")
     return summary

@@ -29,9 +29,24 @@ rows are marked ``usage_estimated = true``.  Cache hits report zero new token
 usage and are not charged the fallback.
 
 No monetary billing data is available from the provider.  Cost figures are an
-explicitly-labelled *estimate range* derived from the documented placeholder
-per-million-token assumptions below; they are not a bill and must not be
-reported as verified spend.
+explicitly-labelled *estimate* derived from token-type-aware accounting
+(:mod:`membud.cost`): per-million-token rates supplied via CLI flags, or the
+documented placeholder range ``$0.10-$2.00/M`` when no quote is supplied.  They
+are not a bill and must not be reported as verified spend.
+
+Checkpoint / resume
+-------------------
+Every row is appended to ``<output>/checkpoint.jsonl`` (flushed and fsynced)
+after it completes, together with a configuration fingerprint covering the
+manifest SHA-256, split, model/provider, prompt versions, conditions, max
+attempts, and code revision.  ``--resume`` reuses an existing output directory:
+it validates the fingerprint (refusing any mismatch before a client call),
+skips every recorded row without calling the client, carries forward the
+checkpoint's accounted-token/attempt/cache totals, and rewrites
+``summary.json``/``metrics.json`` as a complete run would.  Without
+``--resume`` the default fresh-run behaviour is unchanged (a non-empty output
+directory is still refused).  Resume must work with ``--require-cache``: skipped
+rows make no client calls, so they cannot trigger a cache miss.
 
 Cache-only / offline mode
 -------------------------
@@ -76,6 +91,22 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from membud.checkpoint import (  # noqa: E402
+    CHECKPOINT_FILENAME,
+    CHECKPOINT_SCHEMA_VERSION,
+    RunCheckpoint,
+)
+from membud.cost import (  # noqa: E402
+    PLACEHOLDER_HIGH_USD_PER_MTOK,
+    PLACEHOLDER_LOW_USD_PER_MTOK,
+    PriceTable,
+    TokenCounts,
+    build_price_tables,
+    estimate_cost,
+    estimate_usage_cost,
+    extract_token_counts,
+    sum_token_counts,
+)
 from membud.experiment import (  # noqa: E402
     _last_event,
     _record_invalid_input,
@@ -107,16 +138,19 @@ ESTIMATED_TOKENS_PER_ATTEMPT = 2500
 
 # Placeholder cost envelope, in USD per 1,000,000 accounted tokens.  Provider
 # billing is unavailable for this workflow and no verified account pricing was
-# recorded, so the metrics report a RANGE rather than a single unearned number.
-COST_LOW_USD_PER_MILLION_TOKENS = 0.10
-COST_HIGH_USD_PER_MILLION_TOKENS = 2.00
+# recorded, so the metrics report a labelled RANGE rather than a single unearned
+# number.  Kept as module constants for backwards compatibility with earlier
+# analysis code; :mod:`membud.cost` is the source of truth.
+COST_LOW_USD_PER_MILLION_TOKENS = PLACEHOLDER_LOW_USD_PER_MTOK
+COST_HIGH_USD_PER_MILLION_TOKENS = PLACEHOLDER_HIGH_USD_PER_MTOK
 COST_ASSUMPTION_NOTE = (
     "Estimated cost range, not a billed amount: the provider did not report "
-    "monetary cost and no verified account price is recorded. The range applies "
-    f"${COST_LOW_USD_PER_MILLION_TOKENS:.2f}-${COST_HIGH_USD_PER_MILLION_TOKENS:.2f} "
-    "USD per 1,000,000 accounted tokens to reported plus conservatively "
-    f"estimated tokens ({ESTIMATED_TOKENS_PER_ATTEMPT} tokens/attempt where "
-    "usage is absent). Token counts are telemetry, not a billing record."
+    "monetary cost and no verified account price is recorded. The placeholder "
+    f"assumption ${COST_LOW_USD_PER_MILLION_TOKENS:.2f}-"
+    f"${COST_HIGH_USD_PER_MILLION_TOKENS:.2f} USD per 1,000,000 accounted tokens "
+    "is applied to reported token classes plus conservatively estimated tokens "
+    f"({ESTIMATED_TOKENS_PER_ATTEMPT} tokens/attempt where usage is absent). "
+    "Token counts are telemetry, not a billing record."
 )
 
 COMPARISON_POLICY = (
@@ -210,21 +244,90 @@ def parse_conditions(raw: str) -> tuple[str, ...]:
     return tuple(condition for condition in CONDITION_ORDER if condition in requested)
 
 
-def _estimated_cost_range(tokens: int) -> dict[str, Any]:
-    """Return the explicitly-labelled estimated cost range for accounted tokens."""
-    low = round(tokens * COST_LOW_USD_PER_MILLION_TOKENS / 1_000_000, 6)
-    high = round(tokens * COST_HIGH_USD_PER_MILLION_TOKENS / 1_000_000, 6)
-    return {
-        "low_usd": low,
-        "high_usd": high,
+def _estimated_cost_range(
+    tokens: int, price_tables: tuple[PriceTable, PriceTable] | None = None
+) -> dict[str, Any]:
+    """Legacy helper: labelled estimate when only an accounted total is known."""
+    tables = price_tables or build_price_tables()
+    return estimate_cost(TokenCounts(), tables, accounted_tokens=int(tokens)).to_dict()
+
+
+def _cost_estimate(
+    tokens: TokenCounts,
+    price_tables: tuple[PriceTable, PriceTable],
+    *,
+    accounted_tokens: int,
+) -> dict[str, Any]:
+    """Token-type-aware cost estimate payload (labelled; never a bill)."""
+    return estimate_cost(
+        tokens, price_tables, accounted_tokens=int(accounted_tokens)
+    ).to_dict()
+
+
+def _cost_assumption(
+    cost_estimate: dict[str, Any], fallback_tokens_per_attempt: int
+) -> dict[str, Any]:
+    """Provenance block describing the pricing assumption behind the metrics."""
+    pricing = cost_estimate["pricing"]
+    payload: dict[str, Any] = {
         "estimated": True,
         "billing_data_available": False,
-        "accounted_tokens": tokens,
-        "assumption": {
-            "low_usd_per_million_tokens": COST_LOW_USD_PER_MILLION_TOKENS,
-            "high_usd_per_million_tokens": COST_HIGH_USD_PER_MILLION_TOKENS,
-            "note": COST_ASSUMPTION_NOTE,
+        "verified_billed": False,
+        "currency": pricing["currency"],
+        "rate_basis": pricing["rate_basis"],
+        "pricing": pricing,
+        "fallback_tokens_per_attempt": fallback_tokens_per_attempt,
+        "note": cost_estimate["basis"],
+    }
+    if pricing["placeholder"]:
+        payload["low_usd_per_million_tokens"] = pricing["low_rates_per_mtok"]["output"]
+        payload["high_usd_per_million_tokens"] = pricing["high_rates_per_mtok"]["output"]
+    return payload
+
+
+def _require_resume_checkpoint(output: Path) -> Path:
+    """Refuse ``--resume`` unless the run checkpoint exists on disk."""
+    checkpoint_path = output / CHECKPOINT_FILENAME
+    if not output.is_dir() or not checkpoint_path.is_file():
+        raise ValueError(
+            f"--resume requires an existing checkpoint file at {checkpoint_path}; "
+            "start a fresh run without --resume first"
+        )
+    return checkpoint_path
+
+
+def _checkpoint_config(
+    *,
+    manifest_id: str,
+    manifest_sha256: str,
+    split: str,
+    conditions: Iterable[str],
+    model: str,
+    provider: str,
+    prompt_versions: dict[str, str],
+    max_attempts: int,
+    code_revision: str,
+) -> dict[str, Any]:
+    """Settings whose change would make a resumed run incomparable.
+
+    Deliberately excluded: ``max_total_tokens`` (a resume may extend the budget
+    cap), ``require_cache``/``cache_path`` (resume must work in cache-only mode),
+    and run identity/time fields.  Their effects are accounted for separately.
+    """
+    return {
+        "manifest_id": manifest_id,
+        "manifest_sha256": manifest_sha256,
+        "split": split,
+        "conditions": list(conditions),
+        "model": model,
+        "provider": provider,
+        "prompt_versions": {
+            "llm": prompt_versions.get("llm", ""),
+            "semantic": prompt_versions.get("semantic", ""),
         },
+        "max_attempts": int(max_attempts),
+        "code_revision": code_revision,
+        "checkpoint_schema_version": CHECKPOINT_SCHEMA_VERSION,
     }
 
 
@@ -473,6 +576,7 @@ def _condition_metrics(
     rows: list[dict[str, Any]],
     heldout_entries: list[Any],
     labels: dict[str, dict[str, Any]],
+    price_tables: tuple[PriceTable, PriceTable],
 ) -> dict[str, Any]:
     condition_rows = [row for row in rows if row["condition"] == condition]
     attempted = [
@@ -547,6 +651,12 @@ def _condition_metrics(
     latencies = [
         float(row["latency_ms"]) for row in attempted if row.get("latency_ms") is not None
     ]
+    condition_tokens = sum_token_counts(
+        extract_token_counts(row.get("usage") or {}) for row in attempted
+    )
+    cost_estimate = _cost_estimate(
+        condition_tokens, price_tables, accounted_tokens=accounted_tokens
+    )
 
     def ids(rows_: list[dict[str, Any]]) -> list[str]:
         return sorted({row["case_id"] for row in rows_})
@@ -621,8 +731,10 @@ def _condition_metrics(
                 ),
             },
             "accounted_total_tokens": accounted_tokens,
+            "by_token_class": condition_tokens.to_dict(),
         },
-        "estimated_cost_range_usd": _estimated_cost_range(accounted_tokens),
+        "cost_estimate": cost_estimate,
+        "estimated_cost_range_usd": cost_estimate,
     }
 
 
@@ -631,17 +743,28 @@ def build_metrics(
     summary: dict[str, Any],
     heldout_entries: list[Any],
     labels: dict[str, dict[str, Any]],
+    price_tables: tuple[PriceTable, PriceTable] | None = None,
 ) -> dict[str, Any]:
     rows = summary["results"]
+    price_tables = price_tables or build_price_tables()
     condition_metrics = {
         condition: _condition_metrics(
             condition=condition,
             rows=rows,
             heldout_entries=heldout_entries,
             labels=labels,
+            price_tables=price_tables,
         )
         for condition in summary["conditions"]
     }
+    run_tokens = sum_token_counts(
+        extract_token_counts(row.get("usage") or {}) for row in rows
+    )
+    run_cost_estimate = _cost_estimate(
+        run_tokens,
+        price_tables,
+        accounted_tokens=int(summary["budget"]["accounted_tokens_used"]),
+    )
     return {
         "run_id": summary["run_id"],
         "manifest_id": summary["manifest_id"],
@@ -661,10 +784,10 @@ def build_metrics(
             ),
             "usage": summary["usage"],
             "budget": summary["budget"],
-            "estimated_cost_range_usd": _estimated_cost_range(
-                summary["budget"]["accounted_tokens_used"]
-            ),
+            "cost_estimate": run_cost_estimate,
+            "estimated_cost_range_usd": run_cost_estimate,
         },
+        "cost_estimate": run_cost_estimate,
         "comparison_policy": COMPARISON_POLICY,
         "denominator_note": (
             "Detection and error rates use rows actually attempted in this run "
@@ -676,14 +799,9 @@ def build_metrics(
             "independent human review is still pending. This is a small synthetic "
             "held-out split, not a representative benchmark."
         ),
-        "cost_assumption": {
-            "estimated": True,
-            "billing_data_available": False,
-            "low_usd_per_million_tokens": COST_LOW_USD_PER_MILLION_TOKENS,
-            "high_usd_per_million_tokens": COST_HIGH_USD_PER_MILLION_TOKENS,
-            "fallback_tokens_per_attempt": ESTIMATED_TOKENS_PER_ATTEMPT,
-            "note": COST_ASSUMPTION_NOTE,
-        },
+        "cost_assumption": _cost_assumption(
+            run_cost_estimate, ESTIMATED_TOKENS_PER_ATTEMPT
+        ),
     }
 
 
@@ -704,12 +822,20 @@ def run_heldout(
     run_id: str | None = None,
     code_revision: str = "",
     comparator_factory: Callable[[Any], Any] = LLMSemanticComparator,
+    resume: bool = False,
+    price_tables: tuple[PriceTable, PriceTable] | None = None,
 ) -> dict[str, Any]:
     """Run the held-out LLM evaluation and write ``summary.json``/``metrics.json``.
 
     ``client`` is required and must be a fake in tests.  Every non-invalid row
     is executed through :func:`membud.store.run_case`; expected-invalid rows are
     recorded with zero client/comparator calls.
+
+    ``resume=True`` reuses an existing output directory and its
+    ``checkpoint.jsonl``: the configuration fingerprint is validated first, then
+    every recorded row is reused without a client call and the run continues at
+    the first unrecorded row.  ``resume=False`` keeps the original fresh-run
+    contract (a non-empty output directory is refused).
     """
     if max_total_tokens <= 0:
         raise ValueError("--max-total-tokens must be positive")
@@ -725,7 +851,11 @@ def run_heldout(
 
     manifest_path = Path(manifest_path)
     output = Path(output)
-    _require_fresh_output(output)
+    price_tables = price_tables or build_price_tables()
+    if resume:
+        _require_resume_checkpoint(output)
+    else:
+        _require_fresh_output(output)
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest_sha256 = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
@@ -751,47 +881,95 @@ def run_heldout(
     code_revision = code_revision or source_fingerprint()
     generated_at = _iso_now()
 
+    model = getattr(client, "model", "") or ""
+    provider = (getattr(client, "configuration", {}) or {}).get("provider", "")
+    prompt_versions = {
+        "llm": LLM_PROMPT_VERSION,
+        "semantic": SEMANTIC_PROMPT_VERSION,
+    }
+    checkpoint_path = output / CHECKPOINT_FILENAME
+    checkpoint_config = _checkpoint_config(
+        manifest_id=str(manifest["manifest_id"]),
+        manifest_sha256=manifest_sha256,
+        split=split,
+        conditions=conditions,
+        model=str(model),
+        provider=str(provider),
+        prompt_versions=prompt_versions,
+        max_attempts=max_attempts,
+        code_revision=code_revision,
+    )
+    if resume:
+        checkpoint = RunCheckpoint.load(checkpoint_path)
+        # Refuse a mismatched configuration before any row (and any paid call).
+        checkpoint.validate(checkpoint_config)
+    else:
+        checkpoint = RunCheckpoint.create(checkpoint_path, config=checkpoint_config)
+    preexisting_identities = set(checkpoint.completed_identities())
+    checkpoint_totals = checkpoint.totals()
+
     rows: list[dict[str, Any]] = []
     recorded_invalid: set[tuple[str, str]] = set()
-    accounted_total = 0
-    reported_total = 0
-    estimated_total = 0
-    attempts_total = 0
-    cache_hits_total = 0
+    # Seed the running budget from the checkpoint so a resumed run continues the
+    # same accounting ledger instead of restarting the cap.
+    accounted_running = checkpoint_totals["accounted_tokens"]
     aborted = False
     abort_reason = ""
 
-    def record_invalid(entry: Any, condition: str) -> dict[str, Any]:
-        row = _record_invalid_row(
-            entry=entry,
-            condition=condition,
-            output=output,
-            run_id=run_id,
-            code_revision=code_revision,
-            manifest_id=manifest["manifest_id"],
-            manifest_sha256=manifest_sha256,
-        )
+    def recorded_row(condition: str, case_id: str) -> dict[str, Any] | None:
+        stored = checkpoint.get_row({"condition": condition, "case_id": case_id})
+        return dict(stored) if stored is not None else None
+
+    def finish_row(row: dict[str, Any], entry: Any) -> dict[str, Any]:
         row["label_expected_decision"] = labels.get(entry.case_id, {}).get(
             "expected_decision"
         )
-        recorded_invalid.add((condition, entry.case_id))
         rows.append(row)
+        return row
+
+    def record_invalid(entry: Any, condition: str) -> dict[str, Any]:
+        stored = recorded_row(condition, entry.case_id)
+        if stored is None:
+            row = _record_invalid_row(
+                entry=entry,
+                condition=condition,
+                output=output,
+                run_id=run_id,
+                code_revision=code_revision,
+                manifest_id=manifest["manifest_id"],
+                manifest_sha256=manifest_sha256,
+            )
+            finish_row(row, entry)
+            checkpoint.append(row)
+        else:
+            row = finish_row(stored, entry)
+        recorded_invalid.add((condition, entry.case_id))
         return row
 
     for condition in conditions:
         if aborted:
             break
         for entry in heldout_entries:
+            stored = recorded_row(condition, entry.case_id)
             if entry.invalid:
-                record_invalid(entry, condition)
+                if stored is not None:
+                    finish_row(stored, entry)
+                    recorded_invalid.add((condition, entry.case_id))
+                else:
+                    record_invalid(entry, condition)
                 continue
             if aborted:
                 break
-            if accounted_total >= max_total_tokens:
+            if stored is not None:
+                # Already attempted in an earlier (interrupted) run: reuse the
+                # recorded row and make no client call.
+                finish_row(stored, entry)
+                continue
+            if accounted_running >= max_total_tokens:
                 aborted = True
                 abort_reason = (
                     f"token budget reached before {condition}/{entry.case_id}: "
-                    f"accounted {accounted_total} >= cap {max_total_tokens}"
+                    f"accounted {accounted_running} >= cap {max_total_tokens}"
                 )
                 break
             row = _run_valid_row(
@@ -806,23 +984,14 @@ def run_heldout(
                 manifest_sha256=manifest_sha256,
                 max_attempts=max_attempts,
             )
-            row["label_expected_decision"] = labels.get(entry.case_id, {}).get(
-                "expected_decision"
-            )
-            rows.append(row)
-            accounted_total += int(row["accounted_tokens"])
-            reported_total += int(
-                row["usage"].get("total_tokens") or 0
-            )
-            if row["usage_estimated"]:
-                estimated_total += int(row["accounted_tokens"])
-            attempts_total += int(row.get("attempts") or 0)
-            cache_hits_total += int(row.get("cache_hit") or 0)
-            if accounted_total > max_total_tokens:
+            finish_row(row, entry)
+            checkpoint.append(row)
+            accounted_running += int(row["accounted_tokens"])
+            if accounted_running > max_total_tokens:
                 aborted = True
                 abort_reason = (
                     f"token budget exceeded after {condition}/{entry.case_id}: "
-                    f"accounted {accounted_total} > cap {max_total_tokens}; "
+                    f"accounted {accounted_running} > cap {max_total_tokens}; "
                     "stopped before the next row"
                 )
                 break
@@ -837,6 +1006,54 @@ def run_heldout(
                     record_invalid(entry, condition)
 
     rows.sort(key=lambda row: (row_order[(row["condition"], row["case_id"])]))
+
+    # Recompute the whole ledger from the rows (fresh + checkpointed) so a
+    # resumed run's totals are exactly the sum of all recorded rows.
+    accounted_total = sum(int(row.get("accounted_tokens") or 0) for row in rows)
+    reported_total = sum(
+        int((row.get("usage") or {}).get("total_tokens") or 0) for row in rows
+    )
+    estimated_total = sum(
+        int(row.get("accounted_tokens") or 0)
+        for row in rows
+        if row.get("usage_estimated")
+    )
+    attempts_total = sum(int(row.get("attempts") or 0) for row in rows)
+    cache_hits_total = sum(int(row.get("cache_hit") or 0) for row in rows)
+    resumed_rows = sum(
+        1
+        for row in rows
+        if (row["condition"], row["case_id"]) in preexisting_identities
+    )
+    if not aborted and accounted_total > max_total_tokens:
+        aborted = True
+        abort_reason = (
+            f"token budget exceeded: accounted {accounted_total} > cap "
+            f"{max_total_tokens} (recomputed from recorded rows; all recorded "
+            "rows were kept)"
+        )
+
+    planned_identities = {
+        (condition, entry.case_id)
+        for condition in conditions
+        for entry in heldout_entries
+    }
+    recorded_identities = {(row["condition"], row["case_id"]) for row in rows}
+    if not aborted and recorded_identities == planned_identities:
+        checkpoint.mark_complete()
+
+    for row in rows:
+        row["cost_estimate"] = estimate_usage_cost(
+            row.get("usage") or {},
+            price_tables,
+            accounted_tokens=int(row.get("accounted_tokens") or 0),
+        )
+    directory_tokens = sum_token_counts(
+        extract_token_counts(row.get("usage") or {}) for row in rows
+    )
+    run_cost_estimate = _cost_estimate(
+        directory_tokens, price_tables, accounted_tokens=accounted_total
+    )
 
     planned_valid_rows = len(valid_entries) * len(conditions)
     executed_valid_rows = sum(
@@ -861,12 +1078,15 @@ def run_heldout(
         "overshoot_tokens": max(0, accounted_total - max_total_tokens),
         "planned_non_invalid_rows": planned_valid_rows,
         "executed_non_invalid_rows": executed_valid_rows,
+        "resumed": bool(resume),
+        "resumed_rows": resumed_rows,
         "note": (
             "The cap is checked after each row and before the next row starts. "
             "Because token usage is only known after a provider response, one "
             "in-flight row can overshoot the cap; overshoot_tokens reports it. "
             f"Rows without reported usage are charged {ESTIMATED_TOKENS_PER_ATTEMPT} "
-            "tokens/attempt (marked estimated)."
+            "tokens/attempt (marked estimated). A resumed run carries forward the "
+            "checkpoint's accounted-token totals."
         ),
     }
     summary = {
@@ -883,8 +1103,8 @@ def run_heldout(
         "case_count": len(heldout_entries),
         "valid_case_count": len(valid_entries),
         "invalid_case_count": len(invalid_entries),
-        "model": getattr(client, "model", ""),
-        "provider": (getattr(client, "configuration", {}) or {}).get("provider", ""),
+        "model": model,
+        "provider": provider,
         "cache_path": (
             str(getattr(client, "cache_path", ""))
             if getattr(client, "cache_path", None) is not None
@@ -893,34 +1113,40 @@ def run_heldout(
         "require_cache": bool(getattr(client, "require_cache", False)),
         "max_attempts": max_attempts,
         "estimated_tokens_per_attempt": ESTIMATED_TOKENS_PER_ATTEMPT,
-        "prompt_versions": {
-            "llm": LLM_PROMPT_VERSION,
-            "semantic": SEMANTIC_PROMPT_VERSION,
-        },
+        "prompt_versions": prompt_versions,
+        "resumed": bool(resume),
+        "resumed_rows": resumed_rows,
+        "checkpoint_path": str(checkpoint_path),
+        "config_fingerprint": checkpoint.fingerprint,
+        "checkpoint_schema_version": CHECKPOINT_SCHEMA_VERSION,
+        "checkpoint_torn_final_line": checkpoint.torn_final_line,
+        "checkpoint_is_complete": checkpoint.is_complete,
         "results": rows,
         "budget": budget,
+        "cost_estimate": run_cost_estimate,
         "usage": {
             "reported": {
                 "input_tokens": sum(
-                    int(row["usage"].get("input_tokens") or 0) for row in rows
+                    int((row.get("usage") or {}).get("input_tokens") or 0) for row in rows
                 ),
                 "output_tokens": sum(
-                    int(row["usage"].get("output_tokens") or 0) for row in rows
+                    int((row.get("usage") or {}).get("output_tokens") or 0) for row in rows
                 ),
                 "total_tokens": reported_total,
                 "rows_with_reported_usage": sum(
-                    1 for row in rows if row["usage"].get("reported")
+                    1 for row in rows if (row.get("usage") or {}).get("reported")
                 ),
             },
             "estimated": {
                 "accounted_tokens": estimated_total,
-                "rows": sum(1 for row in rows if row["usage_estimated"]),
+                "rows": sum(1 for row in rows if row.get("usage_estimated")),
                 "basis": (
                     f"{ESTIMATED_TOKENS_PER_ATTEMPT} tokens/attempt when usage is "
                     "absent and the row is not a cache hit"
                 ),
             },
             "accounted_total_tokens": accounted_total,
+            "by_token_class": directory_tokens.to_dict(),
         },
         "reported_tokens_used": reported_total,
         "estimated_tokens_used": estimated_total,
@@ -941,7 +1167,10 @@ def run_heldout(
         "semantic_uncertain_rows": semantic_uncertain,
     }
     metrics = build_metrics(
-        summary=summary, heldout_entries=heldout_entries, labels=labels
+        summary=summary,
+        heldout_entries=heldout_entries,
+        labels=labels,
+        price_tables=price_tables,
     )
     _write_json(output / "summary.json", summary)
     _write_json(output / "metrics.json", metrics)
@@ -978,7 +1207,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--split", default="heldout", help="manifest split to evaluate")
     parser.add_argument(
-        "--output", required=True, help="fresh output directory (refuses reuse)"
+        "--output",
+        required=True,
+        help="output directory; reused only with --resume (fresh runs refuse reuse)",
     )
     parser.add_argument(
         "--conditions",
@@ -1021,6 +1252,46 @@ def build_parser() -> argparse.ArgumentParser:
             "request instead of making a paid call"
         ),
     )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help=(
+            "resume an interrupted run from <output>/checkpoint.jsonl: validates "
+            "the config fingerprint and skips recorded rows without calling the "
+            "provider"
+        ),
+    )
+    parser.add_argument(
+        "--price-input-per-mtok",
+        type=float,
+        default=None,
+        help="explicit input-token price per 1,000,000 tokens (with output price)",
+    )
+    parser.add_argument(
+        "--price-output-per-mtok",
+        type=float,
+        default=None,
+        help="explicit output-token price per 1,000,000 tokens (with input price)",
+    )
+    parser.add_argument(
+        "--price-cached-per-mtok",
+        type=float,
+        default=None,
+        help="explicit cached-input price per 1M tokens (default: input price)",
+    )
+    parser.add_argument(
+        "--price-source",
+        default="",
+        help="price provenance source, e.g. a quote URL or 'DeepSeek pricing page'",
+    )
+    parser.add_argument(
+        "--price-date",
+        default="",
+        help=(
+            "price provenance date (ISO-8601); defaults to the run's UTC date. "
+            "Estimates are never billed amounts"
+        ),
+    )
     return parser
 
 
@@ -1028,8 +1299,18 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     args = build_parser().parse_args(argv)
     conditions = parse_conditions(args.conditions)
     output = Path(args.output)
-    # Refuse a stale output directory before constructing a paid client.
-    _require_fresh_output(output)
+    # Refuse a stale/absent run directory before constructing a paid client.
+    if args.resume:
+        _require_resume_checkpoint(output)
+    else:
+        _require_fresh_output(output)
+    price_tables = build_price_tables(
+        input_per_mtok=args.price_input_per_mtok,
+        output_per_mtok=args.price_output_per_mtok,
+        cached_per_mtok=args.price_cached_per_mtok,
+        source=args.price_source,
+        date=args.price_date,
+    )
     code_revision = args.code_revision or source_fingerprint()
     run_id = args.run_id or (
         f"llm-heldout-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
@@ -1049,6 +1330,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         max_attempts=args.max_attempts,
         run_id=run_id,
         code_revision=code_revision,
+        resume=args.resume,
+        price_tables=price_tables,
     )
     metrics_path = output / "metrics.json"
     print(
@@ -1058,13 +1341,19 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         f"invalid={summary['invalid_case_count']})"
     )
     print(f"run_id={summary['run_id']} model={summary['model']}")
+    print(
+        f"resumed={summary['resumed']} resumed_rows={summary['resumed_rows']} "
+        f"checkpoint={summary['checkpoint_path']} "
+        f"fingerprint={summary['config_fingerprint'][:12]} "
+        f"torn_final_line={summary['checkpoint_torn_final_line']}"
+    )
     metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
     for condition in summary["conditions"]:
         block = metrics["condition_metrics"][condition]
         counts = " ".join(
             f"{name}={value}" for name, value in block["decision_counts"].items()
         )
-        cost = block["estimated_cost_range_usd"]
+        cost = block["cost_estimate"]
         print(
             f"{condition:9s} {counts} tokens={block['usage']['accounted_total_tokens']} "
             f"(reported={block['usage']['reported']['total_tokens']}, "
@@ -1087,9 +1376,11 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         f"aborted={budget['aborted']} attempts={summary['attempts']} "
         f"cache_hits={summary['cache_hits']}"
     )
+    cost_run = metrics["cost_estimate"]
     print(
-        "cost: ESTIMATE ONLY, provider billing unavailable; "
-        f"{metrics['cost_assumption']['note']}"
+        "cost: ESTIMATE ONLY, provider billing unavailable "
+        f"(source={cost_run['pricing']['source']!r}, date={cost_run['pricing']['date']}, "
+        f"verified_billed=False); {cost_run['basis']}"
     )
     print(f"no superiority claim: {metrics['comparison_policy']}")
     if budget["aborted"]:

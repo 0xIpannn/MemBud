@@ -14,6 +14,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from membud.checkpoint import CheckpointConfigMismatch, RunCheckpoint
 from membud.llm.client import CacheMissError
 from membud.semantic import SemanticRelation
 
@@ -781,3 +782,370 @@ def test_require_cache_flag_recorded_in_summary(tmp_path):
         output_name="out-default",
     )
     assert default_summary["require_cache"] is False
+
+
+# ---------------------------------------------------------------------------
+# Checkpoint / resume
+# ---------------------------------------------------------------------------
+
+
+def _run_kwargs(
+    manifest_path: Path,
+    output: Path,
+    client: FakeClient,
+    **overrides,
+) -> dict:
+    kwargs = {
+        "manifest_path": manifest_path,
+        "output": output,
+        "client": client,
+        "split": "heldout",
+        "conditions": ("graph",),
+        "max_total_tokens": 250_000,
+        "max_attempts": 3,
+        "run_id": "resume-run",
+        "code_revision": "test-revision",
+    }
+    kwargs.update(overrides)
+    return kwargs
+
+
+def _partial_run(
+    tmp_path: Path,
+    *,
+    cases: list[dict],
+    labels: list[dict],
+    max_total_tokens: int = 100,
+    output_name: str = "out",
+):
+    manifest_path = _write_manifest(tmp_path, cases, labels)
+    output = tmp_path / output_name
+    client = FakeClient(total_tokens=150)
+    summary = harness.run_heldout(
+        **_run_kwargs(
+            manifest_path,
+            output,
+            client,
+            max_total_tokens=max_total_tokens,
+        )
+    )
+    assert client.calls == 1
+    assert summary["budget"]["aborted"] is True
+    assert (output / "checkpoint.jsonl").exists()
+    return manifest_path, output, summary, client
+
+
+def test_fresh_run_writes_checkpoint_and_still_refuses_reuse(tmp_path):
+    manifest_path = _write_manifest(
+        tmp_path, [_valid_raw()], [_label("HELD-01", "ACCEPT")]
+    )
+    output = tmp_path / "out"
+    summary = harness.run_heldout(
+        **_run_kwargs(manifest_path, output, FakeClient())
+    )
+    assert summary["resumed"] is False
+    assert summary["resumed_rows"] == 0
+    assert summary["checkpoint_path"] == str(output / "checkpoint.jsonl")
+    assert summary["config_fingerprint"]
+    assert summary["checkpoint_is_complete"] is True
+    assert summary["checkpoint_torn_final_line"] is False
+    with pytest.raises(ValueError, match="fresh --output"):
+        harness.run_heldout(
+            **_run_kwargs(manifest_path, output, FakeClient(), max_total_tokens=10_000)
+        )
+
+
+def test_resume_skips_completed_rows_without_client_calls(tmp_path):
+    manifest_path, output, first, _ = _partial_run(
+        tmp_path,
+        cases=[_valid_raw("HELD-01"), _valid_raw("HELD-11")],
+        labels=[_label("HELD-01", "ACCEPT"), _label("HELD-11", "ACCEPT")],
+    )
+    assert len(first["results"]) == 1
+
+    second_client = FakeClient(total_tokens=150)
+    summary = harness.run_heldout(
+        **_run_kwargs(
+            manifest_path,
+            output,
+            second_client,
+            max_total_tokens=250_000,
+            resume=True,
+        )
+    )
+    assert second_client.calls == 1  # only the uncompleted row was called
+    assert summary["resumed"] is True
+    assert summary["resumed_rows"] == 1
+    assert summary["budget"]["resumed"] is True
+    assert summary["budget"]["resumed_rows"] == 1
+    assert summary["budget"]["accounted_tokens_used"] == 300
+    assert summary["budget"]["aborted"] is False
+    assert summary["attempts"] == 2
+    assert len(summary["results"]) == 2
+    assert {row["case_id"] for row in summary["results"]} == {"HELD-01", "HELD-11"}
+    assert summary["checkpoint_is_complete"] is True
+    assert (output / "metrics.json").exists()
+
+    # A second resume of the completed checkpoint makes no calls at all and
+    # rewrites the same artifacts.
+    third_client = FakeClient()
+    again = harness.run_heldout(
+        **_run_kwargs(manifest_path, output, third_client, resume=True)
+    )
+    assert third_client.calls == 0
+    assert again["resumed_rows"] == 2
+    assert again["budget"]["accounted_tokens_used"] == 300
+    assert again["checkpoint_is_complete"] is True
+
+
+def test_resume_with_require_cache_makes_no_calls_for_completed_rows(tmp_path):
+    manifest_path, output, _, _ = _partial_run(
+        tmp_path,
+        cases=[_valid_raw("HELD-01"), _valid_raw("HELD-11")],
+        labels=[_label("HELD-01", "ACCEPT"), _label("HELD-11", "ACCEPT")],
+    )
+    client = FakeClient(total_tokens=150)
+    client.require_cache = True
+    client.cache_path = "cache.sqlite3"
+    summary = harness.run_heldout(
+        **_run_kwargs(manifest_path, output, client, resume=True)
+    )
+    assert client.calls == 1  # only the new row; the skipped row never dialled
+    assert getattr(client, "cache_misses", 0) == 0
+    assert summary["require_cache"] is True
+    assert summary["resumed_rows"] == 1
+
+
+def test_resume_fingerprint_mismatch_aborts_before_any_call(tmp_path):
+    manifest_path, output, _, _ = _partial_run(
+        tmp_path,
+        cases=[_valid_raw("HELD-01"), _valid_raw("HELD-11")],
+        labels=[_label("HELD-01", "ACCEPT"), _label("HELD-11", "ACCEPT")],
+    )
+    client = FakeClient()
+    with pytest.raises(CheckpointConfigMismatch) as excinfo:
+        harness.run_heldout(
+            **_run_kwargs(manifest_path, output, client, max_attempts=5, resume=True)
+        )
+    assert client.calls == 0
+    assert "max_attempts" in str(excinfo.value)
+
+    # A different selected-condition set is also a mismatch.
+    with pytest.raises(CheckpointConfigMismatch):
+        harness.run_heldout(
+            **_run_kwargs(
+                manifest_path,
+                output,
+                FakeClient(),
+                conditions=("graph", "text"),
+                resume=True,
+            )
+        )
+    assert client.calls == 0
+
+
+def test_resume_without_checkpoint_raises(tmp_path):
+    manifest_path = _write_manifest(
+        tmp_path, [_valid_raw()], [_label("HELD-01", "ACCEPT")]
+    )
+    output = tmp_path / "out"
+    output.mkdir()
+    (output / "stray.txt").write_text("old run", encoding="utf-8")
+    client = FakeClient()
+    with pytest.raises(ValueError, match="--resume requires an existing checkpoint"):
+        harness.run_heldout(
+            **_run_kwargs(manifest_path, output, client, resume=True)
+        )
+    assert client.calls == 0
+
+
+def test_resume_tolerates_and_repairs_torn_checkpoint_tail(tmp_path):
+    manifest_path, output, _, _ = _partial_run(
+        tmp_path,
+        cases=[_valid_raw("HELD-01"), _valid_raw("HELD-11"), _valid_raw("HELD-12")],
+        labels=[
+            _label("HELD-01", "ACCEPT"),
+            _label("HELD-11", "ACCEPT"),
+            _label("HELD-12", "ACCEPT"),
+        ],
+    )
+    checkpoint_path = output / "checkpoint.jsonl"
+    with checkpoint_path.open("a", encoding="utf-8") as handle:
+        handle.write('{"kind":"row","row":{"condition":"graph","case_id":"HELD')  # torn
+
+    client = FakeClient(total_tokens=150)
+    summary = harness.run_heldout(
+        **_run_kwargs(manifest_path, output, client, resume=True)
+    )
+    assert client.calls == 2  # the torn row and the never-started row re-ran
+    assert summary["resumed_rows"] == 1
+    assert summary["checkpoint_torn_final_line"] is True
+    assert len(summary["results"]) == 3
+    assert summary["budget"]["accounted_tokens_used"] == 450
+
+    reloaded = RunCheckpoint.load(checkpoint_path)
+    assert reloaded.torn_final_line is False  # torn tail repaired before append
+    assert reloaded.is_complete is True
+    assert len(reloaded.completed_identities()) == 3
+
+
+def test_resume_preserves_budget_and_aborts_before_overspending(tmp_path):
+    manifest_path, output, first, _ = _partial_run(
+        tmp_path,
+        cases=[_valid_raw("HELD-01"), _valid_raw("HELD-11")],
+        labels=[_label("HELD-01", "ACCEPT"), _label("HELD-11", "ACCEPT")],
+    )
+    assert first["budget"]["accounted_tokens_used"] == 150
+
+    client = FakeClient(total_tokens=150)
+    summary = harness.run_heldout(
+        **_run_kwargs(manifest_path, output, client, max_total_tokens=100, resume=True)
+    )
+    assert client.calls == 0  # the preserved ledger already reached the cap
+    assert summary["budget"]["aborted"] is True
+    assert summary["budget"]["accounted_tokens_used"] == 150
+    assert summary["resumed_rows"] == 1
+    assert "token budget reached before graph/HELD-11" in summary["budget"]["abort_reason"]
+
+
+def test_resume_does_not_replay_invalid_rows_or_duplicate_audit(tmp_path):
+    manifest_path, output, first, _ = _partial_run(
+        tmp_path,
+        cases=[_valid_raw("HELD-01"), _invalid_raw("HELD-14")],
+        labels=[_label("HELD-01", "ACCEPT"), _label("HELD-14", "INVALID_INPUT")],
+        max_total_tokens=50,
+    )
+    assert {row["decision"] for row in first["results"]} == {"ACCEPT", "INVALID_INPUT"}
+    audit_path = output / "graph" / "audit.jsonl"
+    audit_lines_before = len(audit_path.read_text(encoding="utf-8").splitlines())
+    assert audit_lines_before == 2
+
+    client = FakeClient()
+    summary = harness.run_heldout(
+        **_run_kwargs(manifest_path, output, client, resume=True)
+    )
+    assert client.calls == 0
+    assert summary["resumed_rows"] == 2
+    assert len(summary["results"]) == 2
+    assert summary["budget"]["aborted"] is False
+    assert summary["checkpoint_is_complete"] is True
+    # Reused rows must not re-append audit events.
+    assert len(audit_path.read_text(encoding="utf-8").splitlines()) == audit_lines_before
+
+
+# ---------------------------------------------------------------------------
+# Token-type-aware cost accounting
+# ---------------------------------------------------------------------------
+
+
+def test_cost_estimate_present_per_row_condition_and_run(tmp_path):
+    summary, metrics, _ = _run(
+        tmp_path,
+        cases=[_valid_raw()],
+        labels=[_label("HELD-01", "ACCEPT")],
+        conditions=("graph",),
+        client=FakeClient(total_tokens=150),
+    )
+    row_cost = summary["results"][0]["cost_estimate"]
+    assert row_cost["estimated"] is True
+    assert row_cost["billing_data_available"] is False
+    assert row_cost["verified_billed"] is False
+    assert row_cost["pricing"]["verified_billed"] is False
+    assert row_cost["pricing"]["placeholder"] is True
+    assert row_cost["pricing"]["rate_basis"] == "placeholder_range"
+    assert row_cost["pricing"]["source"]
+    assert row_cost["pricing"]["date"]
+    assert row_cost["low_usd"] <= row_cost["estimated_usd"] <= row_cost["high_usd"]
+    assert row_cost["tokens"]["input"] == 120
+    assert row_cost["tokens"]["output"] == 30
+    assert row_cost["tokens"]["accounted"] == 150
+    assert "not a billed amount" in row_cost["basis"]
+
+    run_cost = summary["cost_estimate"]
+    assert run_cost["accounted_tokens"] == 150
+    block = metrics["condition_metrics"]["graph"]
+    assert block["cost_estimate"] == block["estimated_cost_range_usd"]
+    assert block["cost_estimate"]["accounted_tokens"] == 150
+    assert metrics["cost_estimate"]["accounted_tokens"] == 150
+    assert metrics["cost_assumption"]["estimated"] is True
+    assert metrics["cost_assumption"]["billing_data_available"] is False
+    assert metrics["cost_assumption"]["verified_billed"] is False
+    assert metrics["cost_assumption"]["pricing"]["placeholder"] is True
+
+
+def test_cache_hit_row_has_zero_cost(tmp_path):
+    summary, metrics, _ = _run(
+        tmp_path,
+        cases=[_valid_raw()],
+        labels=[_label("HELD-01", "ACCEPT")],
+        conditions=("graph",),
+        client=FakeClient(cached=True),
+    )
+    row_cost = summary["results"][0]["cost_estimate"]
+    assert row_cost["estimated_usd"] == 0.0
+    assert row_cost["low_usd"] == 0.0
+    assert row_cost["high_usd"] == 0.0
+    assert row_cost["tokens"]["accounted"] == 0
+    assert summary["cost_estimate"]["estimated_usd"] == 0.0
+    assert metrics["condition_metrics"]["graph"]["cost_estimate"]["estimated_usd"] == 0.0
+
+
+def test_cli_price_flags_parse_and_apply_explicit_rates(tmp_path, monkeypatch):
+    parser = harness.build_parser()
+    defaults = parser.parse_args(["--output", "out"])
+    assert defaults.resume is False
+    assert defaults.price_input_per_mtok is None
+    assert defaults.price_output_per_mtok is None
+    assert defaults.price_cached_per_mtok is None
+    assert defaults.price_source == ""
+    assert defaults.price_date == ""
+
+    parsed = parser.parse_args(
+        [
+            "--output",
+            "out",
+            "--resume",
+            "--price-input-per-mtok",
+            "1.0",
+            "--price-output-per-mtok",
+            "2.0",
+            "--price-source",
+            "quote-page",
+            "--price-date",
+            "2026-01-02",
+        ]
+    )
+    assert parsed.resume is True
+    assert parsed.price_input_per_mtok == 1.0
+    assert parsed.price_output_per_mtok == 2.0
+
+    manifest_path = _write_manifest(
+        tmp_path, [_valid_raw()], [_label("HELD-01", "ACCEPT")]
+    )
+    monkeypatch.setattr(harness, "build_client", lambda **_: FakeClient())
+    summary = harness.main(
+        [
+            "--manifest",
+            str(manifest_path),
+            "--output",
+            str(tmp_path / "priced-out"),
+            "--conditions",
+            "graph",
+            "--price-input-per-mtok",
+            "1.0",
+            "--price-output-per-mtok",
+            "2.0",
+            "--price-source",
+            "quote-page",
+            "--price-date",
+            "2026-01-02",
+        ]
+    )
+    cost = summary["cost_estimate"]
+    assert cost["pricing"]["source"] == "quote-page"
+    assert cost["pricing"]["date"] == "2026-01-02"
+    assert cost["pricing"]["rate_basis"] == "explicit_per_mtok"
+    assert cost["pricing"]["placeholder"] is False
+    assert cost["low_usd"] == cost["high_usd"]
+    # 120 input tokens * $1/M + 30 output tokens * $2/M = $0.00018
+    assert cost["low_usd"] == pytest.approx(0.00018)
