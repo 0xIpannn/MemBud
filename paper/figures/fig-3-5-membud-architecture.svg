@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="700" viewBox="0 0 1100 700" font-family="Helvetica, Arial, 'DejaVu Sans', sans-serif">
+<defs>
+<marker id="arr-neutral" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#2b3a4a"/></marker>
+<marker id="arr-graph" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#2f6f9f"/></marker>
+<marker id="arr-text" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#c07020"/></marker>
+<marker id="arr-red" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#b23b3b"/></marker>
+<marker id="arr-green" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#2e7d32"/></marker>
+<marker id="arr-grey" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#7a7a7a"/></marker>
+</defs>
+<rect x="0" y="0" width="1100" height="700" fill="#ffffff"/>
+<rect x="30" y="40" width="200" height="70" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="130.0" y="79.6875" font-size="12.5" fill="#1d2b3a" text-anchor="middle" font-weight="600">Host memory system</text>
+<rect x="270" y="40" width="190" height="70" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="365.0" y="79.5" font-size="12" fill="#1d2b3a" text-anchor="middle" font-weight="600">Proposed operations</text>
+<rect x="500" y="40" width="190" height="70" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="595.0" y="79.6875" font-size="12.5" fill="#1d2b3a" text-anchor="middle" font-weight="600">Backend adapter</text>
+<rect x="730" y="40" width="300" height="70" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="880.0" y="65.5125" font-size="12.5" fill="#1d2b3a" text-anchor="middle" font-weight="600">Transition package</text>
+<text x="880.0" y="80.28750000000001" font-size="10.5" fill="#55657a" text-anchor="middle" font-weight="normal">prior state, candidate, evidence,</text>
+<text x="880.0" y="94.46250000000002" font-size="10.5" fill="#55657a" text-anchor="middle" font-weight="normal">claims, operations</text>
+<path d="M 233 75 L 267 75" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<path d="M 463 75 L 497 75" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<path d="M 693 75 L 727 75" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<path d="M 820 110 L 680 170" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<path d="M 940 110 L 950 170" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<rect x="560" y="172" width="200" height="62" rx="10" ry="10" fill="#e8f0f7" stroke="#2f6f9f" stroke-width="2.0"/>
+<text x="660.0" y="207.6875" font-size="12.5" fill="#2f6f9f" text-anchor="middle" font-weight="600">Graph builder</text>
+<rect x="850" y="172" width="200" height="62" rx="10" ry="10" fill="#f8efe3" stroke="#c07020" stroke-width="2.0"/>
+<text x="950.0" y="207.6875" font-size="12.5" fill="#c07020" text-anchor="middle" font-weight="600">Text renderer</text>
+<path d="M 660 234 L 660 268" fill="none" stroke="#2f6f9f" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-graph)"/>
+<path d="M 950 234 L 950 268" fill="none" stroke="#c07020" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-text)"/>
+<rect x="560" y="270" width="200" height="62" rx="10" ry="10" fill="#e8f0f7" stroke="#2f6f9f" stroke-width="2.0"/>
+<text x="660.0" y="305.6875" font-size="12.5" fill="#2f6f9f" text-anchor="middle" font-weight="600">Graph verifier</text>
+<rect x="850" y="270" width="200" height="62" rx="10" ry="10" fill="#f8efe3" stroke="#c07020" stroke-width="2.0"/>
+<text x="950.0" y="305.6875" font-size="12.5" fill="#c07020" text-anchor="middle" font-weight="600">Text verifier</text>
+<path d="M 660 332 L 610 378" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<path d="M 950 332 L 720 378" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<rect x="430" y="380" width="300" height="70" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="580.0" y="412.45" font-size="13" fill="#1d2b3a" text-anchor="middle" font-weight="600">Decision policy</text>
+<text x="580.0" y="427.9" font-size="11" fill="#55657a" text-anchor="middle" font-weight="normal">commit only if every check passes</text>
+<path d="M 430 415 L 300 415 L 300 496" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-green)"/>
+<text x="352" y="405" font-size="12" fill="#2e7d32" text-anchor="middle" font-weight="600">ACCEPT</text>
+<rect x="170" y="500" width="230" height="70" rx="10" ry="10" fill="#e7f2e8" stroke="#2e7d32" stroke-width="2.0"/>
+<text x="285.0" y="532.1125" font-size="13" fill="#2e7d32" text-anchor="middle" font-weight="600">Store</text>
+<text x="285.0" y="548.0875" font-size="11.5" fill="#55657a" text-anchor="middle" font-weight="normal">versioned JSON, version + 1</text>
+<path d="M 140 478 L 460 478" fill="none" stroke="#55657a" stroke-width="1.6" stroke-dasharray="6 5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="318" y="470" font-size="10" fill="#55657a" text-anchor="start" font-weight="normal">no store write before the decision</text>
+<path d="M 650 450 L 650 598" fill="none" stroke="#b23b3b" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-red)"/>
+<text x="662" y="520" font-size="12" fill="#b23b3b" text-anchor="start" font-weight="600">HOLD: no write</text>
+<rect x="30" y="600" width="1040" height="66" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="550.0" y="630.4499999999999" font-size="13" fill="#1d2b3a" text-anchor="middle" font-weight="600">Audit log (append-only)</text>
+<text x="550.0" y="645.8999999999999" font-size="11" fill="#55657a" text-anchor="middle" font-weight="normal">every proposal, decision and write is recorded</text>
+<path d="M 300 570 L 300 598" fill="none" stroke="#2b3a4a" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<text x="330" y="590" font-size="10" fill="#55657a" text-anchor="start" font-weight="normal">audit entry</text>
+</svg>

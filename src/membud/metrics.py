@@ -83,8 +83,26 @@ def _llm_usage_block(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return llm_usage
 
 
-def _estimated_cost(llm_usage: dict[str, Any]) -> dict[str, Any]:
+def _estimated_cost(
+    llm_usage: dict[str, Any], *, declared_verifier: str = "rules"
+) -> dict[str, Any]:
     if llm_usage.get("response_count", 0) == 0:
+        verifier = declared_verifier.strip().lower()
+        rules_only = verifier in {"", "rules"}
+        if not rules_only:
+            # A declared model verifier with no completed response cannot claim
+            # zero spend: the run may have made failed/uncounted provider calls.
+            return {
+                "estimated_cost_usd": None,
+                "estimated": False,
+                "billing_data_available": False,
+                "basis": "spend_unknown_no_completed_responses",
+                "note": (
+                    f"Declared verifier '{declared_verifier}' has no completed model "
+                    "responses in this condition; spend is unknown and no $0.00 claim "
+                    "is made. Token counts are telemetry, not a bill."
+                ),
+            }
         return {
             "estimated_cost_usd": 0.0,
             "estimated": True,
@@ -192,6 +210,8 @@ def _condition_block(
     condition: str,
     rows_by_key: dict[tuple[str, str], dict[str, Any]],
     labels: dict[str, dict[str, Any]],
+    *,
+    declared_verifier: str = "rules",
 ) -> dict[str, Any]:
     def row_for(case_id: str) -> dict[str, Any]:
         return rows_by_key[(case_id, condition)]
@@ -328,7 +348,7 @@ def _condition_block(
         "timing_breakdown": _timing_breakdown(timing),
         "llm_usage": llm_usage,
         "token_usage": dict(llm_usage),
-        "estimated_cost": _estimated_cost(llm_usage),
+        "estimated_cost": _estimated_cost(llm_usage, declared_verifier=declared_verifier),
         "as_completed": as_completed,
         "fail_closed_itt": fail_closed_itt,
         "faulty_detection": faulty_detection,
@@ -499,9 +519,16 @@ def analyze_manifest_run(manifest_path: str | Path, summary_path: str | Path) ->
         category = label.get("category", "unlabelled")
         category_counts[category] = category_counts.get(category, 0) + 1
 
+    declared_verifier = str(summary.get("verifier") or "rules")
     condition_metrics: dict[str, Any] = {}
     for condition in ("graph", "text"):
-        block = _condition_block(manifest["case_ids"], condition, rows_by_key, labels)
+        block = _condition_block(
+            manifest["case_ids"],
+            condition,
+            rows_by_key,
+            labels,
+            declared_verifier=declared_verifier,
+        )
         if splits:
             block["splits"] = {
                 split: _condition_block(
@@ -509,6 +536,7 @@ def analyze_manifest_run(manifest_path: str | Path, summary_path: str | Path) ->
                     condition,
                     rows_by_key,
                     labels,
+                    declared_verifier=declared_verifier,
                 )
                 for split in splits
             }

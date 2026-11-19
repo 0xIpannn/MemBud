@@ -43,11 +43,35 @@ def verify(
     required-claim reachability, operation edges, contradictions, connectivity).
     ``representation="text"`` runs the original exact-claim-set baseline and is
     intentionally kept implementation-independent of the graph verifier.
+
+    ``prepared_input`` is an optional performance shortcut used by
+    :func:`membud.store.run_case`: for the graph path it must equal
+    ``build_graph(t)`` exactly, otherwise ``ValueError`` is raised (a caller-
+    supplied graph is never trusted as verification fact). For the text path it
+    is accepted for API symmetry but the canonical text serialization is
+    recomputed, so it cannot alter the decision.
     """
     if representation not in {"graph", "text"}:
         raise ValueError("representation must be 'graph' or 'text'")
     if representation == "graph":
-        graph = prepared_input if isinstance(prepared_input, dict) and "nodes" in prepared_input else None
+        graph: dict[str, Any] | None = None
+        if prepared_input is not None:
+            if (
+                not isinstance(prepared_input, dict)
+                or not isinstance(prepared_input.get("nodes"), list)
+                or not isinstance(prepared_input.get("edges"), list)
+            ):
+                raise ValueError(
+                    "prepared_input for graph verification must be the canonical "
+                    "graph dict returned by build_graph(transition)"
+                )
+            canonical = build_graph(t)
+            if prepared_input != canonical:
+                raise ValueError(
+                    "prepared_input graph does not match build_graph(transition); "
+                    "refusing to verify a caller-supplied graph"
+                )
+            graph = prepared_input
         return verify_graph(t, graph=graph)
     t.validate()
     if prepared_input is not None:

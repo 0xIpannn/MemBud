@@ -114,6 +114,11 @@ class OpenAICompatibleChatClient:
         # still abort the run loudly.
         self.cache_misses = 0
         self.last_cache_miss_key = ""
+        # Telemetry: provider request cycles attempted by this client instance
+        # (cache hits are not counted).  Runners use this to distinguish a row
+        # that never reached the provider from one whose response was lost, so
+        # a pre-request failure is not charged a phantom token estimate.
+        self.provider_calls = 0
         self._sleep = sleeper
 
     @property
@@ -219,6 +224,7 @@ class OpenAICompatibleChatClient:
         token_totals = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
         seen_usage = {key: False for key in token_totals}
         for json_retry in range(self.max_json_retries + 1):
+            self.provider_calls += 1
             response, attempts = self._request_json_object(request_messages)
             total_attempts += attempts
             for key in token_totals:

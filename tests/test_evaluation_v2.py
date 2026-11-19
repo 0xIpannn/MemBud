@@ -346,6 +346,7 @@ def test_v1_manifest_remains_loadable_and_metric_semantics_preserved(tmp_path):
         code_revision="test-revision",
         manifest_id=data["manifest_id"],
         manifest_sha256=hashlib.sha256(V1_MANIFEST_PATH.read_bytes()).hexdigest(),
+        allow_legacy=True,
     )
     report = analyze_manifest_run(V1_MANIFEST_PATH, output / "pilot-summary.json")
     assert report["candidate_error_rates"]["omission"] == {
@@ -357,3 +358,24 @@ def test_v1_manifest_remains_loadable_and_metric_semantics_preserved(tmp_path):
     assert report["condition_metrics"]["graph"]["invalid_input"]["expected_invalid_cases"] == 0
     assert report["split_counts"] == {}
     assert "faulty_detection" in report["condition_metrics"]["graph"]
+
+
+def test_plain_text_detection_prose_matches_committed_metrics():
+    """Docs must not claim plain text detects 12/12 gold-HOLD cases."""
+    metrics = json.loads(
+        (ROOT / "data/results/evaluation-v2/metrics.json").read_text(encoding="utf-8")
+    )
+    text_faulty = metrics["condition_metrics"]["text"]["as_completed"]["faulty"]
+    assert text_faulty["detection_rate"]["numerator"] == 10
+    assert text_faulty["detection_rate"]["denominator"] == 12
+    assert text_faulty["false_accepts"] == 2
+
+    for relative_path in (
+        "README.md",
+        "docs/technical-report-milestone-2.md",
+        "data/pilot-report.md",
+    ):
+        prose = (ROOT / relative_path).read_text(encoding="utf-8")
+        lowered = prose.lower()
+        assert "both conditions detect 12/12" not in lowered, relative_path
+        assert "10/12" in prose, relative_path

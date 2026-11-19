@@ -1,0 +1,18 @@
+{
+  "schema_version": 2,
+  "version": 3,
+  "records": [
+    {
+      "id": "r1",
+      "claims": [
+        "lives in Chicago"
+      ]
+    },
+    {
+      "id": "r2",
+      "claims": [
+        "allergic to peanuts"
+      ]
+    }
+  ]
+}

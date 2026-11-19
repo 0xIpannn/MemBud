@@ -1,6 +1,6 @@
 # MemBud — Software Implementation Plan
 
-**Status:** Proposed implementation plan  
+**Status:** Original proposed implementation plan. The body below is the original proposal; appendices record delivered status. **Current status of record: §19 (2026-11-08).**  
 **Target timeline:** 6–8 weeks (1–2 months)  
 **Primary objective:** Build and evaluate a graph-based safety layer for validating proposed memory updates before they are committed to persistent storage.
 
@@ -394,7 +394,7 @@ Before submission, verify bibliographic details and implementation claims agains
 
 ---
 
-## Milestone 2 implementation status (2026-11-07)
+## Milestone 2 implementation status (2026-11-07; historical — see §19 for current status)
 
 This appendix records what was actually delivered after the original plan; the body above remains the original proposal and is not a status report.
 
@@ -411,10 +411,129 @@ This appendix records what was actually delivered after the original plan; the b
 
 The rules-only v2 run shows graph and text agreeing on 34/36 decisions; the two differences are constructed unresolved-contradiction cases where graph verification consumes `evidence.contradicts` and the claim-set baseline cannot. This validates that the harness can measure graph-vs-text differences on equivalent inputs, but it does **not** establish graph superiority: the dataset is synthetic and single-reviewed, authored alongside the verifier, and has no statistical power. No graph-superiority claim is made anywhere in the repository.
 
-### Next plan of record
+### Next plan of record (as of Milestone 2; superseded by §19)
 
 1. Independent second human review/adjudication of v2 labels, then a larger powered held-out evaluation.
 2. Optional semantic/LLM conditions with bounded spend, calibration/abstention reporting, and billed-cost accounting.
 3. Checkpoint/resume and longer-running experiment support.
 4. Real backend integration via host-owned staged-write/fork once a safe pre-commit boundary is demonstrated.
 5. Stable versioned interchange format with cross-release migration tests.
+
+
+---
+
+## 19. Post-Milestone-2 software status (2026-11-08)
+
+This appendix is the **current status of record** and supersedes §18's "next plan
+of record". The body above remains the original proposal and is not a status
+report. Paper work remains deferred; `paper/` was not modified.
+
+### Delivered since Milestone 2 (commits `60976ed`..`7d301c8`, 2026-11-07/08)
+
+- **Semantic annotation gap closed.** `membud.semantic` now consumes
+  `evidence.contradicts` deterministically: a candidate-state claim listed in an
+  evidence contradiction makes the appended `semantic` check FAIL with
+  `CONTRADICTED_CLAIM`, before and independent of comparator calls. A cache-only
+  held-out replay used 0 provider attempts / 0 new tokens / 51 cache hits; the
+  only decision delta was semantic `HELD-13` ACCEPT -> HOLD, moving semantic
+  false accepts 1/6 -> 0/6 and faulty detection 5/6 -> 6/6.
+- **Graph-LLM false-hold attribution and controlled ablation.** A cache-only
+  analysis attributed all 52 cached completions 1:1 to the run; the four false
+  holds all failed preservation with reasons citing null/absent authorization on
+  evidence-backed `REVISE`/`SUPERSEDE`. G0/G1/G2 ablation: G0 (cache control)
+  reproduced the four holds; G1 (omit null authorization) converted 2/4; G2
+  (one-sentence policy clarification) converted 4/4 and on the 13 schema-valid
+  held-out cases accepted 7/7 valid with 0/6 false accepts and 0 false holds.
+- **Prompt v2 promoted.** G2 was replicated on the 13 dev cases (7/7 valid
+  accepted, 0/6 false accepts) and promoted to the default
+  `membud-transition-checks-v2`; legacy v1 remains selectable
+  (`policy_clarification=False`) for archival cache replay and analysis. The
+  held-out evaluation was re-run: graph/text/semantic each 7 ACCEPT / 6 HOLD /
+  5 INVALID_INPUT, 0 false accepts, 0 false holds (24,265 new tokens, no abort).
+- **Phase 0 opencode productization.** `membud.service` provides a loopback-only
+  stdlib `/verify` sidecar; `integrations/opencode/` provides a no-build
+  `tool.execute.before` guard plugin, a node/bun harness, a real opencode 1.19.5
+  module-load smoke under an offline network namespace, and an opt-in
+  model-originated live denial test. Live test: HOLD was denied before tool
+  execution with byte-identical host state and surfaced to the model; ACCEPT
+  executed once and persisted exactly the candidate (~$0.0005/run). This is not
+  production software; the 1.18.30-typings vs 1.19.5-CLI gap is documented.
+- **Mem0 groundwork.** `membud.adapters.mem0_bridge` implements a host-owned
+  staged-proposal path with deterministic mapping and byte-identical HOLD tests.
+  No Mem0 import, no runtime Mem0 exercise, and **no compatibility claim**.
+- **Format stabilization.** `membud.migrations` plus `docs/format-policy.md`
+  define the transition/store version registry, compatibility matrix, explicit
+  upgrade/refusal behavior, and release checklist; 13 hand-written cross-version
+  tests pin archival round-trips, explicit v1 -> v2 migration, HOLD byte
+  identity, and unknown-version rejection.
+- **Checkpoint/resume and cost accounting.** Model runs write an append-only
+  `checkpoint.jsonl`; `--resume` validates a config fingerprint, skips recorded
+  rows with zero client calls (including cache-only mode), tolerates a torn
+  final line, and preserves budget/attempt/cache totals. `membud.cost` reports
+  token-class estimates with mandatory pricing provenance and hard
+  `verified_billed: false`; every figure is labelled an estimate, never a bill.
+- **Paired statistical analysis.** `scripts/analyze_paired_metrics.py` produces
+  a deterministic paired report (percentile bootstrap CIs over cases, seed
+  20261108/10k resamples, exact McNemar, sample-size/precision rationale) from
+  committed artifacts only; results remain exploratory and support neither
+  superiority nor equivalence. Artifact: `data/results/statistical-analysis/`;
+  write-up: `docs/statistical-analysis.md`.
+- **Verification.** Full test suite: **542 passing**. No API keys, prompt text,
+  or private cache data was committed. `main` is 5 commits ahead of
+  `origin/main`; nothing has been pushed.
+
+### Plan compliance and deviations
+
+- **Aligned:** the semantic annotation fix matches §6's information-parity
+  requirement; graph and text LLM conditions now share the same v2 prompt
+  (§8.5); model runs remain cache-backed with pinned model/prompt/config and
+  saved raw responses (§8.5, §11); no compatibility or graph-superiority claim
+  was added.
+- **Deviation (important):** the semantic fix and the v2 prompt were
+  selected/validated using the **held-out** split, which §8.4/§8.5 require to be
+  kept separate from tuning. This is mitigated by explicitly labelling the
+  held-out results as development evidence and by a dev-split replication, but
+  a fresh independent case set is still required before treating v2 as
+  validated.
+- **Extension outside the plan:** the opencode sidecar/plugin/live test came
+  from the handoff's productization priority, not this plan. It stays within the
+  plan's non-goals (feasibility spike; no production product, no third-party
+  compatibility claim).
+- **Not yet met:** Definition of Done #5 (one real third-party backend
+  end-to-end), #7 billed cost (only token-based estimates with provenance),
+  #8 downstream QA utility; the genuinely independent powered evaluation itself
+  (the paired-CI/sample-size machinery and checkpoint/resume are now delivered,
+  but fresh cases, second-review labels, and spend approval are still needed).
+
+### Definition of Done (§16) status
+
+| # | Requirement | Status |
+|---|---|---|
+| 1 | Validated canonical transition package | met |
+| 2 | Same case through graph and non-graph paths | met |
+| 3 | Coverage/preservation/faithfulness produce a recorded decision | met |
+| 4 | Unsafe/uncertain update cannot commit silently in the guarded path | met for the reference/service paths; no live third-party backend |
+| 5 | JSON baseline **and one real backend** run end-to-end | partial: JSON/reference only |
+| 6 | Fixed case manifest and saved configuration | met (v2 manifest; labels single-reviewer) |
+| 7 | Raw outputs, decisions, metrics, tokens, latency, cost logged | partial: token-class cost estimates with provenance exist, but billed cost is unavailable; some latency is fixture-scale |
+| 8 | Compare reliability, false rejection, downstream utility, cost | partial: no downstream QA; descriptive statistics only |
+| 9 | Conclusions distinguish measured findings from limitations | met |
+
+### Current plan of record (next)
+
+1. Collect the independent second human review and adjudicate the v2 labels
+   (`data/review/quiz-v2.html`).
+2. Run a genuinely independent, better-powered evaluation on fresh cases with
+   tuning/final separation, using the delivered paired-CI/sample-size machinery
+   (requires fresh cases, second-review labels, and spend approval).
+3. Confirm provider-billed cost; checkpoint/resume and token-class estimate
+   accounting are delivered, but no billing data exists yet.
+4. Implement one real backend end-to-end (Mem0 or A-Mem) through a host-owned
+   staged write/fork, proving HOLD mutates none of the host's write side
+   effects; only then claim compatibility.
+5. Maintain the delivered format policy (`docs/format-policy.md`) for any future
+   breaking version bump; no migration work is open today.
+6. If productizing: add concurrency/version arbitration to the opencode guard
+   (TOCTOU between snapshot and write) and decide on sidecar auth/TLS/rate
+   limits; extend live tests to unscripted agent behavior, other providers, and
+   MCP/real backends.

@@ -720,3 +720,16 @@ def test_committed_analysis_artifact_is_complete():
     # The artifact must state the post-hoc, no-superiority scope explicitly.
     assert "not a controlled experiment" in artifact["disclaimer"]
     assert "no causal or superiority claim" in artifact["disclaimer"]
+
+
+def test_analyse_cases_tolerates_extra_cache_rows_from_other_runs():
+    cases, summary_rows, cache_rows = _build_fixture()
+    cache_rows["foreign-run-cache-key"] = _payload(ALL_PASS_CHECKS)
+
+    analysis = analysis_module.analyse_cases(cases, summary_rows, cache_rows)
+    coverage = analysis["coverage"]
+
+    assert coverage["unattributed_cache_keys"] == ["foreign-run-cache-key"]
+    assert coverage["missing"] == []
+    assert coverage["full_cache_coverage"] is True
+    assert coverage["all_assertions_passed"] is True

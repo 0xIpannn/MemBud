@@ -125,6 +125,11 @@ class Transition:
         # loadable for archival/reproducibility, but strict operation-coverage
         # invariants only apply to schema_version 2 transitions.
         declared_version = d.get("schema_version", 1)
+        if not isinstance(declared_version, int) or isinstance(declared_version, bool):
+            raise ValueError(
+                "schema_version must be an integer "
+                f"(got {type(declared_version).__name__}: {declared_version!r})"
+            )
         if declared_version not in _SUPPORTED_SCHEMA_VERSIONS:
             raise ValueError(f"unsupported schema_version: {declared_version}")
         if not isinstance(d.get("before"), list) or not isinstance(d.get("candidate"), list):
@@ -162,6 +167,11 @@ class Transition:
         return t
 
     def validate(self) -> None:
+        if not isinstance(self.schema_version, int) or isinstance(self.schema_version, bool):
+            raise ValueError(
+                "schema_version must be an integer "
+                f"(got {type(self.schema_version).__name__}: {self.schema_version!r})"
+            )
         if self.schema_version not in _SUPPORTED_SCHEMA_VERSIONS:
             raise ValueError(f"unsupported schema_version: {self.schema_version}")
         if not self.case_id.strip():

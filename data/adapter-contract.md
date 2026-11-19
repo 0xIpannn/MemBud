@@ -47,15 +47,19 @@ properties, in this order:
    `DeletionAuthorization` are invalid input and are rejected **before** any verification, audit-store
    write, or host write. Invalid input is a decision (`REJECTED`), not an exception escaping to the
    caller.
-3. **Verification with audit.** Submit the transition to MemBud verification on the graph path via
-   `membud.store.run_case` (which writes the run audit event and conditionally the controlled JSON
-   baseline). The three required checks are `coverage`, `preservation`, and `faithfulness`; any
+3. **Verification, then an ordered ACCEPT-only apply.** Submit the transition to MemBud verification
+   on the graph path via `membud.store.run_case` with a verifier callback (see
+   `GuardedMemory._verifying_apply`). The callback runs the deterministic checks first; *only* on
+   ACCEPT does it re-snapshot the scope, compare it exactly with the captured prior state, and, if
+   still current, call `replace_state(scope, transition.candidate)` exactly once and re-snapshot to
+   require equality with the accepted candidate. A stale prior state, apply failure, or post-apply
+   mismatch raises a fail-closed rejection. Because this happens inside `run_case`'s `flock`
+   critical section *before* the shadow baseline is committed, a rejected apply can never advance
+   the baseline. The three required checks are `coverage`, `preservation`, and `faithfulness`; any
    non-ACCEPT result means no host mutation.
-4. **ACCEPT-only persistence.** Only when the result is ACCEPT: re-snapshot the scope and compare it
-   exactly with the captured prior state. If it differs, fail closed and report `REJECTED`
-   (stale-prior-state); do not persist. Otherwise call `replace_state(scope, transition.candidate)`
-   exactly once, then re-snapshot and require equality with the accepted candidate. On apply failure,
-   attempt to restore the captured prior state and report `REJECTED` with `applied=False`.
+4. **Baseline commit after the host apply.** The controlled JSON baseline and the run audit event are
+   written by `run_case` only after the verifier callback returned ACCEPT (i.e. after the host apply
+   succeeded).
 5. **Audit/decision record.** Append one JSONL record per proposal (ACCEPT, HOLD, and REJECTED
    including invalid input) containing: run ID, case ID, decision, `applied`, reason, prior state,
    the canonical transition (including evidence source/text and DELETE authorization), the
@@ -107,19 +111,31 @@ operations=[{
 The authorization `evidence_id` must reference evidence in the same transition. Both styles compile to
 the canonical `Operation.authorization` (`source`, `evidence_id`, `target_id`, `rationale`).
 
-`GuardedMemory.capture_prior(scope)` exposes the explicit prior-state snapshot. `InMemoryBackend` and
-`SQLiteBackend` are reference implementations only: they exist so the interception contract can be
-tested deterministically (stdlib only, no network).
+`GuardedMemory.capture_prior(scope)` exposes the explicit prior-state snapshot.
+`GuardedMemory.resync_shadow_store(scope)` is the explicit recovery hook for the crash window
+described in §4: it rewrites the baseline to the live host snapshot (at most one version bump) and
+records a `RESYNC` audit event; it is never called automatically.
+
+`InMemoryBackend` and `SQLiteBackend` are reference implementations only: they exist so the
+interception contract can be tested deterministically (stdlib only, no network). A `GuardedMemory`
+instance owns one shadow store; use one instance per scope (or one store keyed per scope), because
+the store is reconciled against the whole scoped prior state.
 
 ## 4. Known limits of this reference integration
 
-- The controlled JSON baseline (`run_case` store) and the host backend are separate writes; there is no
-  distributed transaction spanning them. The re-snapshot before apply and the post-apply equality
-  check close the common stale-write window, but a crash between the shadow-store write and the host
-  `replace_state` can leave the shadow baseline ahead of the host. The host backend is authoritative;
-  the shadow store is an audit/verification baseline.
-- The decision record is appended after the backend apply, so a crash in between can leave an applied
-  write without its decision record (the `run_case` audit event is already durable).
+- The controlled JSON baseline (`run_case` store) and the host backend are separate writes; there is
+  no distributed transaction spanning them. The ordering (host apply inside the verifier callback,
+  baseline commit afterwards) prevents an ordinary stale/apply rejection from advancing the
+  baseline. The remaining crash window is the opposite direction: process death after the host
+  `replace_state` succeeds and before `run_case` commits the baseline leaves the baseline *behind*
+  the host, so the next proposal fails prior-state reconciliation. The host is authoritative; call
+  `GuardedMemory.resync_shadow_store(scope)` after establishing that the live host state is correct.
+- The post-verification stale re-check and `replace_state` are serialized by the store `flock`, but a
+  non-guarded host writer can still interleave between them. The rollback helper only restores the
+  prior state when the host still holds our candidate, so it never clobbers an unrelated newer write;
+  full version arbitration against non-guarded writers remains future work (`TODO.md`).
+- The decision record is appended after the backend apply; a crash in between can leave an applied
+  write without a decision record (the `run_case` audit event is already durable by then).
 - Only adapters whose `replace_state` is genuinely atomic (or whose non-atomic path is restored on
   failure) can be labelled guarded. The reference backends satisfy this; third-party backends are
   unproven.

@@ -1,0 +1,42 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: python -m pip install -e ".[test]"
+      - name: Test
+        run: python -m pytest -q
+
+  opencode-guard-harness:
+    # The no-model harness starts the real Python sidecar and exercises the
+    # no-build opencode guard plugin, so the JS path is executed in CI rather
+    # than only inspected.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Run guard harness (no model calls)
+        run: |
+          PYTHONPATH=src MEMBUD_PYTHON="$(command -v python)" \
+            node integrations/opencode/harness.mjs --samples 10

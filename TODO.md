@@ -2,6 +2,18 @@
 
 Prioritized next steps from the current implementation and `PLAN.md`.
 
+Reconciled with `PLAN.md` §19 on 2026-11-08: the actionable list is at the top;
+the sections below are a historical work log (mostly complete) and the
+post-Milestone-2 log.
+
+## Next up (2026-11-08, updated after the format/infra round)
+
+1. [ ] Collect the independent second human review and adjudicate the v2 labels (`data/review/quiz-v2.html`).
+2. [ ] Run a genuinely independent, better-powered evaluation on fresh cases with tuning/final separation; the paired-CI/sample-size machinery is delivered (`scripts/analyze_paired_metrics.py`, `docs/statistical-analysis.md`), but fresh cases, second-review labels, and spend approval remain.
+3. [ ] Confirm provider-billed cost. Checkpoint/resume and token-class estimate accounting are delivered, but the provider returns no bill and only a placeholder/explicit-rate estimate exists.
+4. [ ] Implement one real backend end-to-end (Mem0 or A-Mem) through a host-owned staged write/fork, proving HOLD mutates none of the host's write side effects; only then claim compatibility.
+5. [ ] If productizing: add concurrency/version arbitration to the opencode guard (TOCTOU between snapshot and write) and decide on sidecar auth/TLS/rate limits; extend live tests to unscripted agent behavior, other providers, and MCP/real backends.
+
 ## Immediate: make the prototype robust
 
 - [x] Review the canonical schema and public API; document schema/versioning and compatibility expectations.
@@ -33,7 +45,7 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [x] Add a local 3-condition development pilot runner (`python -m membud.experiment`) with an explicitly selected optional LLM verifier.
 - [x] Harden the DeepSeek client: retry bounded malformed completion envelopes, cap provider retry delays, and record attempt counts on failed verifier rows.
 - [x] Rerun the 9 failed graph/text rows (5 graph, 4 text); all completed (24,407 reported tokens, 0 cache hits, no residual errors) and the combined decisions match the labels in both conditions.
-- [ ] Add checkpoint/resume support before external/model calls.
+- [x] Add checkpoint/resume support before external/model calls (`membud.checkpoint`, `--resume`; config-fingerprint validation, zero-call row replay, crash-tolerant JSONL, budget totals preserved; see also token-class cost accounting in `membud.cost`).
 - [x] Record/report graph preparation time and verifier time separately, plus graph node/edge counts. Successful LLM responses include token usage and retries; failed response attempts still need more complete provider-attempt metadata. The provider completion response does not report billed cost.
 
 ## Backend integrations
@@ -41,7 +53,7 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [x] Define the structural adapter contract and atomicity/provenance requirements (`src/membud/adapters/`, `data/adapter-contract.md`).
 - [x] Inspect Mem0's proposed-update/write path; no supported safe pre-commit hook was found, so defer adapter/fork (`data/backend-feasibility.md`).
 - [x] Inspect A-Mem's note/evolution write path; safe guarding requires staging/forking, so defer integration (`data/backend-feasibility.md`).
-- [x] Phase 0 opencode productization spike: stdlib localhost `/verify` sidecar (`membud.service`) plus a no-build `tool.execute.before` guard plugin against a mock memory tool (`integrations/opencode/`); 39 sidecar tests, node/bun harness, real opencode 1.19.5 module-load smoke under an offline network namespace, and measured loopback latency. No live model-originated denial test, no MCP/memory-backend integration.
+- [x] Phase 0 opencode productization spike: stdlib localhost `/verify` sidecar (`membud.service`) plus a no-build `tool.execute.before` guard plugin against a mock memory tool (`integrations/opencode/`); 39 sidecar tests, node/bun harness, real opencode 1.19.5 module-load smoke under an offline network namespace, and measured loopback latency. The live model-originated denial test is recorded below; no MCP/memory-backend integration.
 - [x] Mem0 host-owned staged-proposal bridge (`membud.adapters.mem0_bridge`) with deterministic mapping and byte-identical HOLD tests; no Mem0 import and no compatibility claim (`data/mem0-bridge.md`).
 - [x] Live model-originated opencode denial test: a real `deepseek/deepseek-flash` session in opencode 1.19.5 called the plugin-registered `memory_write` tool; HOLD was denied before execution with byte-identical state and surfaced to the model, ACCEPT executed and persisted exactly the candidate. Reproducible via `scripts/run_live_opencode_denial.py --confirm-paid-call` (≈$0.0005 for the run); evidence in `integrations/opencode/live/EVIDENCE.md`.
 - [ ] If productizing: decide on sidecar authentication/TLS/rate limiting/concurrency-version arbitration; extend the live test to unscripted agent behavior, other providers/models, and a real backend/MCP tool through a host-owned staged write.
@@ -70,7 +82,7 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [x] Second-review process prepared (review sheet generator + adjudication template); no independence fabricated.
 - [x] Updated README/PLAN/TODO and added `docs/technical-report-milestone-2.md`.
 
-### Remaining after Milestone 2
+### Post-Milestone-2 work log (2026-11-07/08)
 
 - [x] Fairness/equivalence audit (plain text vs fair text with equal contradiction access vs structural graph): fair text matches graph on all 26 non-invalid cases; the earlier 2/36 graph advantage is explained by annotation access, not structural inference (`docs/fairness-audit.md`).
 - [ ] Define and evaluate a graph hypothesis where relational structure supplies detection capability a fair text verifier cannot reconstruct from the same facts (multi-hop provenance/derivation, entity-relation contradictions across records, temporal ordering), and compare against a fair-text control with identical information.
@@ -78,11 +90,27 @@ Prioritized next steps from the current implementation and `PLAN.md`.
 - [x] Run the optional semantic/LLM conditions on the v2 held-out split under the approved $2 cap (101,231 reported tokens, ~$0.40 upper-bound estimate, no abort): graph LLM 3/10/5, text LLM 6/7/5, semantic 8/5/5; no superiority claim. See `docs/llm-heldout.md`.
 - [x] Make the semantic verifier consume `evidence.contradicts` (it inherited plain text's blind spot and accepted HELD-13), then rerun the cached held-out conditions: cache-only rerun with 0 provider attempts / 0 new tokens / 51 cache hits / 0 misses; graph and text unchanged, semantic HELD-13 ACCEPT→HOLD (`CONTRADICTED_CLAIM`), semantic false accepts 1/6→0/6, faulty detection 5/6→6/6 (`data/results/llm-heldout-v2-rerun/`).
 - [x] Investigate the graph-LLM false holds (4/7 valid held; prompt/serialization effects, retries) from the response cache only: all 52 completions attributed 1:1; all four fail preservation with reasons citing null/absent authorization on evidence-backed `REVISE`/`SUPERSEDE`; length/token asymmetry not supported; 7/52 calls retried once. See `docs/graph-llm-false-holds.md`. No paid calls.
-- [x] Run the controlled G0/G1/G2 graph false-hold ablation under the approved spend: G0 (cache control) reproduced the 4 false holds; G1 (omit null authorization) converted 2/4; G2 (one-sentence policy clarification) converted 4/4 and on the 13 valid held-out cases accepted 7/7 valid with 0/6 false accepts and 0 false holds. 20 paid calls, 76,486 accounted tokens (≈$0.008–$0.15 placeholder estimate). Development evidence only: the split was used to select the variants. See `docs/graph-llm-false-holds.md`.
-- [x] Replicate the G2 policy-clarification prompt variant on the unused dev split: 7 ACCEPT / 6 HOLD, 7/7 valid accepted, 0/6 false accepts, 0 false holds (13/13 label agreement; 13 paid calls, 40,906 accounted tokens). Artifact `data/results/graph-false-hold-ablation-dev/`.
+- [x] Run the controlled G0/G1/G2 graph false-hold ablation under the approved spend: G0 (cache control) reproduced the 4 false holds; G1 (omit null authorization) converted 2/4; G2 (one-sentence policy clarification) converted 4/4 and on the 13 valid held-out cases accepted 7/7 valid with 0/6 false accepts and 0 false holds. 27 provider attempts across the probe and paired runs (25 called rows; see the counting convention in `docs/graph-llm-false-holds.md`), 76,486 accounted tokens (≈$0.008–$0.15 placeholder estimate). Development evidence only: the split was used to select the variants. See `docs/graph-llm-false-holds.md`.
+- [x] Replicate the G2 policy-clarification prompt variant on the unused dev split: 7 ACCEPT / 6 HOLD, 7/7 valid accepted, 0/6 false accepts, 0 false holds (13/13 label agreement; 13 called rows / 16 provider attempts, 40,906 accounted tokens). Artifact `data/results/graph-false-hold-ablation-dev/`.
 - [x] Promote the clarified prompt to the default `membud-transition-checks-v2` (legacy v1 selectable) and re-run the held-out evaluation: graph/text/semantic each 7 ACCEPT / 6 HOLD / 5 INVALID, 0 false accepts, 0 false holds (24,265 new tokens, no abort; artifact `data/results/llm-heldout-v2-prompt-v2/`). Held-out was used for prompt selection, so this remains development evidence.
+- [x] Stabilize transition/store formats as a versioned interchange protocol: `membud.migrations` + `docs/format-policy.md` (registry, compatibility matrix, explicit v1->v2 transition migration, store migration on ACCEPT only, unknown-version rejection, release checklist) and hand-written cross-version tests in `tests/test_format_migration.py` (13 originally; 19 after the 2026-11-19 remediation).
+- [x] Add checkpoint/resume for model runs: append-only JSONL checkpoint with a canonical config fingerprint, zero-call row replay (including `--require-cache`), torn-tail tolerance, and preserved budget/attempt/cache totals (`src/membud/checkpoint.py`, `scripts/run_llm_heldout.py --resume`).
+- [x] Add token-class cost accounting with mandatory pricing provenance and hard `verified_billed: false` (`src/membud/cost.py`; both runners accept `--price-*` flags; every figure labelled an estimate, never a bill).
+- [x] Deliver paired statistical-analysis infrastructure from committed artifacts: percentile bootstrap CIs over cases, exact McNemar, Wilson intervals, and a sample-size/precision rationale (`scripts/analyze_paired_metrics.py`, `data/results/statistical-analysis/report.json`, `docs/statistical-analysis.md`). Results remain exploratory; no superiority or equivalence claim.
 - [ ] Run a genuinely independent, better-powered evaluation on fresh cases before treating the v2 prompt as validated; collect the pending second human review.
 - [ ] Use the blind quiz (`data/review/quiz-v2.html`) to collect the independent second review of the v2 labels.
-- [ ] Add checkpoint/resume, provider-billing cost accounting, and a powered evaluation with a justified sample size.
+- [ ] Confirm provider-billed cost and run a powered evaluation with a justified sample size (checkpoint/resume and analysis machinery are delivered).
 - [ ] Implement a real third-party backend integration through a host-owned staged-write/fork after a safe pre-commit boundary is demonstrated.
-- [ ] Stabilize transition/store formats as a versioned interchange protocol with migration tests across releases.
+
+### Software review and remediation (2026-11-19)
+
+- [x] Independent four-reviewer software review plus Lead validation of every Major finding; report: `docs/software-review-2026-11-19.md` (8 Major / 24 Minor / 9 Nit, no Blocker; committed evaluation numbers reproduce).
+- [x] Apply the ordered remediation: checkpoint/resume crash-window recovery with zero-charge pre-request failures; host-apply-before-shadow-commit and `resync_shadow_store` recovery in the reference adapter; honest `store_written`/`rolled_back` audit fields and documented write/audit ordering; enforced schema-v2 commit gate with strict `schema_version` typing (archival v1 replay via explicit `allow_legacy=True`); `prepared_input` graph validation; corrected 12/12 claim, dev-split artifact metadata, false-hold analysis reproducibility, latency/paid-call/live-cost figures; owner-only PII logs; JSON protocol-error envelopes in the sidecar; repo-relative artifact paths; failure-injection/regression tests and CI (pytest + opencode guard harness).
+- [x] Full suite after remediation: 573 passing, 0 skipped (also verified on Python 3.12 and 3.14).
+
+### Actual conversation pipeline (2026-11-19)
+
+- [x] Multi-format conversation ingestion (`membud`, `openai`, `opencode`, `halumem`, plain text/Markdown) and canonical `ConversationTurn`/`ConversationTranscript` schemas (`src/membud/conversation.py`).
+- [x] Transcript-grounded evidence verification (`verify_transcript_grounding`, `verify_with_transcript`) integrated into `membud.store`, `/verify` sidecar (`membud.service`), and `integrations/opencode/plugin/membud-verify-guard.js` (`harness.mjs`).
+- [x] Conversation extractors (`RuleBasedConversationExtractor`, `LLMConversationExtractor`) and multi-turn session runner (`run_conversation_session`, `python -m membud.conversation`).
+- [x] Hash-pinned multi-turn conversation evaluation (`data/manifests/conversations-v1.json`, `scripts/run_conversation_evaluation.py`, `data/results/conversations-v1/`): 8 conversations / 28 steps (`graph` and `text_fair` 17/17 valid acceptance, 10/10 faulty detection, 0 false accepts, 8/8 safe final states vs 4/8 unguarded) plus 8/8 raw-transcript extraction convergence (`20/20` `ACCEPT`). See `docs/conversation-pipeline.md`.

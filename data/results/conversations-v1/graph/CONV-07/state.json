@@ -1,0 +1,12 @@
+{
+  "schema_version": 2,
+  "version": 2,
+  "records": [
+    {
+      "id": "r2",
+      "claims": [
+        "has a rescue dog"
+      ]
+    }
+  ]
+}

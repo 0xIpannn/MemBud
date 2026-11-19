@@ -1,0 +1,14 @@
+[
+  {
+    "id": "r1",
+    "claims": [
+      "works at Acme Corp"
+    ]
+  },
+  {
+    "id": "r2",
+    "claims": [
+      "prefers morning meetings"
+    ]
+  }
+]

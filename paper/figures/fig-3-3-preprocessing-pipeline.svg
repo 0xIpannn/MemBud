@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="780" viewBox="0 0 1000 780" font-family="Helvetica, Arial, 'DejaVu Sans', sans-serif">
+<defs>
+<marker id="arr-neutral" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#2b3a4a"/></marker>
+<marker id="arr-graph" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#2f6f9f"/></marker>
+<marker id="arr-text" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#c07020"/></marker>
+<marker id="arr-red" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#b23b3b"/></marker>
+<marker id="arr-green" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#2e7d32"/></marker>
+<marker id="arr-grey" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#7a7a7a"/></marker>
+</defs>
+<rect x="0" y="0" width="1000" height="780" fill="#ffffff"/>
+<rect x="220" y="40" width="320" height="58" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="380.0" y="74.0625" font-size="13.5" fill="#1d2b3a" text-anchor="middle" font-weight="600">Raw case</text>
+<rect x="220" y="122" width="320" height="58" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="380.0" y="156.0625" font-size="13.5" fill="#1d2b3a" text-anchor="middle" font-weight="600">Parse</text>
+<path d="M 380 98 L 380 118" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<rect x="220" y="204" width="320" height="58" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="380.0" y="238.0625" font-size="13.5" fill="#1d2b3a" text-anchor="middle" font-weight="600">Normalise</text>
+<path d="M 380 180 L 380 200" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<rect x="220" y="286" width="320" height="58" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="380.0" y="320.0625" font-size="13.5" fill="#1d2b3a" text-anchor="middle" font-weight="600">Validate (schema v2)</text>
+<path d="M 380 262 L 380 282" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<path d="M 380 344 L 380 358" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<polygon points="380,358.0 510.0,410 380,462.0 250.0,410" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0" stroke-linejoin="round"/>
+<text x="380" y="415.0625" font-size="13.5" fill="#1d2b3a" text-anchor="middle" font-weight="600">Schema valid?</text>
+<path d="M 512 410 L 716 410" fill="none" stroke="#b23b3b" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-red)"/>
+<text x="560" y="401" font-size="11.5" fill="#b23b3b" text-anchor="middle" font-weight="600">invalid</text>
+<rect x="722" y="380" width="230" height="60" rx="10" ry="10" fill="#f7e8e8" stroke="#b23b3b" stroke-width="2.0"/>
+<text x="837.0" y="415.0625" font-size="13.5" fill="#b23b3b" text-anchor="middle" font-weight="600">INVALID_INPUT</text>
+<text x="837" y="464" font-size="11" fill="#b23b3b" text-anchor="middle" font-weight="normal">no verification, no write</text>
+<text x="397" y="474" font-size="11.5" fill="#2e7d32" text-anchor="middle" font-weight="600">valid</text>
+<path d="M 380 462 L 380 496" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<rect x="190" y="500" width="380" height="66" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="380.0" y="529.925" font-size="12.5" fill="#1d2b3a" text-anchor="middle" font-weight="600">Check store against prior state</text>
+<text x="380.0" y="545.75" font-size="11.5" fill="#55657a" text-anchor="middle" font-weight="normal">stored state = transition prior state</text>
+<path d="M 380 566 L 380 606" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 380 606 L 300 646" fill="none" stroke="#2f6f9f" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-graph)"/>
+<path d="M 380 606 L 660 646" fill="none" stroke="#c07020" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-text)"/>
+<rect x="150" y="650" width="300" height="70" rx="10" ry="10" fill="#e8f0f7" stroke="#2f6f9f" stroke-width="2.0"/>
+<text x="300.0" y="682.1125" font-size="13" fill="#2f6f9f" text-anchor="middle" font-weight="600">Graph rendering</text>
+<text x="300.0" y="698.0875" font-size="11.5" fill="#55657a" text-anchor="middle" font-weight="normal">structural graph</text>
+<rect x="510" y="650" width="300" height="70" rx="10" ry="10" fill="#f8efe3" stroke="#c07020" stroke-width="2.0"/>
+<text x="660.0" y="682.1125" font-size="13" fill="#c07020" text-anchor="middle" font-weight="600">Text rendering</text>
+<text x="660.0" y="698.0875" font-size="11.5" fill="#55657a" text-anchor="middle" font-weight="normal">claim-set text</text>
+<text x="480" y="752" font-size="11.5" fill="#55657a" text-anchor="middle" font-weight="normal">identical content, two renderings</text>
+</svg>

@@ -44,6 +44,7 @@ const PLUGIN_PATH = join(HERE, "plugin", "membud-verify-guard.js");
 const TMP_ROOT = join(REPO_ROOT, ".tmp-plugin");
 const DEMO_DIR = join(TMP_ROOT, "opencode-demo");
 const STATE_PATH = join(DEMO_DIR, "memory-state.json");
+const TRANSCRIPT_PATH = join(DEMO_DIR, "transcript.json");
 const PYTHON = process.env.MEMBUD_PYTHON || join(REPO_ROOT, ".venv", "bin", "python");
 
 const SAMPLE_TARGET = (() => {
@@ -98,6 +99,23 @@ const INVALID_TRANSITION_ARGS = {
   candidate: [], // removes r1 without a declared DELETE -> invalid schema-v2 transition
   evidence: [],
   required_claims: [],
+};
+
+const TRANSCRIPT_ACCEPT_ARGS = {
+  case_id: "harness-transcript-accept",
+  candidate: [
+    { id: "r1", claims: ["tinggal di Bandung"] },
+    { id: "r2", claims: ["bekerja di Tokopedia"] },
+  ],
+  evidence: [
+    {
+      id: "e1",
+      source: "turn:t1",
+      text: "Saya bekerja di Tokopedia.",
+      supports: ["bekerja di Tokopedia"],
+    },
+  ],
+  required_claims: ["tinggal di Bandung"],
 };
 
 // ---------------------------------------------------------------------------
@@ -487,10 +505,66 @@ async function main() {
     console.log("PASS scenario unreadable-local-state -> DENY (fail closed, no host mutation)");
     await seedState();
 
+    // Transcript-grounded scenarios (using real conversation data).
+    await writeFile(
+      TRANSCRIPT_PATH,
+      JSON.stringify({
+        conversation_id: "harness-conv-1",
+        turns: [{ turn_id: "t1", role: "user", content: "Saya bekerja di Tokopedia." }],
+      }),
+      "utf8",
+    );
+    await runScenario({
+      name: "transcript-grounded-accept",
+      args: TRANSCRIPT_ACCEPT_ARGS,
+      options: { ...baseOptions, transcriptPath: TRANSCRIPT_PATH },
+      expected: "allow",
+    });
+
+    await writeFile(
+      TRANSCRIPT_PATH,
+      JSON.stringify({
+        conversation_id: "harness-conv-spoof",
+        turns: [{ turn_id: "t1", role: "user", content: "Cuaca cerah di Bandung hari ini." }],
+      }),
+      "utf8",
+    );
+    await runScenario({
+      name: "transcript-spoofed-quote",
+      args: TRANSCRIPT_ACCEPT_ARGS,
+      options: { ...baseOptions, transcriptPath: TRANSCRIPT_PATH },
+      expected: "deny",
+      expectedCodes: ["UNGROUNDED_EVIDENCE_QUOTE"],
+    });
+
+    await writeFile(
+      TRANSCRIPT_PATH,
+      JSON.stringify({
+        conversation_id: "harness-conv-role",
+        turns: [{ turn_id: "t1", role: "assistant", content: "Saya bekerja di Tokopedia." }],
+      }),
+      "utf8",
+    );
+    await runScenario({
+      name: "transcript-disallowed-role",
+      args: TRANSCRIPT_ACCEPT_ARGS,
+      options: { ...baseOptions, transcriptPath: TRANSCRIPT_PATH },
+      expected: "deny",
+      expectedCodes: ["DISALLOWED_EVIDENCE_ROLE"],
+    });
+
+    await runScenario({
+      name: "unreadable-transcript",
+      args: TRANSCRIPT_ACCEPT_ARGS,
+      options: { ...baseOptions, transcriptPath: join(DEMO_DIR, "missing-transcript.json") },
+      expected: "deny",
+      messageIncludes: ["failed closed"],
+    });
+
     const latency = await measureLatency(sidecar);
     console.log("");
     console.log(
-      `RESULT: PASS — 5 guarded scenarios + 1 non-memory passthrough + 1 unreadable-state fail-closed + latency measurement (${SAMPLE_TARGET} samples/path)`,
+      `RESULT: PASS — 9 guarded scenarios + 1 non-memory passthrough + 1 unreadable-state fail-closed + latency measurement (${SAMPLE_TARGET} samples/path)`,
     );
     console.log(
       `LATENCY_JSON: ${JSON.stringify({

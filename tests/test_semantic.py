@@ -501,7 +501,7 @@ def test_contradicted_four_check_result_commits_as_hold_without_state_change():
     assert result.to_dict()["checks"][3]["reason_code"] == "CONTRADICTED_CLAIM"
 
     store = {record.id: record for record in transition.before}
-    committed = commit(store, transition, result)
+    committed = commit(store, transition, result, allow_legacy=True)
     assert committed == store
     assert committed is not store
 
@@ -698,12 +698,8 @@ def test_four_check_result_passthrough_to_store_commit():
     assert payload["checks"][3]["reason_code"] == "SEMANTIC_OK"
 
     store = {record.id: record for record in transition.before}
-    try:
-        committed = commit(store, transition, result)
-    except ValueError as exc:
-        # Cross-team integration point: the storage workstream owns allowing the
-        # optional fourth check.  Skip cleanly until that lands instead of
-        # asserting the legacy rejection.
-        pytest.skip(f"store.commit does not yet accept the optional semantic check: {exc}")
+    # This fixture is authored as archival v1, so the explicit archival flag is
+    # used; the point under test is the four-check passthrough itself.
+    committed = commit(store, transition, result, allow_legacy=True)
     assert committed == {record.id: record for record in transition.candidate}
     assert Record("r1", ("bekerja di Tokopedia", "kerja di Tokopedia")) in committed.values()

@@ -156,3 +156,51 @@ def test_graph_and_text_verifiers_agree_on_fixture_decisions():
 def test_graph_verifier_rejects_unknown_representation():
     with pytest.raises(ValueError, match="representation"):
         verify(transition("valid"), "table")
+
+
+# ---------------------------------------------------------------------------
+# Public verify() must not trust a caller-supplied graph (M5)
+# ---------------------------------------------------------------------------
+
+
+def _tamper_fixture():
+    transition = Transition.from_dict(
+        {
+            "schema_version": 2,
+            "case_id": "tamper",
+            "before": [],
+            "candidate": [{"id": "r2", "claims": ["U"]}],
+            "evidence": [
+                {"id": "e1", "supports": ["U"]},
+                {"id": "e2", "supports": [], "contradicts": ["U"]},
+            ],
+            "required_claims": [],
+            "operations": [{"type": "WRITE", "record_id": "r2"}],
+        }
+    )
+    return transition
+
+
+def test_verify_accepts_only_the_canonical_graph():
+    transition = _tamper_fixture()
+    canonical_graph = build_graph(transition)
+    assert verify(transition, "graph") == verify(transition, "graph", prepared_input=canonical_graph)
+
+
+def test_verify_rejects_a_tampered_supplied_graph():
+    transition = _tamper_fixture()
+    canonical = verify(transition, "graph")
+    assert canonical.decision == "HOLD"
+
+    forged = build_graph(transition)
+    forged["edges"] = [edge for edge in forged["edges"] if edge.get("type") != "CONTRADICTS"]
+    with pytest.raises(ValueError, match="does not match build_graph"):
+        verify(transition, "graph", prepared_input=forged)
+    # The canonical decision is unchanged and no caller graph was trusted.
+    assert verify(transition, "graph").decision == "HOLD"
+
+
+def test_verify_rejects_a_malformed_supplied_graph():
+    transition = _tamper_fixture()
+    with pytest.raises(ValueError, match="canonical graph dict"):
+        verify(transition, "graph", prepared_input={"nodes": "not-a-list"})

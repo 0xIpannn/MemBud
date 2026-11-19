@@ -417,3 +417,216 @@ def test_build_client_cache_only_needs_no_api_key(tmp_path, monkeypatch):
     )
     assert client.require_cache is True
     assert client.cache_path == tmp_path / "cache.sqlite3"
+
+
+# ---------------------------------------------------------------------------
+# Token-type-aware cost accounting
+# ---------------------------------------------------------------------------
+
+
+def test_cost_range_legacy_helper_keeps_flat_placeholder_range():
+    block = ablation.cost_range(1_000_000)
+    assert block["low_usd"] == pytest.approx(0.10)
+    assert block["high_usd"] == pytest.approx(2.00)
+    assert block["estimated"] is True
+    assert block["billing_data_available"] is False
+    assert block["accounted_tokens"] == 1_000_000
+
+
+def test_summarize_variant_reports_token_aware_cost():
+    rows = [
+        {
+            "variant": "graph_policy_clarified",
+            "decision": "ACCEPT",
+            "expected_decision": "ACCEPT",
+            "preservation_failed": False,
+            "authorization_mentions": 0,
+            "accounted_tokens": 150,
+            "input_tokens": 120,
+            "output_tokens": 30,
+            "total_tokens": 150,
+            "cache_hit": 0,
+        },
+    ]
+    tables = ablation.build_price_tables(
+        input_per_mtok=1.0,
+        output_per_mtok=2.0,
+        source="quote-page",
+        date="2026-01-02",
+    )
+    summary = ablation.summarize_variant(
+        rows, "graph_policy_clarified", price_tables=tables
+    )
+    cost = summary["cost_estimate"]
+    assert cost is summary["estimated_cost_range_usd"]
+    assert cost["pricing"]["source"] == "quote-page"
+    assert cost["pricing"]["date"] == "2026-01-02"
+    assert cost["pricing"]["rate_basis"] == "explicit_per_mtok"
+    assert cost["pricing"]["verified_billed"] is False
+    assert cost["billing_data_available"] is False
+    assert cost["tokens"]["input"] == 120
+    assert cost["tokens"]["output"] == 30
+    # 120 * 1/M + 30 * 2/M
+    assert cost["low_usd"] == pytest.approx(0.00018)
+    assert cost["high_usd"] == pytest.approx(0.00018)
+    assert cost["estimated_usd"] == pytest.approx(0.00018)
+
+
+def test_summarize_variant_placeholder_cost_for_estimated_rows():
+    rows = [
+        {
+            "variant": "graph_cache",
+            "decision": "ERROR",
+            "expected_decision": "ACCEPT",
+            "accounted_tokens": 7_500,
+            "usage_estimated": True,
+            "cache_hit": 0,
+        }
+    ]
+    summary = ablation.summarize_variant(rows, "graph_cache")
+    cost = summary["cost_estimate"]
+    assert cost["pricing"]["placeholder"] is True
+    assert cost["tokens"]["fallback"] == 7_500
+    assert cost["low_usd"] == pytest.approx(7_500 * 0.10 / 1_000_000)
+    assert cost["high_usd"] == pytest.approx(7_500 * 2.00 / 1_000_000)
+    assert cost["low_usd"] <= cost["estimated_usd"] <= cost["high_usd"]
+
+
+def test_run_ablation_rows_and_summary_include_cost_estimate(tmp_path):
+    summary = ablation.run_ablation(
+        manifest_path=MANIFEST,
+        output=tmp_path / "out",
+        clients={"graph_cache": FakeClient()},
+        cases=["HELD-01"],
+        variants=["graph_cache"],
+        max_total_tokens=10_000,
+        max_attempts=3,
+        run_id="cost-run",
+        code_revision="test-rev",
+    )
+    row = summary["rows"][0]
+    assert row["cost_estimate"]["pricing"]["placeholder"] is True
+    assert row["cost_estimate"]["tokens"]["input"] == 120
+    assert row["cost_estimate"]["tokens"]["output"] == 30
+    assert row["cost_estimate"]["billing_data_available"] is False
+    assert summary["cost_estimate"]["pricing"]["verified_billed"] is False
+    assert summary["cost_estimate"]["accounted_tokens"] == 150
+    assert summary["tokens_by_class"]["input"] == 120
+    metrics = summary["variant_metrics"]["graph_cache"]
+    assert metrics["cost_estimate"]["estimated"] is True
+    written = json.loads((tmp_path / "out" / "summary.json").read_text())
+    assert "cost_estimate" in written
+    assert "cost_estimate" in written["rows"][0]
+    assert "cost_estimate" in written["variant_metrics"]["graph_cache"]
+
+
+class CachedClient(FakeClient):
+    """Fake client that replays a cached completion with no token usage."""
+
+    def complete_json(self, messages, validator=None):
+        self.calls += 1
+        self.messages = messages
+        if validator:
+            validator(self.payload)
+        return SimpleNamespace(
+            json=self.payload,
+            content=json.dumps(self.payload),
+            model=self.model,
+            input_tokens=None,
+            output_tokens=None,
+            total_tokens=None,
+            request_id=None,
+            latency_ms=0.0,
+            request_attempts=0,
+            json_retries=0,
+            cached=True,
+        )
+
+
+def test_run_ablation_cache_hit_row_is_zero_cost(tmp_path):
+    summary = ablation.run_ablation(
+        manifest_path=MANIFEST,
+        output=tmp_path / "out",
+        clients={"graph_cache": CachedClient()},
+        cases=["HELD-01"],
+        variants=["graph_cache"],
+        max_total_tokens=10_000,
+        max_attempts=3,
+    )
+    row = summary["rows"][0]
+    assert row["cache_hit"] == 1
+    assert row["cost_estimate"]["estimated_usd"] == 0.0
+    assert row["cost_estimate"]["low_usd"] == 0.0
+    assert row["cost_estimate"]["high_usd"] == 0.0
+    assert summary["cost_estimate"]["estimated_usd"] == 0.0
+    assert summary["variant_metrics"]["graph_cache"]["cost_estimate"]["estimated_usd"] == 0.0
+
+
+def test_ablation_cli_price_flags_parse_and_apply(tmp_path, monkeypatch):
+    parser = ablation.build_parser()
+    defaults = parser.parse_args(["--output", "out", "--variants", "graph_cache"])
+    assert defaults.price_input_per_mtok is None
+    assert defaults.price_output_per_mtok is None
+    assert defaults.price_source == ""
+    assert defaults.price_date == ""
+    parsed = parser.parse_args(
+        [
+            "--output", "out",
+            "--variants", "graph_cache",
+            "--price-input-per-mtok", "1.0",
+            "--price-output-per-mtok", "2.0",
+            "--price-source", "quote-page",
+            "--price-date", "2026-01-02",
+        ]
+    )
+    assert parsed.price_input_per_mtok == 1.0
+    assert parsed.price_output_per_mtok == 2.0
+
+    monkeypatch.setattr(ablation, "build_client", lambda **_: FakeClient())
+    output = tmp_path / "priced-out"
+    summary = ablation.main(
+        [
+            "--manifest", str(MANIFEST),
+            "--output", str(output),
+            "--cases", "HELD-01",
+            "--variants", "graph_cache",
+            "--price-input-per-mtok", "1.0",
+            "--price-output-per-mtok", "2.0",
+            "--price-source", "quote-page",
+            "--price-date", "2026-01-02",
+        ]
+    )
+    cost = summary["cost_estimate"]
+    assert cost["pricing"]["source"] == "quote-page"
+    assert cost["pricing"]["date"] == "2026-01-02"
+    assert cost["pricing"]["rate_basis"] == "explicit_per_mtok"
+    assert cost["pricing"]["placeholder"] is False
+    assert cost["low_usd"] == cost["high_usd"] == pytest.approx(0.00018)
+
+
+def test_run_ablation_derives_split_from_cases_not_a_hardcoded_label(tmp_path):
+    heldout_summary = ablation.run_ablation(
+        manifest_path=MANIFEST,
+        output=tmp_path / "heldout",
+        clients={"graph_cache": FakeClient()},
+        cases=["HELD-01"],
+        variants=["graph_cache"],
+        max_total_tokens=10_000,
+        max_attempts=3,
+    )
+    assert heldout_summary["split"] == "heldout"
+    assert "held-out cases" in heldout_summary["comparison_policy"]
+
+    dev_summary = ablation.run_ablation(
+        manifest_path=MANIFEST,
+        output=tmp_path / "dev",
+        clients={"graph_cache": FakeClient()},
+        cases=["DEV-01"],
+        variants=["graph_cache"],
+        max_total_tokens=10_000,
+        max_attempts=3,
+    )
+    assert dev_summary["split"] == "dev"
+    assert "dev cases" in dev_summary["comparison_policy"]
+    written = json.loads((tmp_path / "dev" / "summary.json").read_text())
+    assert written["split"] == "dev"

@@ -212,6 +212,7 @@ def run_pilot(
     verifier: Callable[[Transition, str, Any], Any] | None = None,
     verifier_name: str = "rules",
     expected_decisions: dict[str, str] | None = None,
+    allow_legacy: bool = False,
 ) -> list[dict[str, Any]]:
     """Run the same fixed entries under three isolated pilot conditions.
 
@@ -270,6 +271,7 @@ def run_pilot(
                     manifest_id,
                     manifest_sha256,
                     verifier,
+                    allow_legacy=allow_legacy,
                 )
             result["split"] = entry.split
             result["invalid_input"] = entry.invalid
@@ -306,6 +308,8 @@ def _run_guarded(
     manifest_id: str,
     manifest_sha256: str,
     verifier: Callable[[Transition, str, Any], Any] | None,
+    *,
+    allow_legacy: bool = False,
 ) -> dict[str, Any]:
     try:
         verification = run_case(
@@ -318,6 +322,7 @@ def _run_guarded(
             manifest_id=manifest_id,
             manifest_sha256=manifest_sha256,
             verifier=verifier,
+            allow_legacy=allow_legacy,
         )
         result = {
             "case_id": transition.case_id,
@@ -464,6 +469,14 @@ def main() -> None:
     parser.add_argument("--output", default="pilot-output", help="output directory")
     parser.add_argument("--code-revision", default="", help="source revision identifier")
     parser.add_argument("--manifest", help="optional hash-pinned transition manifest")
+    parser.add_argument(
+        "--allow-legacy",
+        action="store_true",
+        help=(
+            "allow archival schema-v1 transitions to be verified/committed "
+            "(reproduction of frozen v1 artifacts only)"
+        ),
+    )
     parser.add_argument("--verifier", choices=("rules", "llm"), default="rules")
     parser.add_argument("--provider", choices=("deepseek", "commandcode"), default="deepseek")
     args = parser.parse_args()
@@ -512,6 +525,7 @@ def main() -> None:
         verifier=verifier,
         verifier_name=(f"llm:{args.provider}" if verifier is not None else args.verifier),
         expected_decisions=expected_decisions,
+        allow_legacy=args.allow_legacy,
     )
     print(
         f"Ran {len(entries)} {source} across 3 conditions; summary: "

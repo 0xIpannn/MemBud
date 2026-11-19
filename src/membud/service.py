@@ -84,6 +84,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 from urllib.parse import urlsplit
 
+from .conversation import (
+    ConversationError,
+    ConversationTranscript,
+    parse_conversation,
+    verify_with_transcript,
+)
 from .schemas import SCHEMA_VERSION, Transition
 from .verification import verify
 
@@ -101,6 +107,7 @@ MAX_RECORDS = 5_000
 MAX_EVIDENCE = 5_000
 MAX_OPERATIONS = 5_000
 MAX_CLAIMS = 20_000
+MAX_TURNS = 5_000
 MAX_STRING_LENGTH = 10_000
 
 ALLOWED_REPRESENTATIONS = ("graph", "text")
@@ -125,6 +132,7 @@ _STATIC_ERROR_CODES = frozenset(
         "INVALID_JSON",
         "JSON_TOO_DEEP",
         "INVALID_REQUEST",
+        "INVALID_TRANSCRIPT",
         "UNSUPPORTED_SCHEMA_VERSION",
         "INVALID_TRANSITION",
         "UNKNOWN_REPRESENTATION",
@@ -137,6 +145,7 @@ _STATIC_ERROR_CODES = frozenset(
         "NOT_FOUND",
         "METHOD_NOT_ALLOWED",
         "NON_LOOPBACK_PEER",
+        "PROTOCOL_ERROR",
         "INTERNAL_ERROR",
     }
 )
@@ -240,8 +249,11 @@ def check_json_depth(value: Any, *, max_depth: int = MAX_JSON_DEPTH) -> None:
     walk(value, 0)
 
 
+_ENVELOPE_KEYS = frozenset({"representation", "transcript", "conversation"})
+
+
 def validate_request_envelope(payload: Any) -> tuple[dict[str, Any], str]:
-    """Split the optional representation from the canonical transition payload."""
+    """Split optional envelope controls from the canonical transition payload."""
     if not isinstance(payload, dict):
         raise RequestError(400, "INVALID_REQUEST", "request body must be a JSON object")
     representation = payload.get("representation", "graph")
@@ -253,7 +265,9 @@ def validate_request_envelope(payload: Any) -> tuple[dict[str, Any], str]:
             + ", ".join(repr(item) for item in ALLOWED_REPRESENTATIONS)
             + f"; got {representation!r}",
         )
-    transition_payload = {key: value for key, value in payload.items() if key != "representation"}
+    transition_payload = {
+        key: value for key, value in payload.items() if key not in _ENVELOPE_KEYS
+    }
     unexpected = sorted(set(transition_payload) - ALLOWED_TRANSITION_KEYS)
     if unexpected:
         raise RequestError(
@@ -263,6 +277,59 @@ def validate_request_envelope(payload: Any) -> tuple[dict[str, Any], str]:
             representation=representation,
         )
     return transition_payload, representation
+
+
+def extract_optional_transcript(
+    payload: dict[str, Any],
+    representation: str,
+) -> ConversationTranscript | None:
+    """Parse an optional ``transcript`` or ``conversation`` payload, failing closed."""
+    has_transcript = "transcript" in payload
+    has_conversation = "conversation" in payload
+    if not has_transcript and not has_conversation:
+        return None
+    if has_transcript and has_conversation:
+        raise RequestError(
+            400,
+            "INVALID_TRANSCRIPT",
+            "provide at most one of 'transcript' or 'conversation'",
+            representation=representation,
+        )
+    raw = payload["transcript"] if has_transcript else payload["conversation"]
+    if isinstance(raw, dict):
+        for key in ("turns", "messages", "dialogue", "events"):
+            entries = raw.get(key)
+            if isinstance(entries, list) and len(entries) > MAX_TURNS:
+                raise RequestError(
+                    400,
+                    "INPUT_TOO_LARGE",
+                    f"transcript {key} has {len(entries)} entries; the per-request limit is {MAX_TURNS}",
+                    representation=representation,
+                )
+    elif isinstance(raw, list) and len(raw) > MAX_TURNS:
+        raise RequestError(
+            400,
+            "INPUT_TOO_LARGE",
+            f"transcript has {len(raw)} entries; the per-request limit is {MAX_TURNS}",
+            representation=representation,
+        )
+    try:
+        transcript = parse_conversation(raw)
+    except ConversationError as exc:
+        raise RequestError(
+            400,
+            "INVALID_TRANSCRIPT",
+            f"transcript is invalid: {_ok_message(exc)}",
+            representation=representation,
+        ) from exc
+    if len(transcript.turns) > MAX_TURNS:
+        raise RequestError(
+            400,
+            "INPUT_TOO_LARGE",
+            f"transcript has {len(transcript.turns)} turns; the per-request limit is {MAX_TURNS}",
+            representation=representation,
+        )
+    return transcript
 
 
 def _count_claims(items: Any, keys: tuple[str, ...] = ("claims",)) -> int:
@@ -343,10 +410,17 @@ def build_transition(payload: dict[str, Any], representation: str) -> Transition
         ) from exc
 
 
-def run_verification(transition: Transition, representation: str) -> Any:
-    """Run the deterministic verifier; any internal failure fails closed."""
+def run_verification(
+    transition: Transition,
+    representation: str,
+    *,
+    transcript: ConversationTranscript | None = None,
+) -> Any:
+    """Run the deterministic verifier (plus transcript grounding when supplied)."""
     try:
-        return verify(transition, representation)
+        if transcript is None:
+            return verify(transition, representation)
+        return verify_with_transcript(transition, transcript, representation)
     except Exception as exc:
         raise RequestError(
             500,
@@ -428,6 +502,7 @@ def health_payload(config: ServiceConfig) -> dict[str, Any]:
             "max_json_depth": MAX_JSON_DEPTH,
             "max_records": MAX_RECORDS,
             "max_claims": MAX_CLAIMS,
+            "max_turns": MAX_TURNS,
         },
     }
 
@@ -471,6 +546,23 @@ class _VerifyHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802 - stdlib naming
         self._guarded(self._handle_post)
+
+    def _reject_unsupported_method(self) -> None:
+        self._guarded(self._handle_unsupported_method)
+
+    do_PUT = _reject_unsupported_method
+    do_PATCH = _reject_unsupported_method
+    do_DELETE = _reject_unsupported_method
+    do_OPTIONS = _reject_unsupported_method
+    do_HEAD = _reject_unsupported_method
+    do_TRACE = _reject_unsupported_method
+
+    def _handle_unsupported_method(self) -> None:
+        raise RequestError(
+            405,
+            "METHOD_NOT_ALLOWED",
+            f"{self.command} is not supported; use GET /healthz or POST /verify",
+        )
 
     def _guarded(self, handler: Any) -> None:
         self._request_started = time.perf_counter()
@@ -565,6 +657,7 @@ class _VerifyHandler(BaseHTTPRequestHandler):
         payload = parse_json_body(body)
         check_json_depth(payload)
         transition_payload, representation = validate_request_envelope(payload)
+        transcript = extract_optional_transcript(payload, representation)
         try:
             validate_transition_shape(transition_payload)
         except RequestError as exc:
@@ -573,7 +666,7 @@ class _VerifyHandler(BaseHTTPRequestHandler):
 
         transition = build_transition(transition_payload, representation)
         self._verify_started = time.perf_counter()
-        result = run_verification(transition, representation)
+        result = run_verification(transition, representation, transcript=transcript)
         elapsed_ms = round((time.perf_counter() - self._verify_started) * 1000, 3)
         total_ms = round((time.perf_counter() - self._request_started) * 1000, 3)
         response = success_payload(transition, result, representation, elapsed_ms)
@@ -581,6 +674,41 @@ class _VerifyHandler(BaseHTTPRequestHandler):
         self._send_json(200, response)
 
     # -- responses --------------------------------------------------------
+    def send_error(
+        self, code: int, message: str | None = None, explain: str | None = None
+    ) -> None:
+        """Return the structured fail-closed envelope for protocol-level errors.
+
+        ``BaseHTTPRequestHandler`` calls this for request-line/header parse
+        failures (400/414/431/505) before any endpoint handler runs; the default
+        implementation would return an HTML page, which is fail-closed but
+        outside the documented JSON contract.  No response is ever ACCEPT here.
+        """
+        if self._response_sent:
+            self.close_connection = True
+            return
+        # On Python <= 3.12 a parse failure can leave request_version as
+        # "HTTP/0.9"; the stdlib then omits the status line and headers.  Set a
+        # real response version so every protocol error is a proper HTTP
+        # response carrying the structured JSON HOLD envelope.
+        self.request_version = self.protocol_version
+        self.close_connection = True
+        reason = message or explain or "request could not be parsed"
+        error = RequestError(
+            int(code),
+            "PROTOCOL_ERROR",
+            f"HTTP {int(code)}: {reason}",
+        )
+        total_ms = (
+            round((time.perf_counter() - self._request_started) * 1000, 3)
+            if self._request_started
+            else 0.0
+        )
+        self._send_json(
+            error.status,
+            error_payload(error, elapsed_ms=total_ms, total_ms=total_ms),
+        )
+
     def _send_error(self, error: RequestError) -> None:
         if self._response_sent:
             self.close_connection = True

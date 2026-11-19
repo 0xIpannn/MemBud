@@ -1,0 +1,20 @@
+[
+  {
+    "id": "r1",
+    "claims": [
+      "name is Maya"
+    ]
+  },
+  {
+    "id": "r3",
+    "claims": [
+      "works at Northwind Labs"
+    ]
+  },
+  {
+    "id": "r4",
+    "claims": [
+      "lives in Portland"
+    ]
+  }
+]

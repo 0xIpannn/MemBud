@@ -20,8 +20,10 @@ are executed:
 The script is a manual integration check, not part of the default test suite:
 it makes **paid provider calls** and therefore requires
 ``--confirm-paid-call`` plus a ``DEEPSEEK_API_KEY`` in the environment. The
-observed run consumed ~8.6k input tokens and cost about $0.0017 (opencode's
-provider-side estimate). No API key is ever printed or written to disk.
+committed evidence run (``integrations/opencode/live/EVIDENCE.md``) reports
+1,042 input / 435 output tokens and an estimated $0.00053286 (opencode's
+provider-side estimate, not a bill). No API key is ever printed or written to
+disk.
 
 Requirements
 ------------
@@ -548,7 +550,7 @@ def main(argv: list[str] | None = None) -> int:
     workdir_given = args.workdir is not None
     workdir = Path(args.workdir).expanduser() if workdir_given else Path(tempfile.mkdtemp(prefix="membud-live-"))
     print(f"workdir: {workdir}")
-    print(f"model: {MODEL}; this run is expected to use ~9k input tokens (a fraction of a cent).")
+    print(f"model: {MODEL}; this run is expected to use on the order of 1k input tokens (a fraction of a cent).")
 
     sidecar: subprocess.Popen | None = None
     try:
