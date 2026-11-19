@@ -1,0 +1,44 @@
+{
+  "manifest_id": "membud-conversations-v1",
+  "schema_version": 2,
+  "status": "frozen_exploratory_single_reviewer_second_review_pending",
+  "purpose": "Eight synthetic multi-turn Indonesian and English conversations (28 evaluated steps) testing transcript-grounded evidence verification, multi-turn state progression, and end-to-end conversation extraction. Not a representative benchmark; labels are single-reviewer exploratory annotations.",
+  "review": {
+    "reviewer_count": 1,
+    "second_independent_reviewer": false,
+    "second_review_status": "pending_human_review",
+    "limitation": "Conversations, step proposals, and expected labels are synthetic and single-reviewed by the repository author. Treat all labels as exploratory single-reviewer annotations."
+  },
+  "conversations_file": "../conversations/conversations-v1.jsonl",
+  "conversations_sha256": "9a7d74e2e29a73ec6fc0b9a2149b8afb5dc8b996b2917589dde8a25040a42b66",
+  "labels_file": "../labels/conversations-v1.jsonl",
+  "labels_sha256": "113a57cd883f506387d1a9882427646fcef35230b3d5278ce787512a65b26bd0",
+  "conversation_ids": [
+    "CONV-01",
+    "CONV-02",
+    "CONV-03",
+    "CONV-04",
+    "CONV-05",
+    "CONV-06",
+    "CONV-07",
+    "CONV-08"
+  ],
+  "conversation_count": 8,
+  "step_count": 28,
+  "expected_step_decision_counts": {
+    "ACCEPT": 17,
+    "HOLD": 10,
+    "INVALID_INPUT": 1
+  },
+  "conditions": [
+    "unguarded",
+    "graph",
+    "text",
+    "text_fair"
+  ],
+  "notes": [
+    "Synthetic Indonesian and English dialogues; contains no HaluMem, LoCoMo, or private user conversation data.",
+    "Paired step evaluation verifies fixed step transitions against live transcript slices under transcript-grounding checks.",
+    "End-to-end raw-transcript extraction replay feeds only the raw transcripts into RuleBasedConversationExtractor with no pre-authored step proposals."
+  ]
+}

@@ -47,10 +47,20 @@ import json
 import os
 import sys
 from datetime import datetime, timezone
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping
 
 ROOT = Path(__file__).resolve().parents[1]
+
+def _relative(path: str | Path) -> str:
+    """Repository-relative display path; absolute only when outside the repo."""
+    try:
+        return Path(path).resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        return str(path)
+
+
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -114,11 +124,18 @@ VARIANT_CONFIG: dict[str, dict[str, Any]] = {
         "prompt_version": LLM_PROMPT_VERSION,
     },
 }
-COMPARISON_POLICY = (
-    "Directional ablation on four hand-authored, single-reviewer held-out cases. "
-    "One cached control (G0) plus two new-prompt/graph variants; descriptive only, "
-    "no causal or representation-superiority claim."
-)
+def comparison_policy(*, split: str, case_count: int, variants: Iterable[str]) -> str:
+    """Describe the ablation honestly for the split/variants it actually ran.
+
+    The split is derived from the manifest entries, never hard-coded: the dev
+    replication must not be labelled "held-out" in its artifact metadata.
+    """
+    split_label = {"heldout": "held-out", "dev": "dev"}.get(split, split)
+    return (
+        f"Directional ablation on {case_count} hand-authored, single-reviewer "
+        f"{split_label} cases. Variants: {', '.join(variants)}; descriptive only, "
+        "no causal or representation-superiority claim."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -411,6 +428,10 @@ def run_ablation(
     invalid = [case_id for case_id in cases if entries[case_id].invalid]
     if invalid:
         raise ValueError(f"cases are expected-invalid and cannot be verified: {', '.join(invalid)}")
+    case_splits = sorted(
+        {entries[case_id].split for case_id in cases if entries[case_id].split}
+    )
+    split = case_splits[0] if len(case_splits) == 1 else ("mixed" if case_splits else "unspecified")
 
     output.mkdir(parents=True, exist_ok=True)
     run_id = run_id or f"graph-ablation-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
@@ -475,11 +496,13 @@ def run_ablation(
         "code_revision": code_revision,
         "manifest_id": manifest["manifest_id"],
         "manifest_sha256": manifest_sha256,
-        "manifest_path": str(manifest_path),
-        "split": "heldout",
+        "manifest_path": _relative(manifest_path),
+        "split": split,
         "cases": list(cases),
         "variants": list(variants),
-        "comparison_policy": COMPARISON_POLICY,
+        "comparison_policy": comparison_policy(
+            split=split, case_count=len(cases), variants=variants
+        ),
         "budget": {
             "max_total_tokens": max_total_tokens,
             "accounted_tokens_used": accounted_total,

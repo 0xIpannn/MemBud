@@ -1,0 +1,432 @@
+{
+  "manifest_id": "membud-conversations-v1",
+  "manifest_sha256": "ce336be5f1d175d1d7b09a83ca6e773bcf99f1aa3347cdf296ba318a5326c306",
+  "run_id": "conversations-v1-rules",
+  "code_revision": "working-tree-sha256:5f75f4a779ab7238247d461ef67fc0539113e01a0f13000615297ea182339f79",
+  "conversation_count": 8,
+  "step_count": 28,
+  "expected_step_decision_counts": {
+    "ACCEPT": 17,
+    "HOLD": 10,
+    "INVALID_INPUT": 1
+  },
+  "condition_metrics": {
+    "unguarded": {
+      "step_count": 28,
+      "decision_counts": {
+        "APPLIED": 27,
+        "INVALID_INPUT": 1
+      },
+      "safe_final_state_conversations": {
+        "numerator": 4,
+        "denominator": 8,
+        "rate": 0.5
+      }
+    },
+    "graph": {
+      "step_count": 28,
+      "decision_counts": {
+        "ACCEPT": 17,
+        "HOLD": 10,
+        "INVALID_INPUT": 1
+      },
+      "valid_acceptance_rate": {
+        "numerator": 17,
+        "denominator": 17,
+        "rate": 1.0
+      },
+      "false_hold_rate": {
+        "numerator": 0,
+        "denominator": 17,
+        "rate": 0.0
+      },
+      "faulty_detection_rate": {
+        "numerator": 10,
+        "denominator": 10,
+        "rate": 1.0
+      },
+      "false_accept_rate": {
+        "numerator": 0,
+        "denominator": 10,
+        "rate": 0.0
+      },
+      "invalid_input_handled": {
+        "numerator": 1,
+        "denominator": 1,
+        "rate": 1.0
+      },
+      "label_agreement": {
+        "numerator": 28,
+        "denominator": 28,
+        "rate": 1.0
+      },
+      "safe_final_state_conversations": {
+        "numerator": 8,
+        "denominator": 8,
+        "rate": 1.0
+      },
+      "failed_check_reason_counts": {
+        "CONTRADICTED_CLAIM": 1,
+        "DISALLOWED_EVIDENCE_ROLE": 2,
+        "PRIOR_RECORD_UNAUTHORIZED_CHANGE": 1,
+        "REQUIRED_CLAIM_OMITTED": 2,
+        "UNGROUNDED_DELETE_AUTHORIZATION": 1,
+        "UNGROUNDED_EVIDENCE_CLAIM": 1,
+        "UNGROUNDED_EVIDENCE_QUOTE": 1,
+        "UNGROUNDED_EVIDENCE_SOURCE": 1,
+        "UNSUPPORTED_CLAIM": 2
+      }
+    },
+    "text": {
+      "step_count": 28,
+      "decision_counts": {
+        "ACCEPT": 18,
+        "HOLD": 9,
+        "INVALID_INPUT": 1
+      },
+      "valid_acceptance_rate": {
+        "numerator": 17,
+        "denominator": 17,
+        "rate": 1.0
+      },
+      "false_hold_rate": {
+        "numerator": 0,
+        "denominator": 17,
+        "rate": 0.0
+      },
+      "faulty_detection_rate": {
+        "numerator": 9,
+        "denominator": 10,
+        "rate": 0.9
+      },
+      "false_accept_rate": {
+        "numerator": 1,
+        "denominator": 10,
+        "rate": 0.1
+      },
+      "invalid_input_handled": {
+        "numerator": 1,
+        "denominator": 1,
+        "rate": 1.0
+      },
+      "label_agreement": {
+        "numerator": 27,
+        "denominator": 28,
+        "rate": 0.9642857142857143
+      },
+      "safe_final_state_conversations": {
+        "numerator": 8,
+        "denominator": 8,
+        "rate": 1.0
+      },
+      "failed_check_reason_counts": {
+        "DISALLOWED_EVIDENCE_ROLE": 2,
+        "PRIOR_RECORD_UNAUTHORIZED_CHANGE": 1,
+        "REQUIRED_CLAIM_OMITTED": 2,
+        "UNGROUNDED_DELETE_AUTHORIZATION": 1,
+        "UNGROUNDED_EVIDENCE_CLAIM": 1,
+        "UNGROUNDED_EVIDENCE_QUOTE": 1,
+        "UNGROUNDED_EVIDENCE_SOURCE": 1,
+        "UNSUPPORTED_CLAIM": 2
+      }
+    },
+    "text_fair": {
+      "step_count": 28,
+      "decision_counts": {
+        "ACCEPT": 17,
+        "HOLD": 10,
+        "INVALID_INPUT": 1
+      },
+      "valid_acceptance_rate": {
+        "numerator": 17,
+        "denominator": 17,
+        "rate": 1.0
+      },
+      "false_hold_rate": {
+        "numerator": 0,
+        "denominator": 17,
+        "rate": 0.0
+      },
+      "faulty_detection_rate": {
+        "numerator": 10,
+        "denominator": 10,
+        "rate": 1.0
+      },
+      "false_accept_rate": {
+        "numerator": 0,
+        "denominator": 10,
+        "rate": 0.0
+      },
+      "invalid_input_handled": {
+        "numerator": 1,
+        "denominator": 1,
+        "rate": 1.0
+      },
+      "label_agreement": {
+        "numerator": 28,
+        "denominator": 28,
+        "rate": 1.0
+      },
+      "safe_final_state_conversations": {
+        "numerator": 8,
+        "denominator": 8,
+        "rate": 1.0
+      },
+      "failed_check_reason_counts": {
+        "CONTRADICTED_CLAIM": 1,
+        "DISALLOWED_EVIDENCE_ROLE": 2,
+        "PRIOR_RECORD_UNAUTHORIZED_CHANGE": 1,
+        "REQUIRED_CLAIM_OMITTED": 2,
+        "UNGROUNDED_DELETE_AUTHORIZATION": 1,
+        "UNGROUNDED_EVIDENCE_CLAIM": 1,
+        "UNGROUNDED_EVIDENCE_QUOTE": 1,
+        "UNGROUNDED_EVIDENCE_SOURCE": 1,
+        "UNSUPPORTED_CLAIM": 2
+      }
+    }
+  },
+  "paired_differences": {
+    "graph_vs_text": {
+      "total_steps": 28,
+      "discordant_count": 1,
+      "discordant_steps": [
+        {
+          "step_id": "CONV-06-S3",
+          "graph": "HOLD",
+          "text": "ACCEPT"
+        }
+      ]
+    },
+    "text_fair_vs_graph": {
+      "total_steps": 28,
+      "discordant_count": 0,
+      "discordant_steps": []
+    },
+    "text_vs_text_fair": {
+      "total_steps": 28,
+      "discordant_count": 1,
+      "discordant_steps": [
+        {
+          "step_id": "CONV-06-S3",
+          "text": "ACCEPT",
+          "text_fair": "HOLD"
+        }
+      ]
+    }
+  },
+  "extraction_replay": {
+    "extractor": "rules-conversation-extractor",
+    "condition": "graph",
+    "conversations_total": 8,
+    "conversations_converged_to_expected_state": 8,
+    "total_steps": 20,
+    "accepted_steps": 20,
+    "held_steps": 0
+  },
+  "extraction_replay_conversations": [
+    {
+      "conversation_id": "CONV-01",
+      "step_count": 4,
+      "decisions": [
+        "ACCEPT",
+        "ACCEPT",
+        "ACCEPT",
+        "ACCEPT"
+      ],
+      "final_records": [
+        {
+          "id": "r2",
+          "claims": [
+            "bekerja di Tokopedia"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "belajar bahasa Jepang"
+          ]
+        },
+        {
+          "id": "r4",
+          "claims": [
+            "tinggal di Surabaya"
+          ]
+        }
+      ],
+      "converged_to_expected_final_records": true,
+      "store_path": "data/results/conversations-v1/extracted_graph/CONV-01/state.json",
+      "audit_path": "data/results/conversations-v1/extracted_graph/CONV-01/audit.jsonl"
+    },
+    {
+      "conversation_id": "CONV-02",
+      "step_count": 3,
+      "decisions": [
+        "ACCEPT",
+        "ACCEPT",
+        "ACCEPT"
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "bekerja di PT Astra"
+          ]
+        }
+      ],
+      "converged_to_expected_final_records": true,
+      "store_path": "data/results/conversations-v1/extracted_graph/CONV-02/state.json",
+      "audit_path": "data/results/conversations-v1/extracted_graph/CONV-02/audit.jsonl"
+    },
+    {
+      "conversation_id": "CONV-03",
+      "step_count": 2,
+      "decisions": [
+        "ACCEPT",
+        "ACCEPT"
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "tinggal di Yogyakarta"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "bekerja di Gojek"
+          ]
+        }
+      ],
+      "converged_to_expected_final_records": true,
+      "store_path": "data/results/conversations-v1/extracted_graph/CONV-03/state.json",
+      "audit_path": "data/results/conversations-v1/extracted_graph/CONV-03/audit.jsonl"
+    },
+    {
+      "conversation_id": "CONV-04",
+      "step_count": 2,
+      "decisions": [
+        "ACCEPT",
+        "ACCEPT"
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "tinggal di Semarang"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "menyukai kopi hitam"
+          ]
+        }
+      ],
+      "converged_to_expected_final_records": true,
+      "store_path": "data/results/conversations-v1/extracted_graph/CONV-04/state.json",
+      "audit_path": "data/results/conversations-v1/extracted_graph/CONV-04/audit.jsonl"
+    },
+    {
+      "conversation_id": "CONV-05",
+      "step_count": 3,
+      "decisions": [
+        "ACCEPT",
+        "ACCEPT",
+        "ACCEPT"
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "name is Maya"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "works at Northwind Labs"
+          ]
+        },
+        {
+          "id": "r4",
+          "claims": [
+            "lives in Portland"
+          ]
+        }
+      ],
+      "converged_to_expected_final_records": true,
+      "store_path": "data/results/conversations-v1/extracted_graph/CONV-05/state.json",
+      "audit_path": "data/results/conversations-v1/extracted_graph/CONV-05/audit.jsonl"
+    },
+    {
+      "conversation_id": "CONV-06",
+      "step_count": 2,
+      "decisions": [
+        "ACCEPT",
+        "ACCEPT"
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "lives in Chicago"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "allergic to peanuts"
+          ]
+        }
+      ],
+      "converged_to_expected_final_records": true,
+      "store_path": "data/results/conversations-v1/extracted_graph/CONV-06/state.json",
+      "audit_path": "data/results/conversations-v1/extracted_graph/CONV-06/audit.jsonl"
+    },
+    {
+      "conversation_id": "CONV-07",
+      "step_count": 2,
+      "decisions": [
+        "ACCEPT",
+        "ACCEPT"
+      ],
+      "final_records": [
+        {
+          "id": "r2",
+          "claims": [
+            "has a rescue dog"
+          ]
+        }
+      ],
+      "converged_to_expected_final_records": true,
+      "store_path": "data/results/conversations-v1/extracted_graph/CONV-07/state.json",
+      "audit_path": "data/results/conversations-v1/extracted_graph/CONV-07/audit.jsonl"
+    },
+    {
+      "conversation_id": "CONV-08",
+      "step_count": 2,
+      "decisions": [
+        "ACCEPT",
+        "ACCEPT"
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "works at Acme Corp"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "prefers morning meetings"
+          ]
+        }
+      ],
+      "converged_to_expected_final_records": true,
+      "store_path": "data/results/conversations-v1/extracted_graph/CONV-08/state.json",
+      "audit_path": "data/results/conversations-v1/extracted_graph/CONV-08/audit.jsonl"
+    }
+  ]
+}

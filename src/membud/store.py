@@ -14,6 +14,12 @@ version 0. Duplicate record IDs are always rejected.
 
 Writes are atomic (same-directory temp file, fsync, ``os.replace``) and only
 happen on ACCEPT; a HOLD never creates, rewrites, or reformats a store file.
+On ACCEPT the state file is written first and the completed audit event is
+appended afterwards; if the append raises, the write is rolled back to the
+previous bytes (and the error event records ``store_written``/``rolled_back``).
+A process death between the write and the append is not catchable: it can leave
+an accepted state with no completed audit event. That window is documented, not
+claimed away; the audit log is append-only but it is not write-ahead.
 Any stray atomic-write temp file (``.<name>.<random>.tmp``) left by an earlier
 crashed process is ignored and removed before loading; it is never treated as
 state. A persistent ``<store>.lock`` file is used for an exclusive POSIX
@@ -25,6 +31,7 @@ import os
 import tempfile
 import time
 import uuid
+from collections.abc import Iterable
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -36,18 +43,18 @@ except ImportError:  # Windows and other non-POSIX platforms
     fcntl = None  # type: ignore[assignment]
 
 from .graph import build_graph
-from .schemas import Record, Result, Transition
+from .schemas import SCHEMA_VERSION, Record, Result, Transition
 from .serialization import textual_representation, transition_dict
 from .verification import verify
 
 STORE_SCHEMA_VERSION = 2
 LEGACY_STORE_SCHEMA_VERSION = 1
 _REQUIRED_CHECKS = frozenset({"coverage", "preservation", "faithfulness"})
-_OPTIONAL_CHECKS = frozenset({"semantic"})
+_OPTIONAL_CHECKS = frozenset({"semantic", "transcript_grounding"})
 _ALLOWED_CHECKS = _REQUIRED_CHECKS | _OPTIONAL_CHECKS
 _ACCEPT_CHECK_ERROR = (
     "ACCEPT requires every required check to pass; coverage, preservation, and "
-    "faithfulness are mandatory and an optional semantic check must pass too"
+    "faithfulness are mandatory and optional semantic/transcript_grounding checks must pass too"
 )
 
 
@@ -186,8 +193,14 @@ def _restore_store(path: Path, raw: str | None) -> None:
 
 
 def _append_event(path: Path, event: dict[str, Any]) -> None:
+    """Append one audit event, creating the PII-bearing log owner-only (0600)."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as handle:
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    with os.fdopen(descriptor, "a", encoding="utf-8") as handle:
+        try:
+            path.chmod(0o600)  # tighten a pre-existing world-readable log
+        except OSError:
+            pass
         handle.write(json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n")
         handle.flush()
         os.fsync(handle.fileno())
@@ -205,7 +218,8 @@ def _acquire_store_lock(store_path: Path) -> tuple[Any, bool]:
         return None, False
     lock_path = Path(str(store_path) + ".lock")
     try:
-        handle = lock_path.open("a+", encoding="utf-8")
+        descriptor = os.open(lock_path, os.O_RDWR | os.O_CREAT, 0o600)
+        handle = os.fdopen(descriptor, "a+", encoding="utf-8")
     except OSError:
         return None, False
     try:
@@ -235,15 +249,36 @@ def _release_store_lock(lock: tuple[Any, bool] | None) -> None:
         pass
 
 
-def commit(store: dict[str, Record], t: Transition, result: Result) -> dict[str, Record]:
+def chained_legacy_version_error(t: Transition) -> str:
+    return (
+        f"refusing to commit legacy schema_version {t.schema_version}: the commit "
+        "path requires the current transition format (schema_version "
+        f"{STORE_SCHEMA_VERSION}); call membud.migrations.migrate_transition_to_v2() "
+        "explicitly (or pass allow_legacy=True for an archival replay)"
+    )
+
+
+def commit(
+    store: dict[str, Record],
+    t: Transition,
+    result: Result,
+    *,
+    allow_legacy: bool = False,
+) -> dict[str, Record]:
     """Replace store only on a valid ACCEPT; return a copy and never mutate input.
 
     The three deterministic checks (coverage, preservation, faithfulness) are
-    mandatory and must PASS. An optional fourth check literally named
-    ``semantic`` may be present; if present it must PASS too and only appear
-    once. Unknown or duplicate check names are rejected.
+    mandatory and must PASS. Optional checks named ``semantic`` and/or
+    ``transcript_grounding`` may be present; if present each must PASS too and
+    only appear once. Unknown or duplicate check names are rejected.
+
+    Legacy v1 transitions are archival-only: committing one requires an explicit
+    ``allow_legacy=True`` (normal callers should migrate first), so the weaker
+    legacy operation-coverage semantics cannot authorize a write by accident.
     """
     t.validate()
+    if t.schema_version != SCHEMA_VERSION and not allow_legacy:
+        raise ValueError(chained_legacy_version_error(t))
     _require_matching_prior_state(store, t)
     if result.case_id != t.case_id:
         raise ValueError("result does not belong to transition")
@@ -273,6 +308,7 @@ def run_case(
     manifest_sha256: str = "",
     expected_version: int | None = None,
     verifier: Callable[[Transition, str, Any], Result] | None = None,
+    allow_legacy: bool = False,
 ) -> Result:
     """Load a versioned JSON store, verify, conditionally commit, and audit.
 
@@ -286,8 +322,11 @@ def run_case(
 
     Accepted state is written atomically in the versioned format and the version
     increments by exactly one; held state is never written, so a HOLD cannot
-    reformat or create a store file. The audit event is appended after the
-    write and the write is rolled back if the append fails.
+    reformat or create a store file. The state file is written first and the
+    completed audit event appended after it; a caught append failure rolls the
+    state file back and the error event records ``store_written=False`` and
+    ``rolled_back=True``. A process death between the two cannot be caught and
+    is the documented unaudited-ACCEPT crash window.
     """
     started = time.perf_counter()
     started_at = datetime.now(timezone.utc).isoformat()
@@ -302,6 +341,11 @@ def run_case(
     version_before = 0
     schema_version_after: int | None = schema_version_before
     version_after = version_before
+    write_attempted = False
+    store_write_completed = False
+    store_committed = False
+    rollback_performed = False
+    rollback_failed = False
     try:
         try:
             _recover_stray_temp_files(store_path)
@@ -312,6 +356,9 @@ def run_case(
                 )
             else:
                 store = {record.id: record for record in t.before}
+            t.validate()
+            if t.schema_version != SCHEMA_VERSION and not allow_legacy:
+                raise ValueError(chained_legacy_version_error(t))
             if expected_version is not None and expected_version != version_before:
                 raise ValueError(
                     "state version conflict: expected "
@@ -333,14 +380,15 @@ def run_case(
                 if verifier is None
                 else verifier(t, representation, prepared_input)
             )
-            after = commit(store, t, result)
+            after = commit(store, t, result, allow_legacy=allow_legacy)
             verification_ms = round((time.perf_counter() - verification_started) * 1000, 3)
-            if result.decision == "ACCEPT":
-                schema_version_after = STORE_SCHEMA_VERSION
-                version_after = version_before + 1
+            planned_accept = result.decision == "ACCEPT"
+            if planned_accept:
+                planned_schema_version_after = STORE_SCHEMA_VERSION
+                planned_version_after = version_before + 1
             else:
-                schema_version_after = schema_version_before
-                version_after = version_before
+                planned_schema_version_after = schema_version_before
+                planned_version_after = version_before
             event_status = (
                 "verifier_error"
                 if any(check.reason_code == "INVALID_VERIFIER_OUTPUT" for check in result.checks)
@@ -365,23 +413,43 @@ def run_case(
                 "store_before": [asdict(record) for record in store.values()],
                 "store_after": [asdict(record) for record in after.values()],
                 "store_schema_version_before": schema_version_before,
-                "store_schema_version_after": schema_version_after,
+                "store_schema_version_after": planned_schema_version_after,
                 "store_version_before": version_before,
-                "store_version_after": version_after,
+                "store_version_after": planned_version_after,
+                "store_written": planned_accept,
+                "rolled_back": False,
                 "expected_version": expected_version,
                 "lock_acquired": lock_acquired,
             }
-            if result.decision == "ACCEPT":
-                _atomic_write(store_path, _serialize_store(after, version_after))
+            if planned_accept:
+                write_attempted = True
+                _atomic_write(store_path, _serialize_store(after, planned_version_after))
+                store_write_completed = True
                 try:
                     _append_event(log_path, event)
                 except BaseException:
-                    _restore_store(store_path, previous_store_text)
+                    try:
+                        _restore_store(store_path, previous_store_text)
+                        rollback_performed = True
+                    except BaseException:
+                        rollback_failed = True
                     raise
+                store_committed = True
             else:
                 _append_event(log_path, event)
+            schema_version_after = planned_schema_version_after
+            version_after = planned_version_after
             return result
         except Exception as exc:
+            # The error event describes the *observed* state: a failed or
+            # rolled-back write must not claim an advanced version.  Callers can
+            # distinguish the cases through ``store_written``/``rolled_back``.
+            # A completed audit append implies a committed write.  If the write
+            # completed but the audit append and its rollback both failed, the
+            # store is durably advanced and must be reported as written.
+            store_written = store_committed or (
+                store_write_completed and not rollback_performed
+            )
             event = {
                 "run_id": run_id,
                 "code_revision": code_revision,
@@ -397,15 +465,117 @@ def run_case(
                 "input": transition_dict(t),
                 "representation": representation,
                 "store_schema_version_before": schema_version_before,
-                "store_schema_version_after": schema_version_after,
+                "store_schema_version_after": (
+                    STORE_SCHEMA_VERSION if store_written else schema_version_before
+                ),
                 "store_version_before": version_before,
-                "store_version_after": version_after,
+                "store_version_after": (
+                    version_before + 1 if store_written else version_before
+                ),
+                "store_written": store_written,
+                "rolled_back": rollback_performed,
+                "rollback_failed": rollback_failed,
                 "expected_version": expected_version,
                 "lock_acquired": lock_acquired,
                 "error_type": type(exc).__name__,
                 "error": str(exc),
             }
-            _append_event(log_path, event)
+            try:
+                _append_event(log_path, event)
+            except Exception:
+                # Never let a failing audit append hide the original error.
+                pass
             raise
+    finally:
+        _release_store_lock(lock)
+
+
+def resync_store(
+    store_path: str | Path,
+    records: Iterable[Record],
+    *,
+    log_path: str | Path | None = None,
+    run_id: str = "",
+    code_revision: str = "",
+    only_if_diverged: bool = True,
+) -> dict[str, Any]:
+    """Explicitly rewrite the shadow baseline from an authoritative host snapshot.
+
+    This is the documented recovery path for the guarded-adapter crash window in
+    which the host ``replace_state`` succeeded but the shadow baseline commit did
+    not (so the baseline is behind the host).  It is never called automatically:
+    the caller must have established that the host state is authoritative.
+
+    The snapshot is written atomically in the current store format, incrementing
+    the on-disk version once, and an append-only ``resync`` audit event is
+    recorded.  With ``only_if_diverged`` (the default) a baseline that already
+    matches the requested snapshot is left untouched and no version is bumped.
+
+    Raises ``ValueError`` if the existing store cannot be parsed (a corrupt or
+    unknown-version store must be resolved explicitly, never overwritten here).
+    """
+    requested_records = tuple(records)
+    requested = {record.id: record for record in requested_records}
+    if len(requested) != len(requested_records):
+        raise ValueError("resync records must have unique ids")
+    store_path = Path(store_path)
+    store_path.parent.mkdir(parents=True, exist_ok=True)
+    lock = _acquire_store_lock(store_path)
+    lock_acquired = bool(lock and lock[1])
+    try:
+        _recover_stray_temp_files(store_path)
+        existing: dict[str, Record] | None = None
+        version_before = 0
+        schema_version_before: int | None = None
+        if store_path.exists():
+            existing, schema_version_before, version_before = _parse_store(
+                store_path.read_text(encoding="utf-8"), store_path
+            )
+        if (
+            only_if_diverged
+            and existing is not None
+            and _claims_by_id(existing.values()) == _claims_by_id(requested.values())
+        ):
+            return {
+                "store_path": str(store_path),
+                "resynced": False,
+                "reason": "shadow baseline already matches the requested snapshot",
+                "store_version_before": version_before,
+                "store_version_after": version_before,
+                "lock_acquired": lock_acquired,
+            }
+        version_after = version_before + 1
+        _atomic_write(store_path, _serialize_store(requested, version_after))
+        if log_path is not None:
+            _append_event(
+                Path(log_path),
+                {
+                    "run_id": run_id or str(uuid.uuid4()),
+                    "code_revision": code_revision,
+                    "started_at": datetime.now(timezone.utc).isoformat(),
+                    "status": "resync",
+                    "decision": "RESYNC",
+                    "representation": "host_snapshot",
+                    "store_before": [asdict(record) for record in (existing or {}).values()],
+                    "store_after": [asdict(record) for record in requested.values()],
+                    "store_schema_version_before": (
+                        None if existing is None else schema_version_before
+                    ),
+                    "store_schema_version_after": STORE_SCHEMA_VERSION,
+                    "store_version_before": version_before,
+                    "store_version_after": version_after,
+                    "expected_version": None,
+                    "lock_acquired": lock_acquired,
+                },
+            )
+        return {
+            "store_path": str(store_path),
+            "resynced": True,
+            "reason": "shadow baseline rewritten from the authoritative host snapshot",
+            "store_version_before": version_before,
+            "store_version_after": version_after,
+            "record_count": len(requested),
+            "lock_acquired": lock_acquired,
+        }
     finally:
         _release_store_lock(lock)

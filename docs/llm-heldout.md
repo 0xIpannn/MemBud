@@ -11,7 +11,7 @@
 - Model: DeepSeek `deepseek-flash` official OpenAI-compatible API, temperature 0, JSON mode, prompt `membud-transition-checks-v1`; semantic comparator prompt `membud-semantic-compare-v1`.
 - Conditions: `graph` and `text` use the optional LLM verifier on the graph/text serialization; `semantic` uses the deterministic **text** baseline plus the separate LLM semantic check (4-check result, commit requires all PASS).
 - 39 non-invalid rows executed, 0 verifier errors, 0 cache hits, no budget abort.
-- **Spend:** 101,231 reported tokens (34,505 input / 66,726 output; 59 provider request attempts). Estimated upper bound **≈$0.40** at DeepSeek's top published per-token rate and **≈$0.20** under the harness's $2/M ceiling; the API does not return billed cost, so the provider dashboard remains authoritative. The 250,000-token cap was not approached.
+- **Spend:** 101,231 reported tokens (34,505 input / 66,726 output; 59 provider attempts; 54 rows reported usage). Estimated upper bound **≈$0.40** at DeepSeek's top published per-token rate — note that no price source/date was recorded with this artifact — and **≈$0.20** under the harness's documented $2/M placeholder ceiling. The API does not return billed cost, so the provider dashboard remains authoritative. The 250,000-token cap was not approached. Counting convention: attempts include retries; token totals are telemetry, not a bill.
 
 ## Results (held-out, n = 13 non-invalid; 7 valid, 6 gold faulty; 5 invalid)
 

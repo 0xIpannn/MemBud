@@ -345,6 +345,34 @@ def test_stale_prior_state_is_refused_before_persisting(tmp_path):
     assert decision.error_type == "StalePriorState"
     # The raced state is preserved; the accepted candidate was NOT persisted.
     assert tuple(backend.snapshot(SCOPE)) == (Record("r1", ("tinggal di Surabaya",)),)
+    # Regression (M1): the shadow baseline must not advance before/without the
+    # host apply, otherwise every later proposal fails reconciliation forever.
+    assert not guard.store_path.exists()
+    run_events = read_jsonl(guard.audit_log_path)
+    assert [event["decision"] for event in run_events if event.get("decision")] == []
+    # The guarded path is not wedged: a proposal based on the live host state
+    # succeeds and persists exactly its candidate.
+    follow_up = guard.propose_update(
+        SCOPE,
+        case_id="valid-after-stale",
+        candidate=[
+            {"id": "r1", "claims": ["tinggal di Surabaya", "bekerja di Tokopedia"]},
+            {"id": "r2", "claims": ["bekerja di Tokopedia"]},
+        ],
+        operations=[
+            {"type": "REVISE", "record_id": "r1", "target_id": "r1"},
+            {"type": "WRITE", "record_id": "r2"},
+        ],
+        evidence=[dict(EVIDENCE)],
+        required_claims=["tinggal di Surabaya"],
+    )
+    assert follow_up.decision == "ACCEPT"
+    assert follow_up.applied is True
+    assert guard.store_path.exists()
+    assert tuple(backend.snapshot(SCOPE)) == (
+        Record("r1", ("tinggal di Surabaya", "bekerja di Tokopedia")),
+        Record("r2", ("bekerja di Tokopedia",)),
+    )
 
 
 def test_decision_log_appends_every_outcome_in_order(tmp_path):
@@ -376,3 +404,164 @@ def test_decision_log_appends_every_outcome_in_order(tmp_path):
         assert record["prior_state"]["records"]
         assert record["prior_state"]["scope"] == dict(SCOPE)
         assert record["backend_name"] == "reference-sqlite"
+
+
+def test_backend_apply_failure_never_advances_the_shadow_baseline(tmp_path):
+    class FailingBackend(InMemoryBackend):
+        backend_name = "failing-reference"
+
+        def replace_state(self, scope, records):
+            # Atomic-contract violation simulated as a raise before mutation.
+            raise OSError("database is locked")
+
+    backend = FailingBackend(BASE, scope=SCOPE)
+    guard = make_guard(backend, tmp_path)
+
+    decision = guard.propose_update(SCOPE, **valid_revision_kwargs())
+
+    assert decision.decision == "REJECTED"
+    assert decision.applied is False
+    assert decision.error_type == "OSError"
+    assert tuple(backend.snapshot(SCOPE)) == BASE_RECORDS
+    assert not guard.store_path.exists()
+    run_events = read_jsonl(guard.audit_log_path)
+    assert all(event.get("decision") != "ACCEPT" for event in run_events)
+
+
+def test_post_apply_mismatch_rolls_back_and_does_not_advance_baseline(tmp_path):
+    class LyingBackend(InMemoryBackend):
+        backend_name = "lying-reference"
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.writes = 0
+
+        def replace_state(self, scope, records):
+            self.writes += 1
+            if self.writes == 1:
+                # Applies the candidate plus an undeclared extra record.
+                super().replace_state(scope, [*records, Record("extra", ("surprise",))])
+            else:
+                super().replace_state(scope, records)
+
+    backend = LyingBackend(BASE, scope=SCOPE)
+    guard = make_guard(backend, tmp_path)
+
+    decision = guard.propose_update(SCOPE, **valid_revision_kwargs())
+
+    assert decision.decision == "REJECTED"
+    assert decision.applied is False
+    assert decision.error_type == "ApplyVerificationError"
+    assert tuple(backend.snapshot(SCOPE)) == BASE_RECORDS
+    assert not guard.store_path.exists()
+
+
+def test_resync_recovers_crash_between_host_apply_and_shadow_commit(tmp_path):
+    backend = InMemoryBackend(BASE, scope=SCOPE)
+    guard = make_guard(backend, tmp_path)
+
+    # Normal accepted write: host and shadow baseline both hold state A.
+    first = guard.propose_update(SCOPE, **valid_revision_kwargs())
+    assert first.decision == "ACCEPT"
+    state_a = tuple(backend.snapshot(SCOPE))
+    assert guard.store_path.exists()
+
+    # Simulate the crash window: the host advances to state B directly (its
+    # replace_state succeeded) but the shadow baseline commit never happened, so
+    # the baseline is still at A while the live host is at B.
+    state_b = (*state_a, Record("r3", ("tinggal di Jakarta",)))
+    backend.replace_state(SCOPE, state_b)
+
+    candidate_c = [
+        {"id": "r1", "claims": ["tinggal di Bandung", "bekerja di Tokopedia"]},
+        {"id": "r2", "claims": ["bekerja di Tokopedia"]},
+        {"id": "r3", "claims": ["tinggal di Jakarta"]},
+        {"id": "r4", "claims": ["memiliki sepeda"]},
+    ]
+    proposal_c = {
+        "case_id": "post-crash-write",
+        "candidate": candidate_c,
+        "operations": [{"type": "WRITE", "record_id": "r4"}],
+        "evidence": [
+            {
+                "id": "e4",
+                "supports": ["memiliki sepeda"],
+                "source": "chat:9",
+                "text": "Ia memiliki sepeda.",
+            }
+        ],
+        "required_claims": ["tinggal di Bandung"],
+    }
+
+    # The baseline-behind-host crash residue makes the guarded path fail closed.
+    blocked = guard.propose_update(SCOPE, **proposal_c)
+    assert blocked.decision == "REJECTED"
+    assert "does not match transition.before" in blocked.reason
+    assert tuple(backend.snapshot(SCOPE)) == state_b
+
+    # Explicit operator recovery: the host is authoritative.
+    resync = guard.resync_shadow_store(SCOPE)
+    assert resync["resynced"] is True
+    assert resync["store_version_before"] == 1
+    assert resync["store_version_after"] == 2
+    resync_events = [
+        event for event in read_jsonl(guard.audit_log_path) if event.get("decision") == "RESYNC"
+    ]
+    assert resync_events
+
+    follow_up = guard.propose_update(SCOPE, **proposal_c)
+    assert follow_up.decision == "ACCEPT"
+    assert follow_up.applied is True
+    assert tuple(backend.snapshot(SCOPE)) == (
+        Record("r1", ("tinggal di Bandung", "bekerja di Tokopedia")),
+        Record("r2", ("bekerja di Tokopedia",)),
+        Record("r3", ("tinggal di Jakarta",)),
+        Record("r4", ("memiliki sepeda",)),
+    )
+
+    # A second resync is a no-op once the baseline matches.
+    again = guard.resync_shadow_store(SCOPE)
+    assert again["resynced"] is False
+    assert again["store_version_before"] == again["store_version_after"]
+
+
+def test_decision_log_append_failure_does_not_lose_the_decision(tmp_path, monkeypatch):
+    backend = InMemoryBackend(BASE, scope=SCOPE)
+    guard = make_guard(backend, tmp_path)
+
+    def fail_append(decision):
+        raise OSError(5, "Input/output error")
+
+    monkeypatch.setattr(guard, "_append_decision", fail_append)
+    decision = guard.propose_update(SCOPE, **valid_revision_kwargs())
+
+    assert decision.decision == "ACCEPT"
+    assert decision.applied is True
+    assert guard.last_decision_log_error is not None
+    assert "Input/output error" in guard.last_decision_log_error
+
+
+def test_shadow_commit_failure_after_host_apply_reports_host_applied(tmp_path, monkeypatch):
+    import membud.store as store_module
+
+    backend = InMemoryBackend(BASE, scope=SCOPE)
+    guard = make_guard(backend, tmp_path)
+
+    def fail_write(path, text):
+        raise OSError(28, "No space left on device")
+
+    monkeypatch.setattr(store_module, "_atomic_write", fail_write)
+    decision = guard.propose_update(SCOPE, **valid_revision_kwargs())
+
+    assert decision.decision == "REJECTED"
+    assert decision.error_type == "OSError"
+    assert decision.host_applied is True
+    assert "host write had already completed" in decision.reason
+    assert tuple(backend.snapshot(SCOPE)) == (
+        Record("r1", ("tinggal di Bandung", "bekerja di Tokopedia")),
+        Record("r2", ("bekerja di Tokopedia",)),
+    )
+    assert not guard.store_path.exists()
+    monkeypatch.undo()
+    resync = guard.resync_shadow_store(SCOPE)
+    assert resync["resynced"] is True

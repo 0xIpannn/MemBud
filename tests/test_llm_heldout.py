@@ -15,6 +15,7 @@ from types import SimpleNamespace
 import pytest
 
 from membud.checkpoint import CheckpointConfigMismatch, RunCheckpoint
+from membud.experiment import load_manifest_entries
 from membud.llm.client import CacheMissError
 from membud.semantic import SemanticRelation
 
@@ -845,7 +846,7 @@ def test_fresh_run_writes_checkpoint_and_still_refuses_reuse(tmp_path):
     )
     assert summary["resumed"] is False
     assert summary["resumed_rows"] == 0
-    assert summary["checkpoint_path"] == str(output / "checkpoint.jsonl")
+    assert Path(summary["checkpoint_path"]).resolve() == (output / "checkpoint.jsonl").resolve()
     assert summary["config_fingerprint"]
     assert summary["checkpoint_is_complete"] is True
     assert summary["checkpoint_torn_final_line"] is False
@@ -1149,3 +1150,200 @@ def test_cli_price_flags_parse_and_apply_explicit_rates(tmp_path, monkeypatch):
     assert cost["low_usd"] == cost["high_usd"]
     # 120 input tokens * $1/M + 30 output tokens * $2/M = $0.00018
     assert cost["low_usd"] == pytest.approx(0.00018)
+
+
+# ---------------------------------------------------------------------------
+# Crash-window recovery and pre-request accounting
+# ---------------------------------------------------------------------------
+
+
+def _strip_checkpoint_row(path: Path, case_id: str) -> None:
+    """Simulate a crash after the store/audit write but before the row append."""
+    records = [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    kept = [
+        record
+        for record in records
+        if not (
+            record.get("kind") == "row"
+            and (record.get("row") or {}).get("case_id") == case_id
+        )
+        and record.get("kind") != "complete"
+    ]
+    path.write_text(
+        "\n".join(json.dumps(record) for record in kept) + "\n", encoding="utf-8"
+    )
+
+
+def test_resume_recovers_accept_whose_checkpoint_row_was_lost(tmp_path):
+    manifest_path = _write_manifest(
+        tmp_path, [_valid_raw("HELD-01")], [_label("HELD-01", "ACCEPT")]
+    )
+    output = tmp_path / "out"
+    first = harness.run_heldout(**_run_kwargs(manifest_path, output, FakeClient(total_tokens=150)))
+    assert first["results"][0]["decision"] == "ACCEPT"
+    assert first["budget"]["accounted_tokens_used"] == 150
+
+    # Crash simulation: the store + audit event are durable, the checkpoint row
+    # (and the now-unreachable completion marker) are lost.
+    _strip_checkpoint_row(output / "checkpoint.jsonl", "HELD-01")
+    audit_before = (output / "graph" / "audit.jsonl").read_text(encoding="utf-8")
+
+    resume_client = FakeClient(total_tokens=150)
+    resumed = harness.run_heldout(
+        **_run_kwargs(manifest_path, output, resume_client, resume=True)
+    )
+
+    assert resume_client.calls == 0  # recovery needs no provider/verifier call
+    assert resumed["recovered_rows"] == 1
+    assert resumed["recovered_without_audit_rows"] == 0
+    row = resumed["results"][0]
+    assert row["decision"] == "ACCEPT"
+    assert row["status"] == "completed"
+    assert row["recovered_from_audit"] is True
+    assert row["accounted_tokens"] == 150  # original reported usage preserved
+    assert row["attempts"] == 1
+    assert row["error"] is None
+    assert resumed["budget"]["accounted_tokens_used"] == 150
+    assert resumed["budget"]["aborted"] is False
+    assert resumed["checkpoint_is_complete"] is True
+    # Recovery does not duplicate the durable audit event.
+    assert (output / "graph" / "audit.jsonl").read_text(encoding="utf-8") == audit_before
+
+
+def test_pre_request_failure_is_charged_zero_tokens(tmp_path):
+    manifest_path = _write_manifest(
+        tmp_path, [_valid_raw("HELD-01")], [_label("HELD-01", "ACCEPT")]
+    )
+    output = tmp_path / "out"
+    harness.run_heldout(**_run_kwargs(manifest_path, output, FakeClient(total_tokens=150)))
+
+    # Divergent store residue: recovery must refuse it and run_case then fails
+    # its prior-state/version reconciliation *before* any provider call.
+    store_path = output / "graph" / "HELD-01.json"
+    store_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "version": 1,
+                "records": [{"id": "r9", "claims": ["unrelated state"]}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    _strip_checkpoint_row(output / "checkpoint.jsonl", "HELD-01")
+
+    resume_client = FakeClient(total_tokens=150)
+    resumed = harness.run_heldout(
+        **_run_kwargs(manifest_path, output, resume_client, resume=True)
+    )
+
+    assert resume_client.calls == 0
+    row = resumed["results"][0]
+    assert row["decision"] == "ERROR"
+    assert row["status"] == "error"
+    assert row["accounted_tokens"] == 0
+    assert row["attempts"] == 0
+    assert row["usage_estimated"] is False
+    assert "state version conflict" in row["error"]
+    assert resumed["budget"]["accounted_tokens_used"] == 0
+    assert resumed["budget"]["estimated_tokens_used"] == 0
+
+
+def test_account_usage_zero_attempts_charges_nothing():
+    accounting = harness.account_usage({"api_attempts": 0}, max_attempts=3)
+    assert accounting["accounted_tokens"] == 0
+    assert accounting["attempts"] == 0
+    assert accounting["usage_estimated"] is False
+    # Unknown attempt count still uses the conservative fallback.
+    fallback = harness.account_usage({}, max_attempts=3)
+    assert fallback["accounted_tokens"] == 3 * harness.ESTIMATED_TOKENS_PER_ATTEMPT
+    assert fallback["usage_estimated"] is True
+
+
+def test_resume_recovers_hold_whose_checkpoint_row_was_lost(tmp_path):
+    hold_payload = {
+        "checks": [
+            ALL_PASS_CHECKS[0],
+            ALL_PASS_CHECKS[1],
+            {
+                "name": "faithfulness",
+                "status": "FAIL",
+                "reason": "Unsupported candidate claim.",
+                "reason_code": "UNSUPPORTED_CLAIM",
+                "affected_ids": ["memiliki kapal pesiar"],
+            },
+        ]
+    }
+    manifest_path = _write_manifest(
+        tmp_path, [_faulty_raw("HELD-02")], [_label("HELD-02", "HOLD")]
+    )
+    output = tmp_path / "out"
+    first = harness.run_heldout(
+        **_run_kwargs(
+            manifest_path,
+            output,
+            FakeClient(total_tokens=150, payload=hold_payload),
+        )
+    )
+    assert first["results"][0]["decision"] == "HOLD"
+    audit_path = output / "graph" / "audit.jsonl"
+    audit_before = audit_path.read_text(encoding="utf-8")
+
+    _strip_checkpoint_row(output / "checkpoint.jsonl", "HELD-02")
+    resume_client = FakeClient(total_tokens=150)
+    resumed = harness.run_heldout(
+        **_run_kwargs(manifest_path, output, resume_client, resume=True)
+    )
+
+    # A HOLD is durable in the run audit too: it must not be re-executed (paid)
+    # nor re-appended a second time.
+    assert resume_client.calls == 0
+    assert resumed["recovered_rows"] == 1
+    row = resumed["results"][0]
+    assert row["decision"] == "HOLD"
+    assert row["status"] == "completed"
+    assert row["recovered_from_audit"] is True
+    assert row["accounted_tokens"] == 150
+    assert resumed["budget"]["accounted_tokens_used"] == 150
+    assert audit_path.read_text(encoding="utf-8") == audit_before
+
+
+def test_recovered_store_without_audit_stays_visible_to_metrics(tmp_path):
+    # A crash between the store write and the audit append leaves an inferable
+    # ACCEPT; it must not disappear from the attempted/false-accept views.
+    assert "recovered_without_audit" in harness._ATTEMPTED_STATUSES
+
+    entry = load_manifest_entries(ROOT / "data/manifests/evaluation-v2.json")
+    transition = next(item.transition for item in entry if item.case_id == "HELD-01")
+    store_path = tmp_path / "graph" / "HELD-01.json"
+    store_path.parent.mkdir(parents=True)
+    store_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "version": 1,
+                "records": [
+                    {"id": record.id, "claims": list(record.claims)}
+                    for record in transition.candidate
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    row = harness._recover_unrecorded_row(
+        transition=transition,
+        condition="graph",
+        representation="graph",
+        store_path=store_path,
+        audit_path=tmp_path / "graph" / "audit.jsonl",
+        max_attempts=3,
+    )
+    assert row is not None
+    assert row["status"] == "recovered_without_audit"
+    assert row["decision"] == "ACCEPT"
+    assert row["accounted_tokens"] == 0
+    assert row["usage_estimated"] is False

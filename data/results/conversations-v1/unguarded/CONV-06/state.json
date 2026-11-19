@@ -1,0 +1,20 @@
+[
+  {
+    "id": "r1",
+    "claims": [
+      "lives in Chicago"
+    ]
+  },
+  {
+    "id": "r2",
+    "claims": [
+      "allergic to peanuts"
+    ]
+  },
+  {
+    "id": "r3",
+    "claims": [
+      "owns a private island"
+    ]
+  }
+]

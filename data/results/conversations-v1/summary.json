@@ -1,0 +1,5023 @@
+{
+  "run_id": "conversations-v1-rules",
+  "code_revision": "working-tree-sha256:5f75f4a779ab7238247d461ef67fc0539113e01a0f13000615297ea182339f79",
+  "manifest_id": "membud-conversations-v1",
+  "manifest_sha256": "ce336be5f1d175d1d7b09a83ca6e773bcf99f1aa3347cdf296ba318a5326c306",
+  "verifier": "rules+transcript_grounding",
+  "conditions": [
+    "unguarded",
+    "graph",
+    "text",
+    "text_fair"
+  ],
+  "sessions": [
+    {
+      "conversation_id": "CONV-01",
+      "condition": "unguarded",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-01-S1",
+          "case_id": "CONV-01-S1",
+          "up_to_turn_id": "t1",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 4.609,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S2",
+          "case_id": "CONV-01-S2",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 4.55,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S3",
+          "case_id": "CONV-01-S3",
+          "up_to_turn_id": "t5",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 6.346,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S4",
+          "case_id": "CONV-01-S4",
+          "up_to_turn_id": "t7",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 5.037,
+          "checks": [],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r2",
+          "claims": [
+            "bekerja di Tokopedia"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "belajar bahasa Jepang"
+          ]
+        },
+        {
+          "id": "r4",
+          "claims": [
+            "tinggal di Surabaya"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/unguarded/CONV-01/state.json",
+      "audit_path": "data/results/conversations-v1/unguarded/CONV-01/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-02",
+      "condition": "unguarded",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-02-S1",
+          "case_id": "CONV-02-S1",
+          "up_to_turn_id": "t1",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 4.37,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-02-S2",
+          "case_id": "CONV-02-S2",
+          "up_to_turn_id": "t2",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 4.475,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-02-S3",
+          "case_id": "CONV-02-S3",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 4.426,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-02-S4",
+          "case_id": "CONV-02-S4",
+          "up_to_turn_id": "t4",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 5.621,
+          "checks": [],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "bekerja di PT Astra"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "memiliki kapal pesiar"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/unguarded/CONV-02/state.json",
+      "audit_path": "data/results/conversations-v1/unguarded/CONV-02/audit.jsonl",
+      "final_records_match_expected": false
+    },
+    {
+      "conversation_id": "CONV-03",
+      "condition": "unguarded",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-03-S1",
+          "case_id": "CONV-03-S1",
+          "up_to_turn_id": "t1",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 4.832,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-03-S2",
+          "case_id": "CONV-03-S2",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 4.064,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-03-S3",
+          "case_id": "CONV-03-S3",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 4.376,
+          "checks": [],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r2",
+          "claims": [
+            "bekerja di Gojek"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "memiliki pesawat pribadi"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/unguarded/CONV-03/state.json",
+      "audit_path": "data/results/conversations-v1/unguarded/CONV-03/audit.jsonl",
+      "final_records_match_expected": false
+    },
+    {
+      "conversation_id": "CONV-04",
+      "condition": "unguarded",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-04-S1",
+          "case_id": "CONV-04-S1",
+          "up_to_turn_id": "t1",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 4.13,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-04-S2",
+          "case_id": "CONV-04-S2",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 3.655,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-04-S3",
+          "case_id": "CONV-04-S3",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 4.405,
+          "checks": [],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "tinggal di Semarang"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "menyukai kopi hitam"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "memiliki tiga kapal pesiar"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/unguarded/CONV-04/state.json",
+      "audit_path": "data/results/conversations-v1/unguarded/CONV-04/audit.jsonl",
+      "final_records_match_expected": false
+    },
+    {
+      "conversation_id": "CONV-05",
+      "condition": "unguarded",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-05-S1",
+          "case_id": "CONV-05-S1",
+          "up_to_turn_id": "t1",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 2.892,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-05-S2",
+          "case_id": "CONV-05-S2",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 3.001,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-05-S3",
+          "case_id": "CONV-05-S3",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 2.633,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-05-S4",
+          "case_id": "CONV-05-S4",
+          "up_to_turn_id": "t4",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 2.983,
+          "checks": [],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "name is Maya"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "works at Northwind Labs"
+          ]
+        },
+        {
+          "id": "r4",
+          "claims": [
+            "lives in Portland"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/unguarded/CONV-05/state.json",
+      "audit_path": "data/results/conversations-v1/unguarded/CONV-05/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-06",
+      "condition": "unguarded",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-06-S1",
+          "case_id": "CONV-06-S1",
+          "up_to_turn_id": "t1",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 3.018,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-06-S2",
+          "case_id": "CONV-06-S2",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 2.814,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-06-S3",
+          "case_id": "CONV-06-S3",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 2.844,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-06-S4",
+          "case_id": "CONV-06-S4",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 2.823,
+          "checks": [],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "lives in Chicago"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "allergic to peanuts"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "owns a private island"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/unguarded/CONV-06/state.json",
+      "audit_path": "data/results/conversations-v1/unguarded/CONV-06/audit.jsonl",
+      "final_records_match_expected": false
+    },
+    {
+      "conversation_id": "CONV-07",
+      "condition": "unguarded",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-07-S1",
+          "case_id": "CONV-07-S1",
+          "up_to_turn_id": "t1",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 3.068,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-07-S2",
+          "case_id": "CONV-07-S2",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "INVALID_INPUT",
+          "status": "invalid_input",
+          "error": "undeclared removal of prior record r1",
+          "checks": [],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-07-S3",
+          "case_id": "CONV-07-S3",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 3.337,
+          "checks": [],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r2",
+          "claims": [
+            "has a rescue dog"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/unguarded/CONV-07/state.json",
+      "audit_path": "data/results/conversations-v1/unguarded/CONV-07/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-08",
+      "condition": "unguarded",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-08-S1",
+          "case_id": "CONV-08-S1",
+          "up_to_turn_id": "t1",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 3.908,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-08-S2",
+          "case_id": "CONV-08-S2",
+          "up_to_turn_id": "t2",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 2.867,
+          "checks": [],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-08-S3",
+          "case_id": "CONV-08-S3",
+          "up_to_turn_id": "t3",
+          "condition": "unguarded",
+          "decision": "APPLIED",
+          "status": "completed",
+          "latency_ms": 3.206,
+          "checks": [],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "works at Acme Corp"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "prefers morning meetings"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/unguarded/CONV-08/state.json",
+      "audit_path": "data/results/conversations-v1/unguarded/CONV-08/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-01",
+      "condition": "graph",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-01-S1",
+          "case_id": "CONV-01-S1",
+          "up_to_turn_id": "t1",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.927,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S2",
+          "case_id": "CONV-01-S2",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.339,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S3",
+          "case_id": "CONV-01-S3",
+          "up_to_turn_id": "t5",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.666,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S4",
+          "case_id": "CONV-01-S4",
+          "up_to_turn_id": "t7",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.459,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r2",
+          "claims": [
+            "bekerja di Tokopedia"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "belajar bahasa Jepang"
+          ]
+        },
+        {
+          "id": "r4",
+          "claims": [
+            "tinggal di Surabaya"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/graph/CONV-01/state.json",
+      "audit_path": "data/results/conversations-v1/graph/CONV-01/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-02",
+      "condition": "graph",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-02-S1",
+          "case_id": "CONV-02-S1",
+          "up_to_turn_id": "t1",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.471,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-02-S2",
+          "case_id": "CONV-02-S2",
+          "up_to_turn_id": "t2",
+          "condition": "graph",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.425,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence cites turn(s) with disallowed role: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "DISALLOWED_EVIDENCE_ROLE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-02-S3",
+          "case_id": "CONV-02-S3",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.385,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-02-S4",
+          "case_id": "CONV-02-S4",
+          "up_to_turn_id": "t4",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.873,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "bekerja di PT Astra"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/graph/CONV-02/state.json",
+      "audit_path": "data/results/conversations-v1/graph/CONV-02/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-03",
+      "condition": "graph",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-03-S1",
+          "case_id": "CONV-03-S1",
+          "up_to_turn_id": "t1",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.314,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-03-S2",
+          "case_id": "CONV-03-S2",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.343,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence text is not a verbatim substring of its cited turn: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_EVIDENCE_QUOTE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-03-S3",
+          "case_id": "CONV-03-S3",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.425,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "DELETE authorization is not supported by deletion intent or target overlap: r1",
+              "affected_ids": [
+                "r1"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_DELETE_AUTHORIZATION"
+            }
+          ],
+          "store_written": false
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "tinggal di Yogyakarta"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "bekerja di Gojek"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/graph/CONV-03/state.json",
+      "audit_path": "data/results/conversations-v1/graph/CONV-03/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-04",
+      "condition": "graph",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-04-S1",
+          "case_id": "CONV-04-S1",
+          "up_to_turn_id": "t1",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.563,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-04-S2",
+          "case_id": "CONV-04-S2",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.399,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence items do not resolve to any transcript turn: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_EVIDENCE_SOURCE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-04-S3",
+          "case_id": "CONV-04-S3",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.415,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence claims lack lexical grounding in cited turn quote: memiliki tiga kapal pesiar",
+              "affected_ids": [
+                "memiliki tiga kapal pesiar"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_EVIDENCE_CLAIM"
+            }
+          ],
+          "store_written": false
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "tinggal di Semarang"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "menyukai kopi hitam"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/graph/CONV-04/state.json",
+      "audit_path": "data/results/conversations-v1/graph/CONV-04/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-05",
+      "condition": "graph",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-05-S1",
+          "case_id": "CONV-05-S1",
+          "up_to_turn_id": "t1",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.307,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-05-S2",
+          "case_id": "CONV-05-S2",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.41,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": false,
+              "reason": "required claims omitted: works at Northwind Labs",
+              "affected_ids": [
+                "works at Northwind Labs"
+              ],
+              "status": "FAIL",
+              "reason_code": "REQUIRED_CLAIM_OMITTED"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-05-S3",
+          "case_id": "CONV-05-S3",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.589,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": false,
+              "reason": "required claims omitted: lives in Seattle",
+              "affected_ids": [
+                "lives in Seattle"
+              ],
+              "status": "FAIL",
+              "reason_code": "REQUIRED_CLAIM_OMITTED"
+            },
+            {
+              "name": "preservation",
+              "passed": false,
+              "reason": "prior records changed/removed without an authorizing operation: r2",
+              "affected_ids": [
+                "r2"
+              ],
+              "status": "FAIL",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+            },
+            {
+              "name": "faithfulness",
+              "passed": false,
+              "reason": "claims without evidence provenance: lives in Boston",
+              "affected_ids": [
+                "lives in Boston"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNSUPPORTED_CLAIM"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-05-S4",
+          "case_id": "CONV-05-S4",
+          "up_to_turn_id": "t4",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.502,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "name is Maya"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "works at Northwind Labs"
+          ]
+        },
+        {
+          "id": "r4",
+          "claims": [
+            "lives in Portland"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/graph/CONV-05/state.json",
+      "audit_path": "data/results/conversations-v1/graph/CONV-05/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-06",
+      "condition": "graph",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-06-S1",
+          "case_id": "CONV-06-S1",
+          "up_to_turn_id": "t1",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.291,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-06-S2",
+          "case_id": "CONV-06-S2",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.618,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": false,
+              "reason": "claims without evidence provenance: owns a private island",
+              "affected_ids": [
+                "owns a private island"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNSUPPORTED_CLAIM"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-06-S3",
+          "case_id": "CONV-06-S3",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.355,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": false,
+              "reason": "claims contradicted by connected evidence: lives in Austin",
+              "affected_ids": [
+                "lives in Austin"
+              ],
+              "status": "FAIL",
+              "reason_code": "CONTRADICTED_CLAIM"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-06-S4",
+          "case_id": "CONV-06-S4",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.377,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "lives in Chicago"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "allergic to peanuts"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/graph/CONV-06/state.json",
+      "audit_path": "data/results/conversations-v1/graph/CONV-06/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-07",
+      "condition": "graph",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-07-S1",
+          "case_id": "CONV-07-S1",
+          "up_to_turn_id": "t1",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.337,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-07-S2",
+          "case_id": "CONV-07-S2",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "INVALID_INPUT",
+          "status": "invalid_input",
+          "error": "undeclared removal of prior record r1",
+          "checks": [],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-07-S3",
+          "case_id": "CONV-07-S3",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.386,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r2",
+          "claims": [
+            "has a rescue dog"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/graph/CONV-07/state.json",
+      "audit_path": "data/results/conversations-v1/graph/CONV-07/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-08",
+      "condition": "graph",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-08-S1",
+          "case_id": "CONV-08-S1",
+          "up_to_turn_id": "t1",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.282,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-08-S2",
+          "case_id": "CONV-08-S2",
+          "up_to_turn_id": "t2",
+          "condition": "graph",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.32,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence cites turn(s) with disallowed role: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "DISALLOWED_EVIDENCE_ROLE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-08-S3",
+          "case_id": "CONV-08-S3",
+          "up_to_turn_id": "t3",
+          "condition": "graph",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.308,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims reachable in candidate state",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or changed through evidenced operations",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims have a provenance path from evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "works at Acme Corp"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "prefers morning meetings"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/graph/CONV-08/state.json",
+      "audit_path": "data/results/conversations-v1/graph/CONV-08/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-01",
+      "condition": "text",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-01-S1",
+          "case_id": "CONV-01-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.22,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S2",
+          "case_id": "CONV-01-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.269,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S3",
+          "case_id": "CONV-01-S3",
+          "up_to_turn_id": "t5",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.492,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S4",
+          "case_id": "CONV-01-S4",
+          "up_to_turn_id": "t7",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.54,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r2",
+          "claims": [
+            "bekerja di Tokopedia"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "belajar bahasa Jepang"
+          ]
+        },
+        {
+          "id": "r4",
+          "claims": [
+            "tinggal di Surabaya"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text/CONV-01/state.json",
+      "audit_path": "data/results/conversations-v1/text/CONV-01/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-02",
+      "condition": "text",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-02-S1",
+          "case_id": "CONV-02-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.226,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-02-S2",
+          "case_id": "CONV-02-S2",
+          "up_to_turn_id": "t2",
+          "condition": "text",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.525,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence cites turn(s) with disallowed role: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "DISALLOWED_EVIDENCE_ROLE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-02-S3",
+          "case_id": "CONV-02-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.567,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-02-S4",
+          "case_id": "CONV-02-S4",
+          "up_to_turn_id": "t4",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.27,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "bekerja di PT Astra"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text/CONV-02/state.json",
+      "audit_path": "data/results/conversations-v1/text/CONV-02/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-03",
+      "condition": "text",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-03-S1",
+          "case_id": "CONV-03-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.201,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-03-S2",
+          "case_id": "CONV-03-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.265,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence text is not a verbatim substring of its cited turn: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_EVIDENCE_QUOTE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-03-S3",
+          "case_id": "CONV-03-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.317,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "DELETE authorization is not supported by deletion intent or target overlap: r1",
+              "affected_ids": [
+                "r1"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_DELETE_AUTHORIZATION"
+            }
+          ],
+          "store_written": false
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "tinggal di Yogyakarta"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "bekerja di Gojek"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text/CONV-03/state.json",
+      "audit_path": "data/results/conversations-v1/text/CONV-03/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-04",
+      "condition": "text",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-04-S1",
+          "case_id": "CONV-04-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.492,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-04-S2",
+          "case_id": "CONV-04-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.272,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence items do not resolve to any transcript turn: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_EVIDENCE_SOURCE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-04-S3",
+          "case_id": "CONV-04-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.451,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence claims lack lexical grounding in cited turn quote: memiliki tiga kapal pesiar",
+              "affected_ids": [
+                "memiliki tiga kapal pesiar"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_EVIDENCE_CLAIM"
+            }
+          ],
+          "store_written": false
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "tinggal di Semarang"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "menyukai kopi hitam"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text/CONV-04/state.json",
+      "audit_path": "data/results/conversations-v1/text/CONV-04/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-05",
+      "condition": "text",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-05-S1",
+          "case_id": "CONV-05-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.505,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-05-S2",
+          "case_id": "CONV-05-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.593,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": false,
+              "reason": "required claims omitted: works at Northwind Labs",
+              "affected_ids": [
+                "works at Northwind Labs"
+              ],
+              "status": "FAIL",
+              "reason_code": "REQUIRED_CLAIM_OMITTED"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-05-S3",
+          "case_id": "CONV-05-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.51,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": false,
+              "reason": "required claims omitted: lives in Seattle",
+              "affected_ids": [
+                "lives in Seattle"
+              ],
+              "status": "FAIL",
+              "reason_code": "REQUIRED_CLAIM_OMITTED"
+            },
+            {
+              "name": "preservation",
+              "passed": false,
+              "reason": "valid prior records changed or removed without an evidenced operation: r2",
+              "affected_ids": [
+                "r2"
+              ],
+              "status": "FAIL",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+            },
+            {
+              "name": "faithfulness",
+              "passed": false,
+              "reason": "unsupported claims: lives in Boston",
+              "affected_ids": [
+                "lives in Boston"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNSUPPORTED_CLAIM"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-05-S4",
+          "case_id": "CONV-05-S4",
+          "up_to_turn_id": "t4",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.586,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "name is Maya"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "works at Northwind Labs"
+          ]
+        },
+        {
+          "id": "r4",
+          "claims": [
+            "lives in Portland"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text/CONV-05/state.json",
+      "audit_path": "data/results/conversations-v1/text/CONV-05/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-06",
+      "condition": "text",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-06-S1",
+          "case_id": "CONV-06-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.412,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-06-S2",
+          "case_id": "CONV-06-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.579,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": false,
+              "reason": "unsupported claims: owns a private island",
+              "affected_ids": [
+                "owns a private island"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNSUPPORTED_CLAIM"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-06-S3",
+          "case_id": "CONV-06-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.856,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-06-S4",
+          "case_id": "CONV-06-S4",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.471,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "lives in Chicago"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "allergic to peanuts"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text/CONV-06/state.json",
+      "audit_path": "data/results/conversations-v1/text/CONV-06/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-07",
+      "condition": "text",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-07-S1",
+          "case_id": "CONV-07-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.465,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-07-S2",
+          "case_id": "CONV-07-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "INVALID_INPUT",
+          "status": "invalid_input",
+          "error": "undeclared removal of prior record r1",
+          "checks": [],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-07-S3",
+          "case_id": "CONV-07-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.567,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r2",
+          "claims": [
+            "has a rescue dog"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text/CONV-07/state.json",
+      "audit_path": "data/results/conversations-v1/text/CONV-07/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-08",
+      "condition": "text",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-08-S1",
+          "case_id": "CONV-08-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.233,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-08-S2",
+          "case_id": "CONV-08-S2",
+          "up_to_turn_id": "t2",
+          "condition": "text",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.293,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence cites turn(s) with disallowed role: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "DISALLOWED_EVIDENCE_ROLE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-08-S3",
+          "case_id": "CONV-08-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.311,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "works at Acme Corp"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "prefers morning meetings"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text/CONV-08/state.json",
+      "audit_path": "data/results/conversations-v1/text/CONV-08/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-01",
+      "condition": "text_fair",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-01-S1",
+          "case_id": "CONV-01-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.303,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S2",
+          "case_id": "CONV-01-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.364,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S3",
+          "case_id": "CONV-01-S3",
+          "up_to_turn_id": "t5",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.867,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-01-S4",
+          "case_id": "CONV-01-S4",
+          "up_to_turn_id": "t7",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.714,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r2",
+          "claims": [
+            "bekerja di Tokopedia"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "belajar bahasa Jepang"
+          ]
+        },
+        {
+          "id": "r4",
+          "claims": [
+            "tinggal di Surabaya"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text_fair/CONV-01/state.json",
+      "audit_path": "data/results/conversations-v1/text_fair/CONV-01/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-02",
+      "condition": "text_fair",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-02-S1",
+          "case_id": "CONV-02-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.285,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-02-S2",
+          "case_id": "CONV-02-S2",
+          "up_to_turn_id": "t2",
+          "condition": "text_fair",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.449,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence cites turn(s) with disallowed role: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "DISALLOWED_EVIDENCE_ROLE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-02-S3",
+          "case_id": "CONV-02-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 1.013,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-02-S4",
+          "case_id": "CONV-02-S4",
+          "up_to_turn_id": "t4",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.55,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "bekerja di PT Astra"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text_fair/CONV-02/state.json",
+      "audit_path": "data/results/conversations-v1/text_fair/CONV-02/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-03",
+      "condition": "text_fair",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-03-S1",
+          "case_id": "CONV-03-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.313,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-03-S2",
+          "case_id": "CONV-03-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.275,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence text is not a verbatim substring of its cited turn: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_EVIDENCE_QUOTE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-03-S3",
+          "case_id": "CONV-03-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.297,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "DELETE authorization is not supported by deletion intent or target overlap: r1",
+              "affected_ids": [
+                "r1"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_DELETE_AUTHORIZATION"
+            }
+          ],
+          "store_written": false
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "tinggal di Yogyakarta"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "bekerja di Gojek"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text_fair/CONV-03/state.json",
+      "audit_path": "data/results/conversations-v1/text_fair/CONV-03/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-04",
+      "condition": "text_fair",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-04-S1",
+          "case_id": "CONV-04-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.232,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-04-S2",
+          "case_id": "CONV-04-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.434,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence items do not resolve to any transcript turn: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_EVIDENCE_SOURCE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-04-S3",
+          "case_id": "CONV-04-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.783,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence claims lack lexical grounding in cited turn quote: memiliki tiga kapal pesiar",
+              "affected_ids": [
+                "memiliki tiga kapal pesiar"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNGROUNDED_EVIDENCE_CLAIM"
+            }
+          ],
+          "store_written": false
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "tinggal di Semarang"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "menyukai kopi hitam"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text_fair/CONV-04/state.json",
+      "audit_path": "data/results/conversations-v1/text_fair/CONV-04/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-05",
+      "condition": "text_fair",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-05-S1",
+          "case_id": "CONV-05-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.241,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-05-S2",
+          "case_id": "CONV-05-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.263,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": false,
+              "reason": "required claims omitted: works at Northwind Labs",
+              "affected_ids": [
+                "works at Northwind Labs"
+              ],
+              "status": "FAIL",
+              "reason_code": "REQUIRED_CLAIM_OMITTED"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-05-S3",
+          "case_id": "CONV-05-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.3,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": false,
+              "reason": "required claims omitted: lives in Seattle",
+              "affected_ids": [
+                "lives in Seattle"
+              ],
+              "status": "FAIL",
+              "reason_code": "REQUIRED_CLAIM_OMITTED"
+            },
+            {
+              "name": "preservation",
+              "passed": false,
+              "reason": "valid prior records changed or removed without an evidenced operation: r2",
+              "affected_ids": [
+                "r2"
+              ],
+              "status": "FAIL",
+              "reason_code": "PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+            },
+            {
+              "name": "faithfulness",
+              "passed": false,
+              "reason": "unsupported claims: lives in Boston",
+              "affected_ids": [
+                "lives in Boston"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNSUPPORTED_CLAIM"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-05-S4",
+          "case_id": "CONV-05-S4",
+          "up_to_turn_id": "t4",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.35,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "name is Maya"
+          ]
+        },
+        {
+          "id": "r3",
+          "claims": [
+            "works at Northwind Labs"
+          ]
+        },
+        {
+          "id": "r4",
+          "claims": [
+            "lives in Portland"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text_fair/CONV-05/state.json",
+      "audit_path": "data/results/conversations-v1/text_fair/CONV-05/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-06",
+      "condition": "text_fair",
+      "run_id": "conversations-v1-rules",
+      "step_count": 4,
+      "steps": [
+        {
+          "step_id": "CONV-06-S1",
+          "case_id": "CONV-06-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.345,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-06-S2",
+          "case_id": "CONV-06-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.456,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": false,
+              "reason": "unsupported claims: owns a private island",
+              "affected_ids": [
+                "owns a private island"
+              ],
+              "status": "FAIL",
+              "reason_code": "UNSUPPORTED_CLAIM"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-06-S3",
+          "case_id": "CONV-06-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.615,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": false,
+              "reason": "candidate claims contradicted by evidence: lives in Austin",
+              "affected_ids": [
+                "lives in Austin"
+              ],
+              "status": "FAIL",
+              "reason_code": "CONTRADICTED_CLAIM"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-06-S4",
+          "case_id": "CONV-06-S4",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.56,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "lives in Chicago"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "allergic to peanuts"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text_fair/CONV-06/state.json",
+      "audit_path": "data/results/conversations-v1/text_fair/CONV-06/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-07",
+      "condition": "text_fair",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-07-S1",
+          "case_id": "CONV-07-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.729,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-07-S2",
+          "case_id": "CONV-07-S2",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "INVALID_INPUT",
+          "status": "invalid_input",
+          "error": "undeclared removal of prior record r1",
+          "checks": [],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-07-S3",
+          "case_id": "CONV-07-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.584,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r2",
+          "claims": [
+            "has a rescue dog"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text_fair/CONV-07/state.json",
+      "audit_path": "data/results/conversations-v1/text_fair/CONV-07/audit.jsonl",
+      "final_records_match_expected": true
+    },
+    {
+      "conversation_id": "CONV-08",
+      "condition": "text_fair",
+      "run_id": "conversations-v1-rules",
+      "step_count": 3,
+      "steps": [
+        {
+          "step_id": "CONV-08-S1",
+          "case_id": "CONV-08-S1",
+          "up_to_turn_id": "t1",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.284,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        },
+        {
+          "step_id": "CONV-08-S2",
+          "case_id": "CONV-08-S2",
+          "up_to_turn_id": "t2",
+          "condition": "text_fair",
+          "decision": "HOLD",
+          "status": "completed",
+          "latency_ms": 0.508,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": false,
+              "reason": "evidence cites turn(s) with disallowed role: e1",
+              "affected_ids": [
+                "e1"
+              ],
+              "status": "FAIL",
+              "reason_code": "DISALLOWED_EVIDENCE_ROLE"
+            }
+          ],
+          "store_written": false
+        },
+        {
+          "step_id": "CONV-08-S3",
+          "case_id": "CONV-08-S3",
+          "up_to_turn_id": "t3",
+          "condition": "text_fair",
+          "decision": "ACCEPT",
+          "status": "completed",
+          "latency_ms": 0.438,
+          "checks": [
+            {
+              "name": "coverage",
+              "passed": true,
+              "reason": "all required claims retained",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "COVERAGE_OK"
+            },
+            {
+              "name": "preservation",
+              "passed": true,
+              "reason": "prior records preserved or explicitly changed with evidence",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "PRESERVATION_OK"
+            },
+            {
+              "name": "faithfulness",
+              "passed": true,
+              "reason": "candidate claims supported by evidence or prior memory",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "FAITHFULNESS_OK"
+            },
+            {
+              "name": "transcript_grounding",
+              "passed": true,
+              "reason": "all evidence items and authorizations are grounded in allowed transcript turns",
+              "affected_ids": [],
+              "status": "PASS",
+              "reason_code": "TRANSCRIPT_GROUNDING_OK"
+            }
+          ],
+          "store_written": true
+        }
+      ],
+      "final_records": [
+        {
+          "id": "r1",
+          "claims": [
+            "works at Acme Corp"
+          ]
+        },
+        {
+          "id": "r2",
+          "claims": [
+            "prefers morning meetings"
+          ]
+        }
+      ],
+      "store_path": "data/results/conversations-v1/text_fair/CONV-08/state.json",
+      "audit_path": "data/results/conversations-v1/text_fair/CONV-08/audit.jsonl",
+      "final_records_match_expected": true
+    }
+  ],
+  "extraction_replay": {
+    "extractor": "rules-conversation-extractor",
+    "condition": "graph",
+    "conversations_total": 8,
+    "conversations_converged_to_expected_state": 8,
+    "total_steps": 20,
+    "accepted_steps": 20,
+    "held_steps": 0,
+    "per_conversation": [
+      {
+        "conversation_id": "CONV-01",
+        "step_count": 4,
+        "decisions": [
+          "ACCEPT",
+          "ACCEPT",
+          "ACCEPT",
+          "ACCEPT"
+        ],
+        "final_records": [
+          {
+            "id": "r2",
+            "claims": [
+              "bekerja di Tokopedia"
+            ]
+          },
+          {
+            "id": "r3",
+            "claims": [
+              "belajar bahasa Jepang"
+            ]
+          },
+          {
+            "id": "r4",
+            "claims": [
+              "tinggal di Surabaya"
+            ]
+          }
+        ],
+        "converged_to_expected_final_records": true,
+        "store_path": "data/results/conversations-v1/extracted_graph/CONV-01/state.json",
+        "audit_path": "data/results/conversations-v1/extracted_graph/CONV-01/audit.jsonl"
+      },
+      {
+        "conversation_id": "CONV-02",
+        "step_count": 3,
+        "decisions": [
+          "ACCEPT",
+          "ACCEPT",
+          "ACCEPT"
+        ],
+        "final_records": [
+          {
+            "id": "r1",
+            "claims": [
+              "bekerja di PT Astra"
+            ]
+          }
+        ],
+        "converged_to_expected_final_records": true,
+        "store_path": "data/results/conversations-v1/extracted_graph/CONV-02/state.json",
+        "audit_path": "data/results/conversations-v1/extracted_graph/CONV-02/audit.jsonl"
+      },
+      {
+        "conversation_id": "CONV-03",
+        "step_count": 2,
+        "decisions": [
+          "ACCEPT",
+          "ACCEPT"
+        ],
+        "final_records": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Yogyakarta"
+            ]
+          },
+          {
+            "id": "r2",
+            "claims": [
+              "bekerja di Gojek"
+            ]
+          }
+        ],
+        "converged_to_expected_final_records": true,
+        "store_path": "data/results/conversations-v1/extracted_graph/CONV-03/state.json",
+        "audit_path": "data/results/conversations-v1/extracted_graph/CONV-03/audit.jsonl"
+      },
+      {
+        "conversation_id": "CONV-04",
+        "step_count": 2,
+        "decisions": [
+          "ACCEPT",
+          "ACCEPT"
+        ],
+        "final_records": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Semarang"
+            ]
+          },
+          {
+            "id": "r2",
+            "claims": [
+              "menyukai kopi hitam"
+            ]
+          }
+        ],
+        "converged_to_expected_final_records": true,
+        "store_path": "data/results/conversations-v1/extracted_graph/CONV-04/state.json",
+        "audit_path": "data/results/conversations-v1/extracted_graph/CONV-04/audit.jsonl"
+      },
+      {
+        "conversation_id": "CONV-05",
+        "step_count": 3,
+        "decisions": [
+          "ACCEPT",
+          "ACCEPT",
+          "ACCEPT"
+        ],
+        "final_records": [
+          {
+            "id": "r1",
+            "claims": [
+              "name is Maya"
+            ]
+          },
+          {
+            "id": "r3",
+            "claims": [
+              "works at Northwind Labs"
+            ]
+          },
+          {
+            "id": "r4",
+            "claims": [
+              "lives in Portland"
+            ]
+          }
+        ],
+        "converged_to_expected_final_records": true,
+        "store_path": "data/results/conversations-v1/extracted_graph/CONV-05/state.json",
+        "audit_path": "data/results/conversations-v1/extracted_graph/CONV-05/audit.jsonl"
+      },
+      {
+        "conversation_id": "CONV-06",
+        "step_count": 2,
+        "decisions": [
+          "ACCEPT",
+          "ACCEPT"
+        ],
+        "final_records": [
+          {
+            "id": "r1",
+            "claims": [
+              "lives in Chicago"
+            ]
+          },
+          {
+            "id": "r2",
+            "claims": [
+              "allergic to peanuts"
+            ]
+          }
+        ],
+        "converged_to_expected_final_records": true,
+        "store_path": "data/results/conversations-v1/extracted_graph/CONV-06/state.json",
+        "audit_path": "data/results/conversations-v1/extracted_graph/CONV-06/audit.jsonl"
+      },
+      {
+        "conversation_id": "CONV-07",
+        "step_count": 2,
+        "decisions": [
+          "ACCEPT",
+          "ACCEPT"
+        ],
+        "final_records": [
+          {
+            "id": "r2",
+            "claims": [
+              "has a rescue dog"
+            ]
+          }
+        ],
+        "converged_to_expected_final_records": true,
+        "store_path": "data/results/conversations-v1/extracted_graph/CONV-07/state.json",
+        "audit_path": "data/results/conversations-v1/extracted_graph/CONV-07/audit.jsonl"
+      },
+      {
+        "conversation_id": "CONV-08",
+        "step_count": 2,
+        "decisions": [
+          "ACCEPT",
+          "ACCEPT"
+        ],
+        "final_records": [
+          {
+            "id": "r1",
+            "claims": [
+              "works at Acme Corp"
+            ]
+          },
+          {
+            "id": "r2",
+            "claims": [
+              "prefers morning meetings"
+            ]
+          }
+        ],
+        "converged_to_expected_final_records": true,
+        "store_path": "data/results/conversations-v1/extracted_graph/CONV-08/state.json",
+        "audit_path": "data/results/conversations-v1/extracted_graph/CONV-08/audit.jsonl"
+      }
+    ]
+  }
+}

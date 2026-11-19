@@ -646,3 +646,34 @@ def test_cli_prints_chosen_port_and_serves_healthz():
         except subprocess.TimeoutExpired:  # pragma: no cover - defensive
             process.kill()
             process.wait(timeout=10)
+
+
+def test_unsupported_methods_return_json_hold_envelope(verify_server):
+    port = verify_server.server_address[1]
+    connection = HTTPConnection("127.0.0.1", port, timeout=10)
+    try:
+        connection.request("PUT", "/verify", body=b"{}", headers=JSON_HEADERS)
+        response = connection.getresponse()
+        payload = json.loads(response.read().decode("utf-8"))
+    finally:
+        connection.close()
+    assert response.status == 405
+    assert payload["decision"] == "HOLD"
+    assert payload["error"]["code"] == "METHOD_NOT_ALLOWED"
+    assert payload["transition_valid"] is False
+
+
+def test_protocol_parse_errors_return_json_hold_envelope(verify_server):
+    port = verify_server.server_address[1]
+    status, payload = raw_exchange(port, b"NOT A VALID REQUEST LINE\r\n\r\n")
+    assert status == 400
+    assert payload["decision"] == "HOLD"
+    assert payload["error"]["code"] == "PROTOCOL_ERROR"
+
+
+def test_unsupported_http_version_returns_json_hold_envelope(verify_server):
+    port = verify_server.server_address[1]
+    status, payload = raw_exchange(port, b"GET /healthz HTTP/9.9\r\n\r\n")
+    assert status == 505
+    assert payload["decision"] == "HOLD"
+    assert payload["error"]["code"] == "PROTOCOL_ERROR"

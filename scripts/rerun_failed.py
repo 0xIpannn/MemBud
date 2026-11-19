@@ -81,6 +81,8 @@ def main() -> None:
                 verifier=lambda t, rep, prepared: verify_with_llm(
                     t, client, rep, prepared_input=prepared
                 ),
+                # This script replays the frozen v1 archival manifest.
+                allow_legacy=True,
             )
             event = _last_event(base / "audit.jsonl")
             usage = result.usage or {}

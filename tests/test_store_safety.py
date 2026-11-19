@@ -183,3 +183,154 @@ def test_supersede_must_use_a_new_replacement_record():
     }
     with pytest.raises(ValueError, match="new replacement record"):
         Transition.from_dict(raw)
+
+
+# ---------------------------------------------------------------------------
+# Write/audit ordering: honest write-status fields and rollback (M3/m9)
+# ---------------------------------------------------------------------------
+
+
+def _accept_transition(case_id="t-accept"):
+    return Transition.from_dict(
+        {
+            "schema_version": 2,
+            "case_id": case_id,
+            "before": [],
+            "candidate": [{"id": "r1", "claims": ["A"]}],
+            "evidence": [{"id": "e1", "supports": ["A"]}],
+            "required_claims": [],
+            "operations": [{"type": "WRITE", "record_id": "r1"}],
+        }
+    )
+
+
+def _hold_transition(case_id="t-hold"):
+    return Transition.from_dict(
+        {
+            "schema_version": 2,
+            "case_id": case_id,
+            "before": [],
+            "candidate": [{"id": "r1", "claims": ["unsupported"]}],
+            "evidence": [],
+            "required_claims": [],
+            "operations": [{"type": "WRITE", "record_id": "r1"}],
+        }
+    )
+
+
+def test_hold_audit_event_reports_store_not_written(tmp_path):
+    import membud.store as store_module
+
+    store_path, log = tmp_path / "state.json", tmp_path / "audit.jsonl"
+    result = store_module.run_case(_hold_transition(), store_path, log)
+    assert result.decision == "HOLD"
+    assert not store_path.exists()
+    event = json.loads(log.read_text(encoding="utf-8").splitlines()[-1])
+    assert event["status"] == "completed"
+    assert event["store_written"] is False
+    assert event["rolled_back"] is False
+    assert event["store_version_after"] == event["store_version_before"] == 0
+    assert event["store_schema_version_after"] is None
+
+
+def test_accept_write_failure_reports_no_write(tmp_path, monkeypatch):
+    import membud.store as store_module
+
+    def fail_write(path, text):
+        raise OSError(28, "No space left on device")
+
+    monkeypatch.setattr(store_module, "_atomic_write", fail_write)
+    store_path, log = tmp_path / "state.json", tmp_path / "audit.jsonl"
+    with pytest.raises(OSError):
+        store_module.run_case(_accept_transition(), store_path, log)
+    assert not store_path.exists()
+    event = json.loads(log.read_text(encoding="utf-8").splitlines()[-1])
+    assert event["status"] == "error"
+    assert event["store_written"] is False
+    assert event["rolled_back"] is False  # nothing was written, nothing to roll back
+    assert event["store_version_after"] == 0
+    assert event["store_schema_version_after"] is None
+
+
+def test_accept_append_failure_rolls_back_and_reports_write_status(tmp_path, monkeypatch):
+    import membud.store as store_module
+
+    calls = {"n": 0}
+    original_append = store_module._append_event
+
+    def flaky_append(path, event):
+        if event.get("status") == "completed" and calls["n"] == 0:
+            calls["n"] += 1
+            raise OSError(5, "Input/output error")
+        return original_append(path, event)
+
+    monkeypatch.setattr(store_module, "_append_event", flaky_append)
+    store_path, log = tmp_path / "state.json", tmp_path / "audit.jsonl"
+    with pytest.raises(OSError):
+        store_module.run_case(_accept_transition(), store_path, log)
+    # The state write was rolled back; the error event tells the truth.
+    assert not store_path.exists()
+    event = json.loads(log.read_text(encoding="utf-8").splitlines()[-1])
+    assert event["status"] == "error"
+    assert event["store_written"] is False
+    assert event["rolled_back"] is True
+    assert event["store_version_after"] == 0
+    assert event["store_schema_version_after"] is None
+
+
+def test_accept_append_failure_restores_previous_store_bytes(tmp_path, monkeypatch):
+    import membud.store as store_module
+
+    store_path, log = tmp_path / "state.json", tmp_path / "audit.jsonl"
+    store_module.run_case(_accept_transition("first"), store_path, log)
+    original_bytes = store_path.read_bytes()
+
+    calls = {"n": 0}
+    original_append = store_module._append_event
+
+    def flaky_append(path, event):
+        if event.get("status") == "completed" and calls["n"] == 0:
+            calls["n"] += 1
+            raise OSError(5, "Input/output error")
+        return original_append(path, event)
+
+    second = Transition.from_dict(
+        {
+            "schema_version": 2,
+            "case_id": "second",
+            "before": [{"id": "r1", "claims": ["A"]}],
+            "candidate": [
+                {"id": "r1", "claims": ["A"]},
+                {"id": "r2", "claims": ["B"]},
+            ],
+            "evidence": [{"id": "e2", "supports": ["B"]}],
+            "required_claims": ["A"],
+            "operations": [{"type": "WRITE", "record_id": "r2"}],
+        }
+    )
+    monkeypatch.setattr(store_module, "_append_event", flaky_append)
+    with pytest.raises(OSError):
+        store_module.run_case(second, store_path, log)
+    assert store_path.read_bytes() == original_bytes
+    event = json.loads(log.read_text(encoding="utf-8").splitlines()[-1])
+    assert event["status"] == "error"
+    assert event["store_written"] is False
+    assert event["rolled_back"] is True
+    assert event["store_version_before"] == 1
+    assert event["store_version_after"] == 1
+
+
+def test_pii_bearing_logs_are_created_owner_only(tmp_path):
+    import os
+    import stat
+
+    import membud.store as store_module
+
+    store_path, log_path = tmp_path / "state.json", tmp_path / "audit.jsonl"
+    store_module.run_case(_accept_transition(), store_path, log_path)
+    modes = {
+        "store": stat.S_IMODE(os.stat(store_path).st_mode),
+        "audit": stat.S_IMODE(os.stat(log_path).st_mode),
+        "lock": stat.S_IMODE(os.stat(str(store_path) + ".lock").st_mode),
+    }
+    assert modes == {"store": 0o600, "audit": 0o600, "lock": 0o600}

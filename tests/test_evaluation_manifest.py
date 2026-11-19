@@ -54,6 +54,7 @@ def test_metrics_report_case_and_claim_denominators(tmp_path):
         code_revision="test-revision",
         manifest_id=manifest["manifest_id"],
         manifest_sha256=manifest_hash,
+        allow_legacy=True,
     )
     report = analyze_manifest_run(MANIFEST_PATH, tmp_path / "run/pilot-summary.json")
     assert report["candidate_error_rates"]["omission"] == {"numerator": 7, "denominator": 23, "rate": 7 / 23}
@@ -94,6 +95,7 @@ def test_metrics_do_not_misclassify_verifier_errors_as_decisions(tmp_path):
         code_revision="test-revision",
         manifest_id=manifest["manifest_id"],
         manifest_sha256=manifest_hash,
+        allow_legacy=True,
     )
     summary_path = output / "pilot-summary.json"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
@@ -156,6 +158,7 @@ def test_metrics_tolerate_runner_error_rows(tmp_path):
         code_revision="test-revision",
         manifest_id=manifest["manifest_id"],
         manifest_sha256=manifest_hash,
+        allow_legacy=True,
     )
     summary_path = output / "pilot-summary.json"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
@@ -174,3 +177,39 @@ def test_metrics_tolerate_runner_error_rows(tmp_path):
     # non-accepting ITT outcome and must not crash or become a phantom decision.
     assert graph["fail_closed_itt"]["valid"]["error_holds"] == 1
     assert graph["fail_closed_itt"]["valid"]["false_hold_rate"] == {"numerator": 1, "denominator": 5, "rate": 0.2}
+
+
+def test_failed_llm_condition_does_not_claim_zero_cost(tmp_path):
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    transitions = load_manifest_cases(MANIFEST_PATH)
+    manifest_hash = hashlib.sha256(MANIFEST_PATH.read_bytes()).hexdigest()
+    output = tmp_path / "run"
+    run_pilot(
+        transitions,
+        output,
+        run_id="failed-llm-test",
+        code_revision="test-revision",
+        manifest_id=manifest["manifest_id"],
+        manifest_sha256=manifest_hash,
+        allow_legacy=True,
+    )
+    summary_path = output / "pilot-summary.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    summary["verifier"] = "llm:deepseek"
+    for row in summary["results"]:
+        if row["condition"] == "graph":
+            row["status"] = "error"
+            row["decision"] = "ERROR"
+            row["result"] = None
+            row["error"] = "LLMRequestError: HTTP 500 after 3 attempts"
+    summary_path.write_text(json.dumps(summary), encoding="utf-8")
+
+    report = analyze_manifest_run(MANIFEST_PATH, summary_path)
+    graph_cost = report["condition_metrics"]["graph"]["estimated_cost"]
+    assert graph_cost["estimated_cost_usd"] is None
+    assert graph_cost["basis"] == "spend_unknown_no_completed_responses"
+    assert "spend is unknown" in graph_cost["note"]
+    # The declared verifier is run-wide, so both condition blocks must avoid a
+    # false zero-cost claim when no completed model response exists.
+    text_cost = report["condition_metrics"]["text"]["estimated_cost"]
+    assert text_cost["basis"] == "spend_unknown_no_completed_responses"

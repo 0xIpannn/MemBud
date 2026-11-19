@@ -94,6 +94,17 @@ function resolveMemoryStatePath(input, options) {
   return resolve(input?.directory ?? process.cwd(), DEFAULT_MEMORY_STATE_FILE);
 }
 
+function resolveTranscriptPath(input, options) {
+  const configured =
+    typeof options.transcriptPath === "string" && options.transcriptPath.trim()
+      ? options.transcriptPath.trim()
+      : typeof process.env.MEMBUD_TRANSCRIPT_PATH === "string" && process.env.MEMBUD_TRANSCRIPT_PATH.trim()
+        ? process.env.MEMBUD_TRANSCRIPT_PATH.trim()
+        : "";
+  if (!configured) return null;
+  return isAbsolute(configured) ? configured : resolve(input?.directory ?? process.cwd(), configured);
+}
+
 /**
  * Normalize plugin options once per `server()` call.
  *
@@ -131,10 +142,62 @@ export function normalizeOptions(input, options = {}) {
   return {
     verifyUrl,
     memoryStatePath: resolveMemoryStatePath(input, rawOptions),
+    transcriptPath: resolveTranscriptPath(input, rawOptions),
     timeoutMs,
     representation,
     toolNames,
   };
+}
+
+/** Read an optional conversation transcript file for transcript-grounded checks. */
+export async function loadTranscript(transcriptPath) {
+  let raw;
+  try {
+    raw = await readFile(transcriptPath, "utf8");
+  } catch (cause) {
+    deny(
+      `MemBud guard failed closed: cannot read conversation transcript at ${transcriptPath} (${describeCause(cause)})`,
+      { stage: "transcript", transcriptPath, cause: describeCause(cause) },
+    );
+  }
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    deny(`MemBud guard failed closed: conversation transcript at ${transcriptPath} is empty`, {
+      stage: "transcript",
+      transcriptPath,
+    });
+  }
+  if (transcriptPath.endsWith(".jsonl")) {
+    const items = [];
+    for (const line of trimmed.split(/\r?\n/)) {
+      const part = line.trim();
+      if (!part) continue;
+      try {
+        items.push(JSON.parse(part));
+      } catch (cause) {
+        deny(
+          `MemBud guard failed closed: conversation JSONL transcript is invalid (${describeCause(cause)})`,
+          { stage: "transcript", transcriptPath, cause: describeCause(cause) },
+        );
+      }
+    }
+    return items;
+  }
+  if (transcriptPath.endsWith(".json")) {
+    try {
+      return JSON.parse(trimmed);
+    } catch (cause) {
+      deny(
+        `MemBud guard failed closed: conversation transcript is not valid JSON (${describeCause(cause)})`,
+        { stage: "transcript", transcriptPath, cause: describeCause(cause) },
+      );
+    }
+  }
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return raw;
+  }
 }
 
 /** Read the local JSON memory state that represents the host's prior state. */
@@ -243,8 +306,13 @@ function formatDecisionDenial(payload) {
  * POST one transition to the sidecar and fail closed on anything that is not a
  * complete ACCEPT.  Resolves to `{payload, roundtripMs}` on ACCEPT.
  */
-export async function requestVerification(transition, settings) {
-  const body = JSON.stringify({ ...transition, representation: settings.representation });
+export async function requestVerification(transition, settings, transcript = null) {
+  const envelope = {
+    ...transition,
+    representation: settings.representation,
+    ...(transcript !== null && transcript !== undefined ? { transcript } : {}),
+  };
+  const body = JSON.stringify(envelope);
   const startedAt = performance.now();
   let response;
   try {
@@ -296,11 +364,17 @@ export async function requestVerification(transition, settings) {
   return { payload, roundtripMs };
 }
 
-/** One guarded memory write: prior state + args -> transition -> /verify. */
+/** One guarded memory write: prior state + optional transcript + args -> /verify. */
 export async function verifyMemoryWrite(args, settings, callID) {
   const beforeRecords = await loadMemoryState(settings.memoryStatePath);
   const transition = buildTransition(args, beforeRecords, callID);
-  return requestVerification(transition, settings);
+  let transcript = null;
+  if (settings.transcriptPath) {
+    transcript = await loadTranscript(settings.transcriptPath);
+  } else if (args && typeof args === "object" && !Array.isArray(args) && args.transcript !== undefined && args.transcript !== null) {
+    transcript = args.transcript;
+  }
+  return requestVerification(transition, settings, transcript);
 }
 
 /**

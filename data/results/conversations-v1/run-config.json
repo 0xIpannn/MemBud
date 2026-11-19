@@ -1,0 +1,16 @@
+{
+  "manifest_id": "membud-conversations-v1",
+  "manifest_sha256": "ce336be5f1d175d1d7b09a83ca6e773bcf99f1aa3347cdf296ba318a5326c306",
+  "manifest_path": "data/manifests/conversations-v1.json",
+  "run_id": "conversations-v1-rules",
+  "code_revision": "working-tree-sha256:5f75f4a779ab7238247d461ef67fc0539113e01a0f13000615297ea182339f79",
+  "verifier": "rules+transcript_grounding",
+  "conditions": [
+    "unguarded",
+    "graph",
+    "text",
+    "text_fair"
+  ],
+  "paid_api_calls": 0,
+  "note": "Rules-only multi-turn conversation evaluation with transcript-grounding checks, plus end-to-end raw-transcript extraction replay via RuleBasedConversationExtractor."
+}

@@ -5,7 +5,7 @@
   "manifest_id": "membud-evaluation-v2",
   "manifest_sha256": "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a",
   "manifest_path": "/home/ifan/Projects/MemBud/data/manifests/evaluation-v2.json",
-  "split": "heldout",
+  "split": "dev",
   "cases": [
     "DEV-01",
     "DEV-02",
@@ -24,7 +24,7 @@
   "variants": [
     "graph_policy_clarified"
   ],
-  "comparison_policy": "Directional ablation on four hand-authored, single-reviewer held-out cases. One cached control (G0) plus two new-prompt/graph variants; descriptive only, no causal or representation-superiority claim.",
+  "comparison_policy": "Directional ablation on 13 hand-authored, single-reviewer dev cases. Variants: graph_policy_clarified; descriptive only, no causal or representation-superiority claim.",
   "budget": {
     "max_total_tokens": 60000,
     "accounted_tokens_used": 40906,
@@ -1754,5 +1754,10 @@
         "provider_request_id": "ad9bfb45-5de4-4d77-9c3a-229b784c58ac"
       }
     }
-  ]
+  ],
+  "metadata_correction": {
+    "corrected_at": "2026-11-19",
+    "correction": "split and comparison_policy were mislabeled 'heldout' in the original artifact; corrected to 'dev' after a software review. No measurement values, tokens, decisions, or cases changed.",
+    "previous_split": "heldout"
+  }
 }

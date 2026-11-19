@@ -21,6 +21,15 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+def _relative(path: str | Path) -> str:
+    """Repository-relative display path; absolute only when outside the repo."""
+    try:
+        return Path(path).resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        return str(path)
+
+
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -124,7 +133,7 @@ def main() -> None:
         json.dumps({
             "manifest_id": manifest["manifest_id"],
             "manifest_sha256": manifest_sha,
-            "manifest_path": str(manifest_path),
+            "manifest_path": _relative(manifest_path),
             "run_id": args.run_id,
             "code_revision": code_revision,
             "verifier": "rules",

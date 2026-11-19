@@ -43,7 +43,10 @@ attempts, and code revision.  ``--resume`` reuses an existing output directory:
 it validates the fingerprint (refusing any mismatch before a client call),
 skips every recorded row without calling the client, carries forward the
 checkpoint's accounted-token/attempt/cache totals, and rewrites
-``summary.json``/``metrics.json`` as a complete run would.  Without
+``summary.json``/``metrics.json`` as a complete run would.  A row whose durable
+store/audit was written but whose checkpoint line was lost to a crash is
+recovered from that store + audit before re-execution, so a completed paid
+ACCEPT is not re-run or silently turned into an ``ERROR`` row.  Without
 ``--resume`` the default fresh-run behaviour is unchanged (a non-empty output
 directory is still refused).  Resume must work with ``--require-cache``: skipped
 rows make no client calls, so they cannot trigger a cache miss.
@@ -88,6 +91,15 @@ from typing import Any, Callable, Iterable
 from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
+
+def _relative(path: str | Path) -> str:
+    """Repository-relative display path; absolute only when outside the repo."""
+    try:
+        return Path(path).resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        return str(path)
+
+
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -122,6 +134,7 @@ from membud.semantic import (  # noqa: E402
     SEMANTIC_PROMPT_VERSION,
     verify_with_semantics,
 )
+from membud.serialization import transition_dict  # noqa: E402
 from membud.store import run_case  # noqa: E402
 from membud.verification import LLM_PROMPT_VERSION, verify_with_llm  # noqa: E402
 
@@ -160,7 +173,9 @@ COMPARISON_POLICY = (
     "claim superiority of any condition."
 )
 
-_ATTEMPTED_STATUSES = frozenset({"completed", "verifier_error", "error"})
+_ATTEMPTED_STATUSES = frozenset(
+    {"completed", "verifier_error", "error", "recovered_without_audit"}
+)
 _SAFE_DECISIONS = frozenset({"HOLD", "INVALID_INPUT"})
 
 
@@ -205,6 +220,185 @@ def _cache_miss_count(client: Any) -> int:
     if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
         return value
     return 0
+
+
+def _client_invocation_count(client: Any) -> int | None:
+    """Number of provider/verifier cycles processed by this client instance.
+
+    Real clients expose ``provider_calls`` (provider requests only, cache hits
+    excluded); test fakes may expose ``calls``.  ``None`` means the client does
+    not report a counter.
+    """
+    for attribute in ("provider_calls", "calls"):
+        value = getattr(client, attribute, None)
+        if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+            return value
+    return None
+
+
+def _claims_by_id(records: Iterable[Any]) -> dict[str, tuple[str, ...]]:
+    return {record.id: tuple(record.claims) for record in records}
+
+
+def _matching_audit_event(
+    *, audit_path: Path, representation: str, expected_input: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Last durable audit event for exactly this transition/condition, if any."""
+    try:
+        lines = audit_path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        lines = []
+    for line in reversed(lines):
+        if not line.strip():
+            continue
+        try:
+            candidate_event = json.loads(line)
+        except ValueError:
+            continue
+        if not isinstance(candidate_event, dict):
+            continue
+        if candidate_event.get("representation") != representation:
+            continue
+        if candidate_event.get("input") != expected_input:
+            continue
+        if not isinstance(candidate_event.get("result"), dict):
+            continue
+        return candidate_event
+    return None
+
+
+def _store_matches_candidate(store_path: Path, transition: Any) -> bool:
+    """True when the durable per-case store still equals the candidate state."""
+    if not store_path.exists():
+        return False
+    try:
+        raw_store = json.loads(store_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    records = raw_store.get("records") if isinstance(raw_store, dict) else raw_store
+    if not isinstance(records, list):
+        return False
+    stored_claims: dict[str, tuple[str, ...]] = {}
+    for item in records:
+        if not isinstance(item, dict):
+            return False
+        item_id = item.get("id")
+        claims = item.get("claims")
+        if (
+            not isinstance(item_id, str)
+            or not isinstance(claims, list)
+            or any(not isinstance(claim, str) for claim in claims)
+        ):
+            return False
+        stored_claims[item_id] = tuple(claims)
+    return stored_claims == _claims_by_id(transition.candidate)
+
+
+def _recovered_row(
+    *,
+    transition: Any,
+    condition: str,
+    event: dict[str, Any] | None,
+    max_attempts: int,
+) -> dict[str, Any]:
+    """Build a summary row from a durable audit event (no new provider call)."""
+    row: dict[str, Any] = {
+        "case_id": transition.case_id,
+        "condition": condition,
+        "split": "heldout",
+        "decision": "ACCEPT" if event is None else "HOLD",
+        "status": "completed",
+        "latency_ms": None,
+        "checks": [],
+        "error": None,
+        "cache_hit": 0,
+        "recovered_from_audit": True,
+    }
+    if event is None:
+        return row
+    result_payload = event["result"]
+    row["decision"] = result_payload.get("decision") or "HOLD"
+    row["status"] = event.get("status") or "completed"
+    row["latency_ms"] = event.get("latency_ms")
+    row["checks"] = _check_summaries(result_payload)
+    accounting = account_usage(
+        result_payload.get("usage") or {}, max_attempts=max_attempts
+    )
+    row.update(accounting)
+    return row
+
+
+def _recover_unrecorded_row(
+    *,
+    transition: Any,
+    condition: str,
+    representation: str,
+    store_path: Path,
+    audit_path: Path,
+    max_attempts: int,
+) -> dict[str, Any] | None:
+    """Recover a decision durably written before a crash, without a new call.
+
+    ``store.run_case`` writes the per-case store (ACCEPT only) and its audit
+    event before the runner appends the checkpoint row.  If the process dies in
+    that window the checkpoint row is missing although the decision and its
+    token usage are already durable.  Re-running the row would turn a completed
+    ACCEPT into a version-conflict error row, duplicate the audit event, and
+    (for HOLDs too) make a second paid provider call.  This helper reconstructs
+    the row from the durable audit event (and validates the store when one
+    exists) instead.
+
+    Returns ``None`` when there is no crash residue that can be trusted.
+    """
+    expected_input = json.loads(json.dumps(transition_dict(transition)))
+    event = _matching_audit_event(
+        audit_path=audit_path,
+        representation=representation,
+        expected_input=expected_input,
+    )
+    store_matches = _store_matches_candidate(store_path, transition)
+    if store_matches:
+        if event is not None:
+            return _recovered_row(
+                transition=transition, condition=condition, event=event, max_attempts=max_attempts
+            )
+        # Store present but no matching audit event (crash between store write
+        # and audit append): the ACCEPT is inferable from the store, token
+        # usage is not.  Never invent a fallback charge for unrecorded usage.
+        row = _recovered_row(
+            transition=transition, condition=condition, event=None, max_attempts=max_attempts
+        )
+        row.update(
+            {
+                "status": "recovered_without_audit",
+                "error": (
+                    "store state matches the candidate but no matching audit event "
+                    "was found; token usage for this recovered ACCEPT is unknown"
+                ),
+                "usage": {
+                    "input_tokens": None,
+                    "output_tokens": None,
+                    "total_tokens": None,
+                    "reported": False,
+                    "json_retries": None,
+                },
+                "accounted_tokens": 0,
+                "usage_estimated": False,
+                "attempts": 0,
+                "attempts_estimated": False,
+            }
+        )
+        return row
+    if event is not None:
+        # No store is expected for a HOLD (HOLD never writes): recover the
+        # durable non-ACCEPT decision from the audit event.  An ACCEPT event
+        # without a matching store cannot be trusted; let the row run again.
+        decision = str((event.get("result") or {}).get("decision") or "")
+        if decision and decision != "ACCEPT":
+            return _recovered_row(
+                transition=transition, condition=condition, event=event, max_attempts=max_attempts
+            )
+    return None
 
 
 def _iso_now() -> str:
@@ -365,6 +559,14 @@ def account_usage(usage: dict[str, Any], *, max_attempts: int) -> dict[str, Any]
         estimated = False
         attempts = raw_attempts or 0
         attempts_estimated = False
+    elif raw_attempts == 0:
+        # The row failed before any provider request (store reconciliation,
+        # setup, lock).  No tokens were spent, so no fallback estimate may be
+        # charged: a phantom charge would distort the budget ledger and cost.
+        accounted = 0
+        estimated = False
+        attempts = 0
+        attempts_estimated = False
     else:
         fallback_attempts = raw_attempts if raw_attempts and raw_attempts > 0 else max_attempts
         accounted = ESTIMATED_TOKENS_PER_ATTEMPT * fallback_attempts
@@ -435,10 +637,22 @@ def _run_valid_row(
     missing cache entry can never fall back to a paid provider request.
     """
     misses_before = _cache_miss_count(client)
+    calls_before = _client_invocation_count(client)
     base = output / condition
     store_path = base / (quote(transition.case_id, safe="") + ".json")
     audit_path = base / "audit.jsonl"
     representation = "text" if condition == "semantic" else condition
+
+    recovered = _recover_unrecorded_row(
+        transition=transition,
+        condition=condition,
+        representation=representation,
+        store_path=store_path,
+        audit_path=audit_path,
+        max_attempts=max_attempts,
+    )
+    if recovered is not None:
+        return recovered
 
     if condition == "semantic":
 
@@ -489,6 +703,12 @@ def _run_valid_row(
         decision = (result_payload or {}).get("decision") or "ERROR"
         latency_ms = event.get("latency_ms")
         usage = (result_payload or {}).get("usage") or {}
+        calls_after = _client_invocation_count(client)
+        if calls_after is not None and calls_after == calls_before:
+            # Failed before any provider request (store reconciliation, setup,
+            # lock): record zero attempts so no phantom token estimate is
+            # charged to the budget/cost ledger.
+            usage = {"api_attempts": 0, "cache_hit": 0}
 
     # Some verifier layers fail closed on exceptions; detect a swallowed
     # cache-only miss and turn it into a loud run-level abort.
@@ -1025,6 +1245,10 @@ def run_heldout(
         for row in rows
         if (row["condition"], row["case_id"]) in preexisting_identities
     )
+    recovered_rows = sum(1 for row in rows if row.get("recovered_from_audit"))
+    recovered_without_audit_rows = sum(
+        1 for row in rows if row.get("status") == "recovered_without_audit"
+    )
     if not aborted and accounted_total > max_total_tokens:
         aborted = True
         abort_reason = (
@@ -1095,7 +1319,7 @@ def run_heldout(
         "code_revision": code_revision,
         "manifest_id": manifest["manifest_id"],
         "manifest_sha256": manifest_sha256,
-        "manifest_path": str(manifest_path),
+        "manifest_path": _relative(manifest_path),
         "cases_sha256": manifest.get("cases_sha256"),
         "labels_sha256": manifest.get("labels_sha256"),
         "split": split,
@@ -1106,7 +1330,7 @@ def run_heldout(
         "model": model,
         "provider": provider,
         "cache_path": (
-            str(getattr(client, "cache_path", ""))
+            _relative(getattr(client, "cache_path", ""))
             if getattr(client, "cache_path", None) is not None
             else None
         ),
@@ -1116,7 +1340,9 @@ def run_heldout(
         "prompt_versions": prompt_versions,
         "resumed": bool(resume),
         "resumed_rows": resumed_rows,
-        "checkpoint_path": str(checkpoint_path),
+        "recovered_rows": recovered_rows,
+        "recovered_without_audit_rows": recovered_without_audit_rows,
+        "checkpoint_path": _relative(checkpoint_path),
         "config_fingerprint": checkpoint.fingerprint,
         "checkpoint_schema_version": CHECKPOINT_SCHEMA_VERSION,
         "checkpoint_torn_final_line": checkpoint.torn_final_line,

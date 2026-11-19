@@ -27,7 +27,7 @@ from membud.migrations import (
     store_needs_migration,
     transition_needs_migration,
 )
-from membud.schemas import SCHEMA_VERSION, Transition
+from membud.schemas import SCHEMA_VERSION, Check, Result, Transition
 from membud.serialization import transition_dict
 from membud.store import run_case
 
@@ -293,3 +293,92 @@ def test_legacy_store_with_duplicate_ids_is_rejected(tmp_path):
     )
     with pytest.raises(ValueError, match="duplicate record IDs"):
         run_case(_v2_transition(("bekerja di Tokopedia",)), store_path, audit_path)
+
+
+# ---------------------------------------------------------------------------
+# Commit-path version gate and strict schema_version typing (M4)
+# ---------------------------------------------------------------------------
+
+
+def _legacy_undeclared_transition():
+    """Version-less archival transition with an undeclared insertion."""
+    return Transition.from_dict(
+        {
+            "case_id": "legacy-insertion",
+            "before": [],
+            "candidate": [{"id": "r2", "claims": ["fabricated"]}],
+            "evidence": [{"id": "e1", "supports": ["fabricated"]}],
+        }
+    )
+
+
+def test_schema_version_must_be_an_integer(tmp_path):
+    raw = dict(LEGACY_V1_TRANSITION)
+    for value in (True, False, 1.0, 2.0, "2", "1", [], {}):
+        raw["schema_version"] = value
+        with pytest.raises(ValueError, match="schema_version must be an integer"):
+            Transition.from_dict(raw)
+
+
+def test_direct_construction_rejects_non_integer_schema_version():
+    transition = Transition(
+        "typed",
+        before=(),
+        candidate=(),
+        evidence=(),
+        schema_version=True,  # type: ignore[arg-type]
+    )
+    with pytest.raises(ValueError, match="schema_version must be an integer"):
+        transition.validate()
+
+
+def test_run_case_refuses_legacy_transition_by_default(tmp_path):
+    from membud.store import run_case
+
+    legacy = _legacy_undeclared_transition()
+    store_path, log_path = tmp_path / "state.json", tmp_path / "audit.jsonl"
+    with pytest.raises(ValueError, match="refusing to commit legacy schema_version 1"):
+        run_case(legacy, store_path, log_path)
+    assert not store_path.exists()
+    event = json.loads(log_path.read_text(encoding="utf-8").splitlines()[-1])
+    assert event["status"] == "error"
+    assert event["error_type"] == "ValueError"
+    assert event["store_written"] is False
+
+
+def test_commit_refuses_legacy_transition_by_default():
+    from membud.store import commit
+
+    legacy = _legacy_undeclared_transition()
+    result = Result(
+        "legacy-insertion",
+        "ACCEPT",
+        [
+            Check("coverage", True, "ok"),
+            Check("preservation", True, "ok"),
+            Check("faithfulness", True, "ok"),
+        ],
+    )
+    with pytest.raises(ValueError, match="refusing to commit legacy schema_version 1"):
+        commit({}, legacy, result)
+
+
+def test_allow_legacy_is_an_explicit_archival_replay(tmp_path):
+    from membud.store import run_case
+
+    legacy = _legacy_undeclared_transition()
+    store_path, log_path = tmp_path / "state.json", tmp_path / "audit.jsonl"
+    result = run_case(legacy, store_path, log_path, allow_legacy=True)
+    assert result.decision == "ACCEPT"
+    # The committed envelope is always current-format v2.
+    envelope = json.loads(store_path.read_text(encoding="utf-8"))
+    assert envelope["schema_version"] == 2
+    assert any(record["id"] == "r2" for record in envelope["records"])
+
+
+def test_migrations_reject_non_integer_versions():
+    from membud.migrations import store_needs_migration
+
+    for value in (True, False, 1.0, 2.0):
+        with pytest.raises(ValueError, match="store schema_version must be an integer"):
+            store_needs_migration(value)  # type: ignore[arg-type]

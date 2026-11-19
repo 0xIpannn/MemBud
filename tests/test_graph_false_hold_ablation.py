@@ -602,3 +602,31 @@ def test_ablation_cli_price_flags_parse_and_apply(tmp_path, monkeypatch):
     assert cost["pricing"]["rate_basis"] == "explicit_per_mtok"
     assert cost["pricing"]["placeholder"] is False
     assert cost["low_usd"] == cost["high_usd"] == pytest.approx(0.00018)
+
+
+def test_run_ablation_derives_split_from_cases_not_a_hardcoded_label(tmp_path):
+    heldout_summary = ablation.run_ablation(
+        manifest_path=MANIFEST,
+        output=tmp_path / "heldout",
+        clients={"graph_cache": FakeClient()},
+        cases=["HELD-01"],
+        variants=["graph_cache"],
+        max_total_tokens=10_000,
+        max_attempts=3,
+    )
+    assert heldout_summary["split"] == "heldout"
+    assert "held-out cases" in heldout_summary["comparison_policy"]
+
+    dev_summary = ablation.run_ablation(
+        manifest_path=MANIFEST,
+        output=tmp_path / "dev",
+        clients={"graph_cache": FakeClient()},
+        cases=["DEV-01"],
+        variants=["graph_cache"],
+        max_total_tokens=10_000,
+        max_attempts=3,
+    )
+    assert dev_summary["split"] == "dev"
+    assert "dev cases" in dev_summary["comparison_policy"]
+    written = json.loads((tmp_path / "dev" / "summary.json").read_text())
+    assert written["split"] == "dev"

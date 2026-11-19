@@ -250,8 +250,11 @@ ACCEPT; G0 must reproduce the current cache decisions exactly.
   `_cache_key`, `verify_with_llm`, and `_semantic_check` in
   [tests/test_llm_false_hold_analysis.py](../tests/test_llm_false_hold_analysis.py);
   full 52/52 coverage plus exact token/check/decision agreement is the end-to-end
-  evidence that the mapping is correct. If the private cache is ever evicted the
-  analysis must be re-run (the committed artifact is the record).
+  evidence that the mapping is correct. The cache SQLite file is shared with
+  later prompt-version runs, so re-running the script on a used workspace reports
+  extra rows informationally while still requiring all 52 expected rows; only a
+  missing expected row fails the replay. If the private cache is evicted the
+  analysis cannot be re-derived and the committed artifact is the record.
 - **Token accounting confounders.** Output tokens sum across JSON-repair attempts
   and may include hidden reasoning; input-token and serialized-char ratios are
   the interpretable asymmetry numbers.
@@ -341,11 +344,14 @@ remaining preservation failures are true HOLDs HELD-09/10, not false holds.)
 
 ### Cost
 
-Both runs made **20 paid calls in total** (8 probe + 12 new paired; the rest
-were cache hits), accounted at **76,486 tokens** by the runner's conservative
-accounting. At the harness placeholder range that is **$0.0076-$0.153**; the
+The two ablation runs made **27 provider attempts in total** (8 in the probe
+run + 19 in the paired run); **25 rows required a paid call** and the rest were
+cache hits. Together they are accounted at **76,486 tokens** (24,829 + 51,657)
+by the runner's conservative accounting. At the harness placeholder range
+(no verified price source/date is recorded) that is **$0.008-$0.153**; the
 provider's billing dashboard remains authoritative. The G0 controls used zero
-tokens (cache replay).
+tokens (cache replay). Counting convention: provider attempts include retries;
+"called rows" counts rows that made at least one provider request.
 
 ### Recommended follow-up
 
@@ -367,14 +373,16 @@ diagnose or select it (artifact:
 | False accepts on faulty cases | **0/6** |
 | False holds | 0 |
 | Label agreement | 13/13 |
-| Paid calls / accounted tokens | 13 / 40,906 |
+| Called rows / provider attempts / accounted tokens | 13 / 16 / 40,906 |
 
 This is a genuine out-of-sample check with respect to the four false-hold
 diagnosis, and it supports the policy clarification rather than the null-field
 serialization change. Caveats still apply: the dev cases were used earlier in
 case/verifier development, labels are single-reviewer, and this is one model and
-one run. Total ablation + replication + re-run spend: 46 paid calls, 141,657 accounted
-tokens (≈$0.014–$0.283 at the harness placeholder).
+one run. Total ablation + replication + re-run spend: **58 provider attempts**
+(51 called rows; retries are included in attempts), **141,657 accounted tokens**
+(24,829 + 51,657 + 40,906 + 24,265; ≈$0.014–$0.283 at the harness placeholder,
+which is not a bill).
 
 
 ### Promotion and held-out re-run

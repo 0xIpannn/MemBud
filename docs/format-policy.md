@@ -25,10 +25,10 @@ output and is versioned by its own artifact path, not by this policy.
 
 | Input | Read | Write/round-trip | Notes |
 |---|---|---|---|
-| Transition, no `schema_version` (v1) | yes | stays **v1** | Frozen archival data. Legacy semantics: strict operation-coverage invariants are not enforced, so undeclared state changes may exist. |
-| Transition, `schema_version: 1` | yes | stays **v1** | Same as version-less input; `supersedes` is normalized to explicit operations on load. |
-| Transition, `schema_version: 2` | yes | **v2** | Current format; strict operation-coverage invariants are enforced. |
-| Transition, any other version | **rejected** | — | `ValueError: unsupported schema_version`. No forward compatibility is promised. |
+| Transition, no `schema_version` (v1) | yes | stays **v1**; **not committable** | Frozen archival data. Legacy semantics: strict operation-coverage invariants are not enforced, so undeclared state changes may exist. `store.run_case`/`store.commit` refuse it unless `allow_legacy=True` is passed for an explicit archival replay. |
+| Transition, `schema_version: 1` | yes | stays **v1**; **not committable** | Same as version-less input; `supersedes` is normalized to explicit operations on load. |
+| Transition, `schema_version: 2` | yes | **v2** | Current format; strict operation-coverage invariants are enforced and this is the only format the commit path accepts by default. |
+| Transition, any other version or non-integer `schema_version` | **rejected** | — | `ValueError`; booleans/floats/strings are never reinterpreted as an integer version. No forward compatibility is promised. |
 | Store, absent file | yes (empty) | becomes **v2** on ACCEPT | Treated as version 0 for `expected_version`. |
 | Store, bare JSON list (v1) | yes | stays **v1** on HOLD; **v2** on ACCEPT | Read as schema v1 / `version: 1`; migrated by the next ACCEPT only. |
 | Store, versioned object (`schema_version: 2`) | yes | **v2** | Current format. |
@@ -41,15 +41,22 @@ output and is versioned by its own artifact path, not by this policy.
    store.
 2. **No silent upgrade of transitions.** Loading v1 data and serializing it again
    yields v1. Upgrading is an explicit API call (section 3).
-3. **No silent downgrade or guess.** Unknown future versions are rejected.
-4. **Store migration is explicit in timing, implicit in trigger.** The first
+3. **No silent downgrade or guess.** Unknown future versions are rejected, and
+   `schema_version` must be a JSON integer (`true`/`1.0`/`"2"` are rejected
+   rather than coerced).
+4. **Legacy transitions are archival only on the commit path.** `verify()` still
+   accepts v1 for archival analysis, but `store.run_case`/`store.commit` require
+   the current transition version unless the caller passes an explicit
+   `allow_legacy=True` replay flag; the written store envelope is always v2.
+5. **Store migration is explicit in timing, implicit in trigger.** The first
    `ACCEPT` after a legacy/absent store writes the v2 envelope and increments
    the store `version` once. Later `ACCEPT`s increment the counter
    (`2 -> 3 -> ...`) without re-migrating.
-5. **Audit trail.** Audit events record `store_schema_version_before`,
-   `store_schema_version_after`, `store_version_before`, and
-   `store_version_after`, so a migration is visible after the fact.
-6. **Deterministic JSON.** Stores are written with a fixed key set
+6. **Audit trail.** Audit events record `store_schema_version_before`,
+   `store_schema_version_after`, `store_version_before`, `store_version_after`,
+   and `store_written`/`rolled_back`, so a migration and a failed/rolled-back
+   write are visible after the fact.
+7. **Deterministic JSON.** Stores are written with a fixed key set
    (`schema_version`, `version`, `records`), sorted/deterministic record order
    from the transition, `indent=2`, and a trailing newline. Transitions emit
    `schema_version`, `case_id`, `before`, `candidate`, `evidence`,

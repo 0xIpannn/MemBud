@@ -22,6 +22,8 @@ The normative policy and change checklist live in ``docs/format-policy.md``.
 """
 from __future__ import annotations
 
+from typing import Any
+
 from .schemas import SCHEMA_VERSION, Transition
 from .store import LEGACY_STORE_SCHEMA_VERSION, STORE_SCHEMA_VERSION
 
@@ -41,10 +43,21 @@ MIGRATION_POLICY = (
 )
 
 
+def _require_int_version(value: Any, *, what: str) -> int:
+    """Reject bool/float/string versions; ``True == 1`` must not downgrade."""
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise ValueError(
+            f"{what} schema_version must be an integer "
+            f"(got {type(value).__name__}: {value!r})"
+        )
+    return value
+
+
 def transition_needs_migration(t: Transition) -> bool:
     """True when ``t`` is a legacy v1 transition that can be explicitly upgraded."""
     if not isinstance(t, Transition):
         raise TypeError("transition_needs_migration requires a Transition")
+    _require_int_version(t.schema_version, what="transition")
     if t.schema_version == SCHEMA_VERSION:
         return False
     if t.schema_version == LEGACY_STORE_SCHEMA_VERSION:
@@ -62,6 +75,7 @@ def migrate_transition_to_v2(t: Transition) -> Transition:
     """
     if not isinstance(t, Transition):
         raise TypeError("migrate_transition_to_v2 requires a Transition")
+    _require_int_version(t.schema_version, what="transition")
     t.validate()
     if t.schema_version == SCHEMA_VERSION:
         return t
@@ -84,6 +98,7 @@ def store_needs_migration(schema_version: int | None) -> bool:
     """True when a loaded store format is legacy (v1) or absent (version 0)."""
     if schema_version is None:
         return True
+    _require_int_version(schema_version, what="store")
     if schema_version == STORE_SCHEMA_VERSION:
         return False
     if schema_version == LEGACY_STORE_SCHEMA_VERSION:

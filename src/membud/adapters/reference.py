@@ -12,15 +12,22 @@ Flow implemented by :class:`GuardedMemory`:
 2. normalize the proposed candidate, evidence/provenance and declared
    operations, then build a canonical ``Transition`` (invalid input is
    rejected here, before any write path is entered);
-3. run MemBud verification (graph path) and audit it through
-   :func:`membud.store.run_case`;
+3. run MemBud verification (graph path);
 4. if and only if the result is ACCEPT, re-check the prior state (optimistic
    concurrency) and call ``MemoryAdapter.replace_state`` with exactly the
-   candidate records;
-5. append a decision record to a decision audit log.
+   candidate records -- this happens *before* the shadow baseline is committed,
+   so a stale or failed host write can never advance the baseline;
+5. commit the ACCEPT through :func:`membud.store.run_case` (shadow store +
+   append-only run audit) and append a decision record to the decision log.
 
-HOLD, REJECTED and invalid input never call ``replace_state``, so backend state
-is left byte-for-byte unchanged by those outcomes.
+The shadow baseline only advances after the host backend accepted the write;
+a failure anywhere in the verified-apply path leaves both the host and the
+shadow baseline at the prior state and records a ``REJECTED`` decision.
+
+HOLD and invalid input never call ``replace_state``, so backend state is left
+byte-for-byte unchanged by those outcomes.  A REJECTED decision can follow only
+an *attempted* verified apply that failed (host reported as not applied after a
+best-effort rollback), and it never advances the shadow baseline.
 """
 from __future__ import annotations
 
@@ -29,7 +36,7 @@ import os
 import sqlite3
 import time
 import uuid
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -37,7 +44,8 @@ from typing import Any
 
 from ..schemas import SCHEMA_VERSION, Evidence, Result, Transition
 from ..serialization import transition_dict
-from ..store import run_case
+from ..store import resync_store, run_case
+from ..verification import verify
 from .base import (
     AdapterContractError,
     MemoryAdapter,
@@ -133,6 +141,12 @@ class SQLiteBackend:
                 )
                 """
             )
+        try:
+            # The reference DB stores memory text: keep it owner-only even under
+            # a permissive umask (SQLite creates the file with 0644 by default).
+            self.path.chmod(0o600)
+        except OSError:
+            pass
         if records:
             self.replace_state(scope or {}, records)
 
@@ -212,6 +226,10 @@ class GuardedDecision:
     error_type: str = ""
     latency_ms: float = 0.0
     created_at: str = ""
+    # True only when the host backend accepted the write but a later shadow-
+    # baseline/decision-log step failed (recovery is documented in
+    # data/adapter-contract.md).  None means "not applicable/unknown".
+    host_applied: bool | None = None
 
     @property
     def evidence(self) -> tuple[Evidence, ...]:
@@ -239,7 +257,24 @@ class GuardedDecision:
             "transition": None if self.transition is None else transition_dict(self.transition),
             "result": None if self.result is None else self.result.to_dict(),
             "audit_event": self.audit_event,
+            "host_applied": self.host_applied,
         }
+
+
+class GuardedApplyRejection(RuntimeError):
+    """Raised inside verification when the verified host apply must be refused.
+
+    Carrying the verification :class:`~membud.schemas.Result` lets the guarded
+    layer record what was verified without re-running the deterministic checks.
+    ``run_case`` turns this into a fail-closed audit error event before the
+    shadow store is written.
+    """
+
+    def __init__(self, reason: str, *, error_type: str, result: Result) -> None:
+        super().__init__(reason)
+        self.reason = reason
+        self.error_type = error_type
+        self.result = result
 
 
 def _state_by_id(records: Sequence[Any]) -> dict[str, tuple[str, ...]]:
@@ -324,6 +359,11 @@ class GuardedMemory:
         ``store_path``.
     representation:
         ``"graph"`` (default, structural verifier) or ``"text"`` (baseline).
+
+    The shadow store is scoped to this ``GuardedMemory`` instance: the store is
+    reconciled against the whole ``transition.before`` state, so **use one
+    instance (one store, one audit log) per backend scope**.  A multi-scope host
+    needs one guarded instance per scope or a scope-keyed store implementation.
     """
 
     def __init__(
@@ -354,11 +394,32 @@ class GuardedMemory:
         self.manifest_id = manifest_id
         self.manifest_sha256 = manifest_sha256
         self.code_revision = code_revision
+        #: Last decision-log append failure (``None`` when the log is healthy).
+        self.last_decision_log_error: str | None = None
 
     # -- read side ---------------------------------------------------------
     def capture_prior(self, scope: Mapping[str, str]) -> PriorState:
         """Explicitly snapshot the scoped prior state before proposing a write."""
         return capture_prior_state(self.adapter, scope)
+
+    def resync_shadow_store(self, scope: Mapping[str, str]) -> dict[str, Any]:
+        """Explicit crash recovery: rewrite the shadow baseline from the host.
+
+        The guarded write applies the host state before committing the shadow
+        baseline.  If the process dies in between, the baseline is *behind* the
+        host, and the next proposal fails prior-state reconciliation.  After an
+        operator has established that the live host state is authoritative,
+        this method rewrites the baseline to match it (at most one version bump)
+        and records a ``RESYNC`` audit event.  It is never called automatically.
+        """
+        prior = self.capture_prior(scope)
+        return resync_store(
+            self.store_path,
+            prior.records,
+            log_path=self.audit_log_path,
+            run_id=f"resync-{uuid.uuid4()}",
+            code_revision=self.code_revision,
+        )
 
     # -- write side --------------------------------------------------------
     def propose_update(
@@ -431,7 +492,13 @@ class GuardedMemory:
                 started=started,
             )
 
+        apply_meta: dict[str, bool] = {}
         try:
+            # Verification, optimistic-concurrency re-check and host apply run
+            # inside run_case's flock critical section, *before* the shadow
+            # baseline/audit is committed.  A stale or failed host write
+            # therefore raises GuardedApplyRejection and never advances the
+            # shadow store (the pre-fix failure mode wedged the next proposal).
             result = run_case(
                 transition,
                 self.store_path,
@@ -441,13 +508,36 @@ class GuardedMemory:
                 code_revision=self.code_revision,
                 manifest_id=self.manifest_id,
                 manifest_sha256=self.manifest_sha256,
+                verifier=self._verifying_apply(scope, prior, apply_meta),
             )
-        except Exception as exc:  # run_case fails closed and audits the error
+        except GuardedApplyRejection as rejection:
             return self._record(
                 case_id=case_id,
                 decision="REJECTED",
                 applied=False,
-                reason=f"verification path failed closed: {exc}",
+                reason=rejection.reason,
+                prior=prior,
+                transition=transition,
+                result=rejection.result,
+                run_id=run_id,
+                audit_event=self._last_audit_event(run_id),
+                error_type=rejection.error_type,
+                started=started,
+            )
+        except Exception as exc:  # run_case fails closed and audits the error
+            host_applied = bool(apply_meta.get("applied"))
+            reason = f"verification path failed closed: {exc}"
+            if host_applied:
+                reason += (
+                    " (the host write had already completed but the shadow "
+                    "baseline/audit commit failed; see data/adapter-contract.md "
+                    "for the resync recovery path)"
+                )
+            return self._record(
+                case_id=case_id,
+                decision="REJECTED",
+                applied=False,
+                reason=reason,
                 prior=prior,
                 transition=transition,
                 result=None,
@@ -455,6 +545,7 @@ class GuardedMemory:
                 audit_event=self._last_audit_event(run_id),
                 error_type=type(exc).__name__,
                 started=started,
+                host_applied=host_applied,
             )
 
         audit_event = self._last_audit_event(run_id)
@@ -472,57 +563,6 @@ class GuardedMemory:
                 started=started,
             )
 
-        # Optimistic concurrency: do not persist onto a changed prior state.
-        if not prior_state_matches(self.adapter, scope, prior):
-            return self._record(
-                case_id=case_id,
-                decision="REJECTED",
-                applied=False,
-                reason="backend state changed after the prior-state capture; refusing stale write",
-                prior=prior,
-                transition=transition,
-                result=result,
-                run_id=run_id,
-                audit_event=audit_event,
-                error_type="StalePriorState",
-                started=started,
-            )
-
-        try:
-            self.adapter.replace_state(scope, transition.candidate)
-        except Exception as exc:
-            self._restore_prior(scope, prior)
-            return self._record(
-                case_id=case_id,
-                decision="REJECTED",
-                applied=False,
-                reason=f"backend apply failed: {exc}",
-                prior=prior,
-                transition=transition,
-                result=result,
-                run_id=run_id,
-                audit_event=audit_event,
-                error_type=type(exc).__name__,
-                started=started,
-            )
-
-        applied_state = self.capture_prior(scope)
-        if applied_state.records != transition.candidate:
-            self._restore_prior(scope, prior)
-            return self._record(
-                case_id=case_id,
-                decision="REJECTED",
-                applied=False,
-                reason="backend state after apply did not equal the accepted candidate; rolled back",
-                prior=prior,
-                transition=transition,
-                result=result,
-                run_id=run_id,
-                audit_event=audit_event,
-                error_type="ApplyVerificationError",
-                started=started,
-            )
-
         return self._record(
             case_id=case_id,
             decision="ACCEPT",
@@ -537,13 +577,114 @@ class GuardedMemory:
         )
 
     # -- internals ---------------------------------------------------------
-    def _restore_prior(self, scope: Mapping[str, str], prior: PriorState) -> None:
+    def _verifying_apply(
+        self,
+        scope: Mapping[str, str],
+        prior: PriorState,
+        apply_meta: dict[str, bool] | None = None,
+    ) -> Callable[[Any, str, Any], Result]:
+        """Verifier callback that applies the host write only after ACCEPT.
+
+        ``run_case`` calls this inside its flock critical section, so the
+        prior-state re-check and the host apply are serialized with respect to
+        other guarded proposals that share the same shadow store.
+        """
+
+        def verifier(t: Any, representation: str, prepared: Any) -> Result:
+            result = verify(t, representation, prepared_input=prepared)
+            if result.decision != "ACCEPT":
+                return result
+            if not prior_state_matches(self.adapter, scope, prior):
+                raise GuardedApplyRejection(
+                    "backend state changed after the prior-state capture; refusing stale write",
+                    error_type="StalePriorState",
+                    result=result,
+                )
+            try:
+                self.adapter.replace_state(scope, t.candidate)
+            except Exception as exc:
+                restored = self._restore_if_ours(scope, prior, t.candidate)
+                note = "" if restored else (
+                    "; host state was not restored because it no longer holds our candidate"
+                )
+                raise GuardedApplyRejection(
+                    f"backend apply failed: {exc}{note}",
+                    error_type=type(exc).__name__,
+                    result=result,
+                ) from exc
+            try:
+                applied_state = self.capture_prior(scope)
+            except Exception as exc:
+                self._restore_if_ours(scope, prior, t.candidate)
+                raise GuardedApplyRejection(
+                    f"backend state after apply could not be re-read: {exc}",
+                    error_type=type(exc).__name__,
+                    result=result,
+                ) from exc
+            if applied_state.records != t.candidate:
+                # Our own apply produced a state that is not the accepted
+                # candidate (adapter contract violation).  Restore the prior
+                # state unless it is already in place.
+                restored = self._restore_prior_after_mismatch(scope, prior)
+                note = "" if restored else "; host state could not be restored"
+                raise GuardedApplyRejection(
+                    "backend state after apply did not equal the accepted candidate; "
+                    f"rolled back{note}",
+                    error_type="ApplyVerificationError",
+                    result=result,
+                )
+            if apply_meta is not None:
+                # Host write completed; any later shadow-baseline failure is
+                # reported with host_applied=True instead of pretending the
+                # backend is untouched.
+                apply_meta["applied"] = True
+            return result
+
+        return verifier
+
+    def _restore_prior_after_mismatch(
+        self, scope: Mapping[str, str], prior: PriorState
+    ) -> bool:
+        """Restore ``prior`` after our own apply produced an unexpected state."""
+        try:
+            current = capture_prior_state(self.adapter, scope).records
+        except Exception:
+            return False
+        if current == prior.records:
+            return True
+        try:
+            self.adapter.replace_state(scope, prior.records)
+        except Exception:
+            return False
+        return True
+
+    def _restore_if_ours(
+        self,
+        scope: Mapping[str, str],
+        prior: PriorState,
+        candidate: Sequence[Any],
+    ) -> bool:
+        """Roll back to ``prior`` only if the host still holds our candidate.
+
+        Returns ``True`` when the host is at ``prior`` afterwards (either it was
+        already, or our candidate was rolled back); ``False`` when another
+        writer changed the host and restoring would clobber a newer write.
+        """
+        try:
+            current = capture_prior_state(self.adapter, scope).records
+        except Exception:
+            return False
+        if current == prior.records:
+            return True
+        if current != tuple(candidate):
+            return False
         try:
             self.adapter.replace_state(scope, prior.records)
         except Exception:
             # The decision record still reports applied=False; a non-atomic
             # backend must not be claimed as guarded.
-            pass
+            return False
+        return True
 
     def _record(
         self,
@@ -559,6 +700,7 @@ class GuardedMemory:
         audit_event: dict[str, Any] | None,
         started: float,
         error_type: str = "",
+        host_applied: bool | None = None,
     ) -> GuardedDecision:
         event = GuardedDecision(
             case_id=case_id,
@@ -575,14 +717,29 @@ class GuardedMemory:
             error_type=error_type,
             latency_ms=round((time.perf_counter() - started) * 1000, 3),
             created_at=datetime.now(timezone.utc).isoformat(),
+            host_applied=host_applied,
         )
-        self._append_decision(event)
+        try:
+            self._append_decision(event)
+        except OSError as exc:
+            # A failed decision-log append must not escape and lose the
+            # in-memory decision; record the failure for operators instead.
+            self.last_decision_log_error = f"{type(exc).__name__}: {exc}"
+        return event
         return event
 
     def _append_decision(self, decision: GuardedDecision) -> None:
+        """Append one decision record, creating the PII-bearing log owner-only."""
         self.decision_log_path.parent.mkdir(parents=True, exist_ok=True)
+        descriptor = os.open(
+            self.decision_log_path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600
+        )
         line = json.dumps(decision.to_dict(), ensure_ascii=False, sort_keys=True) + "\n"
-        with self.decision_log_path.open("a", encoding="utf-8") as handle:
+        with os.fdopen(descriptor, "a", encoding="utf-8") as handle:
+            try:
+                self.decision_log_path.chmod(0o600)
+            except OSError:
+                pass
             handle.write(line)
             handle.flush()
             os.fsync(handle.fileno())

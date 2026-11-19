@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="600" viewBox="0 0 1100 600" font-family="Helvetica, Arial, 'DejaVu Sans', sans-serif">
+<defs>
+<marker id="arr-neutral" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#2b3a4a"/></marker>
+<marker id="arr-graph" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#2f6f9f"/></marker>
+<marker id="arr-text" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#c07020"/></marker>
+<marker id="arr-red" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#b23b3b"/></marker>
+<marker id="arr-green" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#2e7d32"/></marker>
+<marker id="arr-grey" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#7a7a7a"/></marker>
+</defs>
+<rect x="0" y="0" width="1100" height="600" fill="#ffffff"/>
+<rect x="30" y="50" width="200" height="80" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="130.0" y="87.11250000000001" font-size="13" fill="#1d2b3a" text-anchor="middle" font-weight="600">1. Literature</text>
+<text x="130.0" y="103.08750000000002" font-size="11.5" fill="#55657a" text-anchor="middle" font-weight="normal">and RQs</text>
+<path d="M 233 90.0 L 267 90.0" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<rect x="270" y="50" width="200" height="80" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="370.0" y="87.11250000000001" font-size="13" fill="#1d2b3a" text-anchor="middle" font-weight="600">2. Case construction</text>
+<text x="370.0" y="103.08750000000002" font-size="11.5" fill="#55657a" text-anchor="middle" font-weight="normal">and annotation</text>
+<path d="M 473 90.0 L 507 90.0" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<rect x="510" y="50" width="200" height="80" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="610.0" y="94.875" font-size="13" fill="#1d2b3a" text-anchor="middle" font-weight="600">3. Prototype</text>
+<path d="M 713 90.0 L 747 90.0" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<rect x="750" y="50" width="200" height="80" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="850.0" y="94.875" font-size="13" fill="#1d2b3a" text-anchor="middle" font-weight="600">4. Development runs</text>
+<path d="M 850 50 C 850 10, 610 10, 610 46" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<text x="730" y="20" font-size="11" fill="#55657a" text-anchor="middle" font-weight="normal">iterate on the development split</text>
+<path d="M 850 130 L 850 205 L 330 205 L 330 228" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<polygon points="330,219.0 460.0,285 330,351.0 200.0,285" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0" stroke-linejoin="round"/>
+<text x="330" y="277.425" font-size="14" fill="#1d2b3a" text-anchor="middle" font-weight="600">Gate A</text>
+<text x="330" y="291.6" font-size="9.5" fill="#55657a" text-anchor="middle" font-weight="normal">freeze manifest,</text>
+<text x="330" y="304.42500000000007" font-size="9.5" fill="#55657a" text-anchor="middle" font-weight="normal">prompts, policy</text>
+<path d="M 460 285 L 637 285" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<polygon points="770,219.0 900.0,285 770,351.0 640.0,285" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0" stroke-linejoin="round"/>
+<text x="770" y="277.425" font-size="14" fill="#1d2b3a" text-anchor="middle" font-weight="600">Gate B</text>
+<text x="770" y="291.6" font-size="9.5" fill="#55657a" text-anchor="middle" font-weight="normal">no tuning after</text>
+<text x="770" y="304.42500000000007" font-size="9.5" fill="#55657a" text-anchor="middle" font-weight="normal">freeze</text>
+<path d="M 770 341 L 770 380 L 290 380 L 290 413" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<rect x="190" y="415" width="200" height="80" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="290.0" y="459.875" font-size="13" fill="#1d2b3a" text-anchor="middle" font-weight="600">5. Held-out / fresh run</text>
+<path d="M 393 455 L 427 455" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<rect x="430" y="415" width="200" height="80" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="530.0" y="459.875" font-size="13" fill="#1d2b3a" text-anchor="middle" font-weight="600">6. Analysis</text>
+<path d="M 633 455 L 667 455" fill="none" stroke="#2b3a4a" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arr-neutral)"/>
+<rect x="670" y="415" width="200" height="80" rx="10" ry="10" fill="#f5f7fa" stroke="#2b3a4a" stroke-width="2.0"/>
+<text x="770.0" y="459.875" font-size="13" fill="#1d2b3a" text-anchor="middle" font-weight="600">7. Reporting</text>
+</svg>
