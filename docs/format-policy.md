@@ -124,7 +124,7 @@ A format change is a breaking change until this checklist is complete:
    byte-identity, unknown-version rejection).
 5. Keep historical result artifacts and their recorded `schema_version` /
    `prompt_version` unchanged; regenerate rather than mutate.
-6. Run the full test suite and update `README.md` / `TODO.md` / `PLAN.md`.
+6. Run the full test suite and update `README.md` / `docs/research-status.md` / `TODO.md` / `PLAN.md`.
 7. If forward compatibility is ever promised, it requires a separate design;
    it is not promised today.
 

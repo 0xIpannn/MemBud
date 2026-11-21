@@ -1,0 +1,14 @@
+{
+  "schema_version": 2,
+  "case_id": "quickstart-accept",
+  "before": [{"id": "r1", "claims": ["lives in Bandung"]}],
+  "candidate": [
+    {"id": "r1", "claims": ["lives in Bandung"]},
+    {"id": "r2", "claims": ["works at Tokopedia"]}
+  ],
+  "evidence": [
+    {"id": "e1", "source": "chat:42", "text": "I just started working at Tokopedia.", "supports": ["works at Tokopedia"]}
+  ],
+  "required_claims": ["lives in Bandung"],
+  "operations": [{"type": "WRITE", "record_id": "r2"}]
+}
