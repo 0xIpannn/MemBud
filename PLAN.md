@@ -404,7 +404,7 @@ This appendix records what was actually delivered after the original plan; the b
 - **Structural graph verification**: `membud.graph_verification` derives coverage/preservation/faithfulness from graph adjacency (provenance paths, required-claim reachability, operation edges, contradiction edges, connectivity, operation/authorization consistency). `verify(t, "graph")` dispatches to it; `verify(t, "text")` remains the exact-claim-set baseline.
 - **Semantic verification**: `membud.semantic` provides a comparator protocol and an LLM-backed comparator with fail-safe uncertainty; `verify_with_semantics` appends one optional `semantic` check and never changes the deterministic baseline.
 - **Storage reliability**: versioned stores with legacy migration, optimistic concurrency (`expected_version`), POSIX `flock`, atomic ACCEPT-only writes, stray-temp recovery, and audit metadata for versions/locks.
-- **Reference backend**: `membud.adapters.reference` demonstrates actual write interception with byte-identical HOLD behavior; Mem0 `2.2.1` source inspection found no safe public pre-commit hook, so no third-party compatibility is claimed.
+- **Reference backend**: `membud.adapters.reference` demonstrates actual write interception with byte-identical HOLD behavior; Mem0 `2.2.1` has no safe public pre-commit hook; a host-owned staged wrapper (`membud.adapters.mem0_staged`, see `docs/mem0-guarded-integration.md`) now guards the real library for the pinned stack (see §19).
 - **Evaluation**: 36-case hash-pinned v2 set (18 dev / 18 held-out) with 14 ACCEPT / 12 HOLD / 10 INVALID_INPUT; reproducible rules-only three-condition run; precision/recall, false accepts/holds, valid acceptance, invalid-input handling, latency overhead, paired graph-vs-text differences, and per-split metrics. A second-review process is prepared but the human second review is pending.
 
 ### Evidence and limitations
@@ -460,7 +460,20 @@ report. Paper work remains deferred; `paper/` was not modified.
   production software; the 1.18.30-typings vs 1.19.5-CLI gap is documented.
 - **Mem0 groundwork.** `membud.adapters.mem0_bridge` implements a host-owned
   staged-proposal path with deterministic mapping and byte-identical HOLD tests.
-  No Mem0 import, no runtime Mem0 exercise, and **no compatibility claim**.
+  The bridge itself imports no Mem0 and makes no compatibility claim; the real-Mem0
+  integration is the staged wrapper below.
+- **Guarded real Mem0 (2026-11-19).** `membud.adapters.mem0_staged.StagedMem0`
+  runs the real, unmodified `mem0ai==2.2.1` (embedded Qdrant incl. entity
+  collection, SQLite history/messages, spaCy entity linking, offline LLM/embedder
+  fakes) on a shadow clone of the host state, derives the full write set by state
+  diff, verifies it with the graph verifier, and replays exactly that set only on
+  ACCEPT. 38 tests + `data/results/mem0-guarded-v1/evidence.json`: HOLD,
+  REJECTED (incl. unmodeled foreign-scope/DDL/history writes) and erroring
+  operations leave every host file and write surface byte-identical while the
+  unguarded twin changes each; ACCEPT == verified state == unmodified-Mem0
+  semantics; failed commits compensated; stale state refused. Scope: pinned stack
+  only; no real LLM; vectors compared at 1e-5 on ACCEPT; commit is compensated,
+  not transactional; O(store) per write. See `docs/mem0-guarded-integration.md`.
 - **Format stabilization.** `membud.migrations` plus `docs/format-policy.md`
   define the transition/store version registry, compatibility matrix, explicit
   upgrade/refusal behavior, and release checklist; 13 hand-written cross-version
@@ -501,7 +514,8 @@ report. Paper work remains deferred; `paper/` was not modified.
   compatibility claim).
 - **Not yet met:** Definition of Done #5 (one real third-party backend
   end-to-end), #7 billed cost (only token-based estimates with provenance),
-  #8 downstream QA utility; the genuinely independent powered evaluation itself
+  #8 downstream QA utility on real dialogue (a simulated multi-session QA
+  benchmark now exists: `docs/qa-utility.md`); the genuinely independent powered evaluation itself
   (the paired-CI/sample-size machinery and checkpoint/resume are now delivered,
   but fresh cases, second-review labels, and spend approval are still needed).
 
@@ -513,10 +527,10 @@ report. Paper work remains deferred; `paper/` was not modified.
 | 2 | Same case through graph and non-graph paths | met |
 | 3 | Coverage/preservation/faithfulness produce a recorded decision | met |
 | 4 | Unsafe/uncertain update cannot commit silently in the guarded path | met for the reference/service paths; no live third-party backend |
-| 5 | JSON baseline **and one real backend** run end-to-end | partial: JSON/reference only |
+| 5 | JSON baseline **and one real backend** run end-to-end | met for Mem0 2.2.1 (pinned stack, offline model fakes; no real LLM run) |
 | 6 | Fixed case manifest and saved configuration | met (v2 manifest; labels single-reviewer) |
 | 7 | Raw outputs, decisions, metrics, tokens, latency, cost logged | partial: token-class cost estimates with provenance exist, but billed cost is unavailable; some latency is fixture-scale |
-| 8 | Compare reliability, false rejection, downstream utility, cost | partial: no downstream QA; descriptive statistics only |
+| 8 | Compare reliability, false rejection, downstream utility, cost | partial: downstream QA utility measured on a seeded conversation simulator with paired bootstrap CIs (`docs/qa-utility.md`); no real-dialogue QA; billed cost unavailable |
 | 9 | Conclusions distinguish measured findings from limitations | met |
 
 ### Current plan of record (next)
@@ -528,9 +542,10 @@ report. Paper work remains deferred; `paper/` was not modified.
    (requires fresh cases, second-review labels, and spend approval).
 3. Confirm provider-billed cost; checkpoint/resume and token-class estimate
    accounting are delivered, but no billing data exists yet.
-4. Implement one real backend end-to-end (Mem0 or A-Mem) through a host-owned
-   staged write/fork, proving HOLD mutates none of the host's write side
-   effects; only then claim compatibility.
+4. ~~Implement one real backend end-to-end~~ — done for Mem0 `2.2.1`
+   (`docs/mem0-guarded-integration.md`). Open follow-ups: real LLM/embedder
+   run, other versions/stores, transactional/crash-safe commit, incremental
+   snapshots, A-Mem.
 5. Maintain the delivered format policy (`docs/format-policy.md`) for any future
    breaking version bump; no migration work is open today.
 6. If productizing: add concurrency/version arbitration to the opencode guard

@@ -295,13 +295,7 @@ timestamp=... level=WARN message="background dependency install failed"
 timestamp=... level=INFO message=init
 ```
 
-Conclusion: the real 1.19.5 host **loaded this plugin module, validated the
-default export, and invoked `server()`** — the probe line could only be written
-from that code path. The bootstrap took ~70 s in the offline namespace because
-opencode's background dependency-install attempt had to time out; on an online
-machine it is quicker, but may attempt that install. This smoke proves **module
-load only**: no tool was executed, no model was called, no hook was fired, and
-no MCP host was involved (see below).
+Conclusion: the real host loaded this plugin module, validated the default export, and invoked the entry point (`server()` on 1.19.5; `setup()` on 2.3.0). A reproducible, zero-network runner (`scripts/run_opencode_load_smoke.py`) now captures and checks the retained module-load evidence in [`smoke/probe.log`](smoke/probe.log) and [`smoke/smoke-evidence.json`](smoke/smoke-evidence.json) (verify offline with `PYTHONPATH=src .venv/bin/python scripts/run_opencode_load_smoke.py --check`). In the original 1.19.5 offline-namespace capture, bootstrap took ~70 s because opencode's background dependency-install attempt timed out; on an online machine or with `integrations/opencode/plugin/package.json` resolved directly from disk via `opencode debug agents --standalone`, loading is immediate. This smoke proves **module load only**: no tool was executed, no model was called, no hook was fired, and no MCP host was involved (see below).
 
 ## Live model-originated denial test (2026-11-07)
 
@@ -344,12 +338,18 @@ opencode version and two scripted prompts — not general agent behavior.
 * **No persistence.** `service.py` never writes a store, audit log, temp file
   or lock. Tests assert a clean temporary working directory after ACCEPT and
   HOLD requests.
-* **Untrusted model args.** Tool args are untrusted data. The sidecar enforces
+* **Untrusted model args & evidence trust boundary.** Tool args are untrusted data. The sidecar enforces
   a 256 KiB body cap (configurable), `Content-Length` (no chunked bodies), a
   JSON depth limit (16), collection limits (≤5 000 records/each, ≤20 000
-  claims), strict schema-version 2, a strict field allow-list, duplicate-key and
-  NaN rejection, and a bounded socket timeout. Anything malformed or oversized
-  is HOLD, never ACCEPT.
+  claims), strict schema-version 2, a strict top-level and nested field allow-list,
+  duplicate-key and NaN rejection, and a bounded socket timeout. Anything malformed
+  or oversized is HOLD, never ACCEPT. **Evidence trust boundary:** without a
+  host-configured `transcriptPath` (or host-supplied `transcript`), `buildTransition`
+  forwards `args.evidence` from the model's `memory_write` arguments as
+  caller-declared input, so `ACCEPT` means "consistent with the caller's
+  declared evidence" rather than externally authenticated provenance; configure
+  `transcriptPath` to bind evidence quotes/roles to the actual conversation
+  transcript.
 * **Fail closed everywhere** (client and server): bad JSON, invalid
   transitions, unknown representation, sidecar down, HTTP error, timeout,
   unreadable local state → denial. An unexpected internal error is a 500

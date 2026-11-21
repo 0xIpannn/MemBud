@@ -1,0 +1,35 @@
+{
+  "note": "wall-clock, machine dependent; not byte-stable",
+  "per_case": {
+    "unguarded": {
+      "median_ms": 0.0004,
+      "p95_ms": 0.0005,
+      "mean_ms": 0.0005
+    },
+    "text_k1_optimistic": {
+      "median_ms": 0.13,
+      "p95_ms": 0.1953,
+      "mean_ms": 0.1341
+    },
+    "text_k1_pessimistic": {
+      "median_ms": 0.1244,
+      "p95_ms": 0.1888,
+      "mean_ms": 0.1278
+    },
+    "text_k2_optimistic": {
+      "median_ms": 0.1218,
+      "p95_ms": 0.1849,
+      "mean_ms": 0.1256
+    },
+    "text_closure": {
+      "median_ms": 0.1217,
+      "p95_ms": 0.1852,
+      "mean_ms": 0.1259
+    },
+    "graph": {
+      "median_ms": 0.1116,
+      "p95_ms": 0.3203,
+      "mean_ms": 0.1352
+    }
+  }
+}

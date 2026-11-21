@@ -598,6 +598,7 @@ def test_refuses_non_fresh_output(tmp_path):
 def test_cli_defaults_and_condition_parsing():
     parser = harness.build_parser()
     args = parser.parse_args(["--output", "out"])
+    assert args.provider == "claude"
     assert args.manifest.endswith("data/manifests/evaluation-v2.json")
     assert args.split == "heldout"
     assert args.max_total_tokens == 250_000
@@ -606,6 +607,36 @@ def test_cli_defaults_and_condition_parsing():
     assert harness.parse_conditions("semantic,graph") == ("graph", "semantic")
     with pytest.raises(ValueError):
         harness.parse_conditions("graph,bogus")
+
+
+def test_build_client_selects_claude_and_gemini_providers(monkeypatch, tmp_path):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setenv("GEMINI_API_KEY", "AIza-test")
+    monkeypatch.delenv("CLAUDE_MODEL", raising=False)
+    monkeypatch.delenv("ANTHROPIC_MODEL", raising=False)
+    monkeypatch.delenv("GEMINI_MODEL", raising=False)
+
+    claude = harness.build_client(
+        max_attempts=2,
+        cache_path=str(tmp_path / "claude.sqlite3"),
+        require_cache=True,
+        provider="claude",
+    )
+    assert claude.configuration["provider"] == "claude-openai-compatible"
+    assert claude.model == "claude-haiku-4-5-20251001"
+    assert claude.require_cache is True
+    assert claude.cache_path == tmp_path / "claude.sqlite3"
+
+    gemini = harness.build_client(
+        max_attempts=2,
+        cache_path=str(tmp_path / "gemini.sqlite3"),
+        require_cache=False,
+        provider="gemini",
+    )
+    assert gemini.configuration["provider"] == "gemini-openai-compatible"
+    assert gemini.model == "gemini-2.5-flash"
+    assert gemini.require_cache is False
+    assert gemini.cache_path == tmp_path / "gemini.sqlite3"
 
 
 def test_cli_writes_outputs_and_console_summary(tmp_path, monkeypatch, capsys):
@@ -1347,3 +1378,187 @@ def test_recovered_store_without_audit_stays_visible_to_metrics(tmp_path):
     assert row["decision"] == "ACCEPT"
     assert row["accounted_tokens"] == 0
     assert row["usage_estimated"] is False
+
+
+def test_run_heldout_metrics_report_as_completed_and_fail_closed_itt_for_errors(tmp_path):
+    from membud.cost import build_price_tables
+    from membud.experiment import ManifestCase
+
+    entries = [
+        ManifestCase(case_id="HELD-01", split="heldout"),
+        ManifestCase(case_id="HELD-02", split="heldout"),
+        ManifestCase(case_id="HELD-03", split="heldout"),
+        ManifestCase(case_id="HELD-04", split="heldout"),
+    ]
+    labels = {
+        "HELD-01": {"expected_decision": "ACCEPT"},
+        "HELD-02": {"expected_decision": "ACCEPT"},
+        "HELD-03": {"expected_decision": "HOLD"},
+        "HELD-04": {"expected_decision": "HOLD"},
+    }
+    rows = [
+        {
+            "case_id": "HELD-01",
+            "condition": "graph",
+            "decision": "ACCEPT",
+            "status": "completed",
+            "usage": {"input_tokens": 10, "output_tokens": 5, "total_tokens": 15, "reported": True},
+            "accounted_tokens": 15,
+            "usage_estimated": False,
+            "attempts": 1,
+            "cache_hit": 0,
+            "latency_ms": 1.0,
+        },
+        {
+            "case_id": "HELD-02",
+            "condition": "graph",
+            "decision": "ERROR",
+            "status": "error",
+            "usage": {"input_tokens": None, "output_tokens": None, "total_tokens": None, "reported": False},
+            "accounted_tokens": 0,
+            "usage_estimated": False,
+            "attempts": 0,
+            "cache_hit": 0,
+            "latency_ms": None,
+        },
+        {
+            "case_id": "HELD-03",
+            "condition": "graph",
+            "decision": "HOLD",
+            "status": "completed",
+            "usage": {"input_tokens": 10, "output_tokens": 5, "total_tokens": 15, "reported": True},
+            "accounted_tokens": 15,
+            "usage_estimated": False,
+            "attempts": 1,
+            "cache_hit": 0,
+            "latency_ms": 1.0,
+        },
+        {
+            "case_id": "HELD-04",
+            "condition": "graph",
+            "decision": "HOLD",
+            "status": "verifier_error",
+            "usage": {"input_tokens": None, "output_tokens": None, "total_tokens": None, "reported": False},
+            "accounted_tokens": 7500,
+            "usage_estimated": True,
+            "attempts": 3,
+            "cache_hit": 0,
+            "latency_ms": 1.0,
+        },
+    ]
+
+    metrics = harness._condition_metrics(
+        condition="graph",
+        rows=rows,
+        heldout_entries=entries,
+        labels=labels,
+        price_tables=build_price_tables(),
+    )
+
+    # Top-level false_holds and valid_acceptance complement to 1.0 over attempted valid rows.
+    assert metrics["valid_acceptance"] == {"numerator": 1, "denominator": 2, "rate": 0.5, "case_ids": ["HELD-01"]}
+    assert metrics["false_holds"]["numerator"] == 1
+    assert metrics["false_holds"]["denominator"] == 2
+    assert metrics["false_holds"]["rate"] == pytest.approx(0.5)
+    assert metrics["false_holds"]["decision_holds"] == 0
+    assert metrics["false_holds"]["error_holds"] == 1
+    assert metrics["false_holds"]["error_hold_case_ids"] == ["HELD-02"]
+
+    # Error-hold on faulty HELD-04 is not credited as an explicit HOLD detection.
+    assert metrics["faulty_detection_hold_only"]["numerator"] == 1
+    assert metrics["faulty_detection_hold_only"]["denominator"] == 2
+    assert metrics["faulty_detection_hold_only"]["error_holds"] == 1
+    assert metrics["faulty_detection_hold_only"]["error_hold_case_ids"] == ["HELD-04"]
+
+    # Explicit as_completed vs fail_closed_itt blocks mirror membud.metrics.
+    assert metrics["as_completed"]["valid"] == {
+        "completed": 1,
+        "accepted": 1,
+        "acceptance_rate": {"numerator": 1, "denominator": 1, "rate": 1.0},
+        "held": 0,
+        "false_hold_rate": {"numerator": 0, "denominator": 1, "rate": 0.0},
+        "case_ids": ["HELD-01"],
+    }
+    assert metrics["as_completed"]["faulty"] == {
+        "completed": 1,
+        "flagged": 1,
+        "detection_rate": {"numerator": 1, "denominator": 1, "rate": 1.0},
+        "false_accepts": 0,
+        "false_accept_rate": {"numerator": 0, "denominator": 1, "rate": 0.0},
+        "case_ids": ["HELD-03"],
+    }
+    assert metrics["fail_closed_itt"]["valid"]["error_holds"] == 1
+    assert metrics["fail_closed_itt"]["valid"]["false_hold_rate"]["rate"] == pytest.approx(0.5)
+    assert metrics["fail_closed_itt"]["faulty"]["error_holds"] == 1
+    assert metrics["fail_closed_itt"]["faulty"]["detection_rate"]["rate"] == pytest.approx(0.5)
+    assert metrics["fail_closed_itt"]["faulty"]["not_accepted_rate"]["rate"] == pytest.approx(1.0)
+
+
+def test_run_heldout_preserves_usage_on_json_repair_exhaustion(tmp_path):
+    from membud.llm.client import LLMJSONError
+
+    class BadJSONClient:
+        model = "claude-haiku-4-5-20251001"
+        configuration = {"provider": "claude-openai-compatible"}
+        calls = 0
+
+        def complete_json(self, messages, validator=None):
+            self.calls += 1
+            raise LLMJSONError(
+                "model did not return a valid JSON object",
+                attempts=2,
+                json_retries=1,
+                input_tokens=40,
+                output_tokens=15,
+                total_tokens=55,
+            )
+
+    manifest_path = _write_manifest(
+        tmp_path, [_valid_raw("HELD-01")], [_label("HELD-01", "ACCEPT")]
+    )
+    output = tmp_path / "out"
+    client = BadJSONClient()
+    summary = harness.run_heldout(
+        manifest_path=manifest_path,
+        output=output,
+        client=client,
+        split="heldout",
+        conditions=("graph",),
+        max_attempts=3,
+        run_id="json-repair-usage",
+        code_revision="rev",
+    )
+
+    row = summary["results"][0]
+    assert row["status"] == "verifier_error"
+    assert row["decision"] == "HOLD"
+    assert row["usage_estimated"] is False
+    assert row["accounted_tokens"] == 55
+    assert row["attempts"] == 2
+    assert row["usage"]["json_retries"] == 1
+    assert summary["budget"]["accounted_tokens_used"] == 55
+    assert summary["budget"]["estimated_tokens_used"] == 0
+
+
+def test_resume_rejects_runner_fingerprint_change(tmp_path):
+    from membud.experiment import source_fingerprint
+
+    fake_runner = tmp_path / "custom_runner.py"
+    fake_runner.write_text("# v1\n", encoding="utf-8")
+    manifest_path = _write_manifest(
+        tmp_path, [_valid_raw("HELD-01")], [_label("HELD-01", "ACCEPT")]
+    )
+    output = tmp_path / "out"
+    first_client = FakeClient(total_tokens=150)
+    kwargs = _run_kwargs(manifest_path, output, first_client)
+    kwargs["code_revision"] = source_fingerprint((fake_runner,))
+    harness.run_heldout(**kwargs)
+
+    # Simulate an edit to the runner script before resuming.
+    fake_runner.write_text("# v2\n", encoding="utf-8")
+    resume_client = FakeClient(total_tokens=150)
+    resume_kwargs = _run_kwargs(manifest_path, output, resume_client, resume=True)
+    resume_kwargs["code_revision"] = source_fingerprint((fake_runner,))
+    with pytest.raises(ValueError, match="code_revision"):
+        harness.run_heldout(**resume_kwargs)
+    assert resume_client.calls == 0

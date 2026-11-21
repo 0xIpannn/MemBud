@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-11-21T05:23:34.018129+00:00",
+  "opencode_version": "opencode v2.3.0",
+  "command": [
+    "opencode",
+    "debug",
+    "agents",
+    "--standalone",
+    "--print-logs",
+    "--log-level",
+    "info"
+  ],
+  "plugin_path": "integrations/opencode/plugin/membud-verify-guard.js",
+  "plugin_sha256": "e3b09684420c6aceb71a2f9062ce886f151a2c10c671f092615307b5f096520b",
+  "probe_log_path": "integrations/opencode/smoke/probe.log",
+  "probe_log_sha256": "0d601b824170bfbac07435d69993b0e16dfa1cb25a16e80eefe7c414cf524fcd",
+  "probe_event": {
+    "event": "server_hook_created",
+    "plugin": "membud-verify-guard",
+    "directory": "smoke/project",
+    "verifyUrl": "http://127.0.0.1:1/verify",
+    "memoryStatePath": "smoke/project/memory-state.json",
+    "toolNames": [
+      "memory_write"
+    ],
+    "at": "2026-11-21T05:23:33.805Z"
+  },
+  "proves": "module load and plugin entry-point invocation only (no model call, no tool call)"
+}

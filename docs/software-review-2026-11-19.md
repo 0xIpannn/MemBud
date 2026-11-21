@@ -443,17 +443,38 @@ failing, so the documented command exits 0. The newly added CI workflow was vali
 pytest command on Python 3.12/3.14 locally and its no-model harness command on Node 26 locally; the
 GitHub-hosted run itself has not been observed.
 
-**Deferred (not part of the ordered plan; still open Minor findings):** LLM-harness as-completed vs
-ITT error-row metrics (`m2`), shape-invalid cache payloads (`m3`), JSON-repair usage propagation
-(`m4`), runner/analysis files in the code fingerprint (`m5`), `validate()` field-level completeness
-for direct construction (`m6`), nested unknown-key rejection (`m7`), explicit evidence trust-boundary
-wording (`m8`), mem0 bridge order-sensitive equality (`m10`), lock-degradation README caveat
-(`m16`), a non-loopback peer test (`m17`), the missing module-load smoke artifact (`m18`), and the
-"13 vs 15 cases" doc count (`m24`). None affects a committed result; they remain candidates for the
-next hardening round.
+**Originally deferred, then resolved in §11:** LLM-harness as-completed vs ITT error-row metrics
+(`m2`), shape-invalid cache payloads (`m3`), JSON-repair usage propagation (`m4`), runner/analysis
+files in the code fingerprint (`m5`), `validate()` field-level completeness for direct
+construction (`m6`), nested unknown-key rejection (`m7`), explicit evidence trust-boundary wording
+(`m8`), mem0 bridge order-sensitive equality (`m10`), lock-degradation controls and README caveat
+(`m16`), non-loopback peer test (`m17`), real OpenCode module-load smoke artifact (`m18`), and the
+"13 vs 15 cases" doc count (`m24`). See §11 below; zero deferred Minor findings remain open.
+
+---
+
+## 11. Deferred minor findings resolved (2026-11-21)
+
+All 12 Minor findings deferred at the end of §10 have been fixed and covered by regression tests:
+
+| Finding | Resolution summary | Primary files & regression tests |
+|---|---|---|
+| `m2` | Added `as_completed` and `fail_closed_itt` metric blocks with `error_holds`, `error_hold_case_ids`, and `unattempted_cases`, excluding error rows from explicit `hold_detections` while preserving `false_holds` + `valid_acceptance` complementarity. | `scripts/run_llm_heldout.py`, `tests/test_llm_heldout.py` (`test_run_heldout_metrics_report_as_completed_and_fail_closed_itt_for_errors`) |
+| `m3` | Validated cached response payload shape via `_is_valid_cached_payload`; invalid cache rows are deleted during `_load_cache` and handled as cache misses in `complete_json`. | `src/membud/llm/client.py`, `tests/test_llm_client.py` (`test_shape_invalid_cache_entry_is_treated_as_miss_and_deleted`) |
+| `m4` | Added `LLMJSONError` and extended `LLMRequestError` with `attempts`, `json_retries`, and token `.usage`; propagated accumulated usage from `complete_json` through `verify_with_llm`, `LLMSemanticComparator.compare`, and `run_llm_heldout.py`. | `src/membud/llm/client.py`, `src/membud/verification.py`, `src/membud/semantic.py`, `tests/test_llm_client.py`, `tests/test_llm_verification.py`, `tests/test_llm_heldout.py` |
+| `m5` | Extended `source_fingerprint(extra_paths=...)` to hash `src/membud/**/*.py`, `scripts/**/*.py`, `pyproject.toml`, and `extra_paths`, plus `_default_code_revision()` in the held-out runner. | `src/membud/experiment.py`, `scripts/run_llm_heldout.py`, `tests/test_evaluation_manifest.py`, `tests/test_llm_heldout.py` (`test_resume_rejects_runner_fingerprint_change`) |
+| `m6` | Hardened `Transition.validate()` to validate all directly constructed nested `Record`, `Evidence`, `Operation`, and `DeletionAuthorization` instances and reject non-string claims or empty authorization fields. | `src/membud/schemas.py`, `tests/test_mvp.py` (`test_direct_construction_validation_rejects_empty_delete_auth_and_non_string_claims`) |
+| `m7` | Enforced strict unknown-key rejection across `from_dict` and HTTP `validate_transition_shape` for top-level and nested `before`, `candidate`, `evidence`, `operations`, and `operations[].authorization`. | `src/membud/schemas.py`, `src/membud/service.py`, `tests/test_mvp.py`, `tests/test_service.py` |
+| `m8` | Documented the evidence-provenance trust boundary explicitly on `Evidence`/`Transition` docstrings, `README.md`, `integrations/opencode/README.md`, and `membud-verify-guard.js`. | `src/membud/schemas.py`, `README.md`, `integrations/opencode/README.md`, `integrations/opencode/plugin/membud-verify-guard.js` |
+| `m10` | Replaced order-sensitive equality in `prior_state_matches`, `GuardedMemory._verifying_apply`, and `apply_staged` with order-insensitive `records_match` / `claims_by_id()` checks plus `expected_prior` pre-apply staleness rejection. | `src/membud/adapters/base.py`, `src/membud/adapters/reference.py`, `src/membud/adapters/mem0_bridge.py`, `tests/test_mem0_bridge.py` |
+| `m16` | Added `require_lock` and `lock_timeout_seconds` fail-closed controls to `run_case` and documented non-POSIX lock-degradation caveats in `README.md`. | `src/membud/store.py`, `README.md`, `tests/test_store_safety.py` |
+| `m17` | Added an explicit regression test verifying non-loopback peer addresses receive `403` on `/healthz` and `/v1/verify` and isolated temp state in `tests/test_service.py`. | `tests/test_service.py` (`test_rejects_non_loopback_peers_on_verify_and_healthz`) |
+| `m18` | Updated `membud-verify-guard.js` (`package.json`, synchronous probe log write, `setup` export alongside `server`), added `scripts/run_opencode_load_smoke.py`, and captured real `opencode v2.3.0` module-load smoke artifacts under `integrations/opencode/smoke/`. | `integrations/opencode/plugin/membud-verify-guard.js`, `integrations/opencode/plugin/package.json`, `scripts/run_opencode_load_smoke.py`, `integrations/opencode/smoke/probe.log`, `integrations/opencode/smoke/smoke-evidence.json`, `tests/test_opencode_smoke.py` |
+| `m24` | Updated the invalid-case count in `data/mem0-bridge.md` from `13` to `15` and added a doc-vs-code invariant test. | `data/mem0-bridge.md`, `tests/test_mem0_bridge.py` (`test_mem0_bridge_doc_matches_invalid_case_count`) |
 
 ---
 
 *Original review conducted read-only; no source, test, data, or documentation file was modified by
 the review itself. Raw per-part reviewer reports are in `.tmp-review/` (gitignored) and are not part
-of the repository deliverable. The remediation above was applied afterwards, as a separate change.*
+of the repository deliverable. The P0–P2 remediation (§10) and resolved deferred Minor findings (§11)
+were applied afterwards, as separate changes.*

@@ -334,3 +334,47 @@ def test_pii_bearing_logs_are_created_owner_only(tmp_path):
         "lock": stat.S_IMODE(os.stat(str(store_path) + ".lock").st_mode),
     }
     assert modes == {"store": 0o600, "audit": 0o600, "lock": 0o600}
+
+
+def test_run_case_require_lock_fails_closed_when_fcntl_unavailable(monkeypatch, tmp_path):
+    import membud.store as store_module
+
+    monkeypatch.setattr(store_module, "fcntl", None)
+    store_path, log_path = tmp_path / "state.json", tmp_path / "audit.jsonl"
+    with pytest.raises(ValueError, match="exclusive store lock"):
+        store_module.run_case(
+            _accept_transition(), store_path, log_path, require_lock=True
+        )
+    assert not store_path.exists()
+    event = json.loads(log_path.read_text(encoding="utf-8").splitlines()[-1])
+    assert event["status"] == "error"
+    assert event["store_written"] is False
+    assert event["lock_acquired"] is False
+
+
+def test_run_case_lock_timeout_fails_closed_when_lock_is_held(tmp_path):
+    import fcntl
+    import os
+    from pathlib import Path
+    import membud.store as store_module
+
+    store_path, log_path = tmp_path / "state.json", tmp_path / "audit.jsonl"
+    lock_path = Path(str(store_path) + ".lock")
+    fd = os.open(lock_path, os.O_RDWR | os.O_CREAT, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        with pytest.raises(TimeoutError, match="timed out"):
+            store_module.run_case(
+                _accept_transition(),
+                store_path,
+                log_path,
+                lock_timeout_seconds=0.05,
+            )
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+    assert not store_path.exists()
+    event = json.loads(log_path.read_text(encoding="utf-8").splitlines()[-1])
+    assert event["status"] == "error"
+    assert event["store_written"] is False
+    assert event["lock_acquired"] is False

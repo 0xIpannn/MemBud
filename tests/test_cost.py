@@ -12,12 +12,14 @@ import pytest
 from membud.cost import (
     PLACEHOLDER_HIGH_USD_PER_MTOK,
     PLACEHOLDER_LOW_USD_PER_MTOK,
+    PROVIDER_MODEL_PRICING,
     PriceTable,
     TokenCounts,
     build_price_tables,
     estimate_cost,
     estimate_usage_cost,
     extract_token_counts,
+    price_tables_for_model,
     pricing_dict,
     sum_token_counts,
 )
@@ -347,3 +349,30 @@ def test_pricing_dict_rejects_mixed_currencies():
     high = PriceTable(1, 1, 1, 1, source=SOURCE, date=DATE, currency="EUR")
     with pytest.raises(ValueError, match="currency"):
         pricing_dict(low, high)
+
+
+def test_price_tables_for_claude_and_gemini_models():
+    for model_id in (
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-4-5-20250929",
+        "gemini-2.5-flash",
+        "gemini-2.5-pro",
+    ):
+        assert model_id in PROVIDER_MODEL_PRICING
+        low, high = price_tables_for_model(model_id, date=DATE)
+        assert low == high
+        assert low.placeholder is False
+        assert low.verified_billed is False
+        assert low.date == DATE
+
+    prefixed_claude = price_tables_for_model("anthropic/claude-haiku-4-5-20251001", date=DATE)
+    bare_claude = price_tables_for_model("claude-haiku-4-5-20251001", date=DATE)
+    assert prefixed_claude == bare_claude
+
+    prefixed_gemini = price_tables_for_model("google/gemini-2.5-flash", date=DATE)
+    assert prefixed_gemini[0].input_per_mtok == pytest.approx(0.30)
+    assert prefixed_gemini[0].output_per_mtok == pytest.approx(2.50)
+
+    unknown_low, unknown_high = price_tables_for_model("unknown/model-x", date=DATE)
+    assert unknown_low.placeholder is True
+    assert unknown_high.placeholder is True

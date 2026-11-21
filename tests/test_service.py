@@ -610,16 +610,15 @@ def test_make_server_rejects_invalid_limits():
         service.make_server("127.0.0.1", 70000)
 
 
-def test_cli_prints_chosen_port_and_serves_healthz():
+def test_cli_prints_chosen_port_and_serves_healthz(tmp_path):
     env = os.environ.copy()
     env.update(
         {
             "PYTHONPATH": "src",
             "PYTHONDONTWRITEBYTECODE": "1",
-            "TMPDIR": str(REPO_ROOT / ".tmp-plugin"),
+            "TMPDIR": str(tmp_path),
         }
     )
-    (REPO_ROOT / ".tmp-plugin").mkdir(exist_ok=True)
     process = subprocess.Popen(
         [sys.executable, "-m", "membud.service", "--host", "127.0.0.1", "--port", "0"],
         cwd=str(REPO_ROOT),
@@ -677,3 +676,70 @@ def test_unsupported_http_version_returns_json_hold_envelope(verify_server):
     assert status == 505
     assert payload["decision"] == "HOLD"
     assert payload["error"]["code"] == "PROTOCOL_ERROR"
+
+
+@pytest.mark.parametrize(
+    "mutator",
+    [
+        lambda p: p["before"][0].update({"extra": 1}),
+        lambda p: p["candidate"][0].update({"extra": 1}),
+        lambda p: p["evidence"][0].update({"contradict": ["memiliki kapal pesiar"]}),
+        lambda p: p["operations"][0].update({"extra": "ignored"}),
+    ],
+)
+def test_verify_nested_unexpected_field_fails_closed(port, mutator):
+    payload = accept_transition()
+    mutator(payload)
+    status, body = post_json(port, payload)
+    assert_fail_closed(status, body, "INVALID_REQUEST")
+
+
+def test_verify_authorization_unexpected_field_fails_closed(port):
+    payload = {
+        "schema_version": 2,
+        "case_id": "auth-extra",
+        "before": [{"id": "r1", "claims": ["tinggal di Bandung"]}],
+        "candidate": [],
+        "evidence": [{"id": "e1", "supports": [], "source": "chat:1", "text": "hapus"}],
+        "required_claims": [],
+        "operations": [
+            {
+                "type": "DELETE",
+                "target_id": "r1",
+                "reason": "user requested deletion",
+                "authorization": {
+                    "source": "chat:1",
+                    "evidence_id": "e1",
+                    "target_id": "r1",
+                    "rationale": "hapus",
+                    "typo_key": True,
+                },
+            }
+        ],
+    }
+    status, body = post_json(port, payload)
+    assert_fail_closed(status, body, "INVALID_REQUEST")
+
+
+@pytest.mark.parametrize("peer_ip", ["192.0.2.25", "10.0.0.8", "2001:db8::1"])
+def test_rejects_non_loopback_peers_on_verify_and_healthz(verify_server, monkeypatch, peer_ip):
+    original_finish = verify_server.finish_request
+
+    def spoofed_peer_finish(request, client_address):
+        return original_finish(request, (peer_ip, client_address[1]))
+
+    monkeypatch.setattr(verify_server, "finish_request", spoofed_peer_finish)
+    port = verify_server.server_address[1]
+
+    status_verify, body_verify = post_json(port, accept_transition())
+    assert status_verify == 403
+    assert_fail_closed(status_verify, body_verify, "NON_LOOPBACK_PEER")
+
+    status_health, body_health = get(port, "/healthz")
+    assert status_health == 403
+    assert_fail_closed(status_health, body_health, "NON_LOOPBACK_PEER")
+
+    assert service._is_loopback("127.0.0.1") is True
+    assert service._is_loopback("::1") is True
+    assert service._is_loopback(peer_ip) is False
+    assert service._is_loopback("not-an-ip") is False

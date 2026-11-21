@@ -277,8 +277,8 @@ class GuardedApplyRejection(RuntimeError):
         self.result = result
 
 
-def _state_by_id(records: Sequence[Any]) -> dict[str, tuple[str, ...]]:
-    return {record.id: tuple(record.claims) for record in records}
+def _state_by_id(records: Sequence[Any]) -> dict[str, frozenset[str]]:
+    return {record.id: frozenset(record.claims) for record in records}
 
 
 def _normalize_evidence(items: Iterable[Any]) -> tuple[Evidence, ...]:
@@ -432,6 +432,7 @@ class GuardedMemory:
         evidence: Sequence[Any] = (),
         required_claims: Sequence[str] = (),
         run_id: str | None = None,
+        expected_prior: PriorState | Sequence[Any] | None = None,
     ) -> GuardedDecision:
         """Verify a proposed candidate and persist it only on ACCEPT.
 
@@ -439,12 +440,53 @@ class GuardedMemory:
         ``operations`` must explicitly declare every change; undeclared
         insertion/modification/removal and DELETE without structured
         authorization make the proposal invalid and it is rejected before any
-        write is attempted.  Returns a :class:`GuardedDecision`; invalid input
+        write is attempted.  When ``expected_prior`` is provided, the live
+        host snapshot is compared canonically (by record ID and claim set)
+        against it before verification/apply and any divergence fails closed as
+        ``StalePriorState``.  Returns a :class:`GuardedDecision`; invalid input
         and verifier HOLDs are decisions, not exceptions.
         """
         started = time.perf_counter()
         run_id = run_id or f"guarded-{uuid.uuid4()}"
         prior = self.capture_prior(scope)
+        if expected_prior is not None:
+            try:
+                expected_records = (
+                    expected_prior.records
+                    if isinstance(expected_prior, PriorState)
+                    else canonical_records(expected_prior)
+                )
+            except (AdapterContractError, KeyError, TypeError, ValueError) as exc:
+                return self._record(
+                    case_id=str(case_id),
+                    decision="REJECTED",
+                    applied=False,
+                    reason=f"invalid expected_prior: {exc}",
+                    prior=prior,
+                    transition=None,
+                    result=None,
+                    run_id=run_id,
+                    audit_event=None,
+                    error_type=type(exc).__name__,
+                    started=started,
+                )
+            if _state_by_id(prior.records) != _state_by_id(expected_records):
+                return self._record(
+                    case_id=str(case_id),
+                    decision="REJECTED",
+                    applied=False,
+                    reason=(
+                        "backend state changed after expected prior capture; "
+                        "refusing stale write before verification"
+                    ),
+                    prior=prior,
+                    transition=None,
+                    result=None,
+                    run_id=run_id,
+                    audit_event=None,
+                    error_type="StalePriorState",
+                    started=started,
+                )
         try:
             candidate_records = canonical_records(candidate)
             evidence_records = _normalize_evidence(evidence)
@@ -621,7 +663,7 @@ class GuardedMemory:
                     error_type=type(exc).__name__,
                     result=result,
                 ) from exc
-            if applied_state.records != t.candidate:
+            if _state_by_id(applied_state.records) != _state_by_id(t.candidate):
                 # Our own apply produced a state that is not the accepted
                 # candidate (adapter contract violation).  Restore the prior
                 # state unless it is already in place.
@@ -650,7 +692,7 @@ class GuardedMemory:
             current = capture_prior_state(self.adapter, scope).records
         except Exception:
             return False
-        if current == prior.records:
+        if _state_by_id(current) == _state_by_id(prior.records):
             return True
         try:
             self.adapter.replace_state(scope, prior.records)
@@ -674,9 +716,9 @@ class GuardedMemory:
             current = capture_prior_state(self.adapter, scope).records
         except Exception:
             return False
-        if current == prior.records:
+        if _state_by_id(current) == _state_by_id(prior.records):
             return True
-        if current != tuple(candidate):
+        if _state_by_id(current) != _state_by_id(candidate):
             return False
         try:
             self.adapter.replace_state(scope, prior.records)

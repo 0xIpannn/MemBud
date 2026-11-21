@@ -1,5 +1,10 @@
 # Mem0 staged-proposal bridge (Phase 0)
 
+> **Update 2026-11-19:** this document describes the Phase 0 *mapping* bridge, which still imports no Mem0. The
+> end-to-end integration with the real, unmodified `mem0ai==2.2.1` (shadow-clone staging, state-diff side-effect
+> derivation, byte-identical HOLD across every host write surface; section 6 checklist items 1–4 for the pinned stack, item 5 as injected-failure compensation and stale-state detection but not real multi-process contention) is in
+> [`docs/mem0-guarded-integration.md`](../docs/mem0-guarded-integration.md) and reuses this bridge unchanged.
+
 Status: **the host-owned staging pipeline is demonstrated against the reference backend; Mem0
 compatibility is NOT claimed and no Mem0 code was installed, imported, or run.**
 
@@ -90,7 +95,7 @@ call occurs.
 | ACCEPT persists *exactly* the staged candidate (reference in-memory and SQLite backends) | `test_accept_persists_exactly_the_staged_candidate` |
 | HOLD on unsupported claim leaves backend records and SQLite file bytes identical | `test_hold_unsupported_claim_leaves_records_and_sqlite_bytes_identical` |
 | HOLD on contradicted evidence (faithfulness `CONTRADICTED_CLAIM`) leaves bytes identical | `test_hold_contradicted_evidence_leaves_records_and_sqlite_bytes_identical` |
-| Invalid proposals rejected before any verification/audit/backend write | `test_invalid_proposal_is_rejected_before_any_write` (13 cases) |
+| Invalid proposals rejected before any verification/audit/backend write | `test_invalid_proposal_is_rejected_before_any_write` (15 cases) |
 | Duplicate IDs rejected | `test_duplicate_proposal_ids_are_rejected` |
 | Deterministic mapping, digest, and proposal-order independence | `test_determinism_and_proposal_order_independence`, `test_staged_digest_matches_canonical_transition_payload` |
 | Scope/evidence mapping and scope-dependent stable IDs | `test_scope_and_evidence_mapping_are_validated_and_passed_through`, `test_stable_ids_are_scope_dependent` |

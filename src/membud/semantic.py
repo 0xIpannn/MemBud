@@ -183,6 +183,17 @@ class LLMSemanticComparator:
         if getattr(completion, "cached", False):
             self._usage["cache_hit"] += 1
 
+    def _record_error_usage(self, exc: BaseException) -> None:
+        raw_usage = getattr(exc, "usage", None)
+        source = raw_usage if isinstance(raw_usage, dict) else {}
+        for key in ("input_tokens", "output_tokens", "total_tokens", "json_retries"):
+            value = source.get(key, getattr(exc, key, None))
+            if isinstance(value, int) and not isinstance(value, bool):
+                self._usage[key] += value
+        attempts = source.get("api_attempts", getattr(exc, "attempts", None))
+        if isinstance(attempts, int) and not isinstance(attempts, bool):
+            self._usage["api_attempts"] += attempts
+
     @staticmethod
     def _messages(claim_a: str, claim_b: str) -> list[dict[str, str]]:
         system_prompt = (
@@ -223,6 +234,7 @@ class LLMSemanticComparator:
                 # Cache-only safety abort: never downgrade a paid-call guard to a
                 # comparator abstention.
                 raise
+            self._record_error_usage(exc)
             return SemanticRelation.UNCERTAIN
         self._record_usage(completion)
         return relation

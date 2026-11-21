@@ -412,11 +412,34 @@ def test_main_refuses_paid_variants_without_confirmation(tmp_path, capsys):
 
 def test_build_client_cache_only_needs_no_api_key(tmp_path, monkeypatch):
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("CLAUDE_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
     client = ablation.build_client(
         max_attempts=1, cache_path=str(tmp_path / "cache.sqlite3"), cache_only=True
     )
     assert client.require_cache is True
+    assert client.configuration["provider"] == "claude-openai-compatible"
+    assert client.model == "claude-haiku-4-5-20251001"
     assert client.cache_path == tmp_path / "cache.sqlite3"
+
+    gemini_client = ablation.build_client(
+        max_attempts=2,
+        cache_path=str(tmp_path / "gemini.sqlite3"),
+        cache_only=True,
+        provider="gemini",
+    )
+    assert gemini_client.require_cache is True
+    assert gemini_client.configuration["provider"] == "gemini-openai-compatible"
+    assert gemini_client.model == "gemini-2.5-flash"
+    assert gemini_client.max_attempts == 2
+
+
+def test_parser_defaults_to_claude_provider():
+    parser = ablation.build_parser()
+    args = parser.parse_args(["--output", "out"])
+    assert args.provider == "claude"
 
 
 # ---------------------------------------------------------------------------

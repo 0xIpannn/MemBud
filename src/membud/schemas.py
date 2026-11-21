@@ -30,6 +30,33 @@ def _string_tuple(value: Any, field_name: str) -> tuple[str, ...]:
     return items
 
 
+_RECORD_KEYS = frozenset({"id", "claims"})
+_EVIDENCE_KEYS = frozenset({"id", "supports", "source", "text", "contradicts"})
+_AUTHORIZATION_KEYS = frozenset({"source", "evidence_id", "target_id", "rationale"})
+_OPERATION_KEYS = frozenset({"type", "record_id", "target_id", "reason", "authorization"})
+_TRANSITION_KEYS = frozenset(
+    {
+        "schema_version",
+        "case_id",
+        "before",
+        "candidate",
+        "evidence",
+        "required_claims",
+        "operations",
+        "supersedes",
+    }
+)
+
+
+def _reject_unknown_keys(d: Any, allowed: frozenset[str], kind: str) -> dict[str, Any]:
+    if not isinstance(d, dict):
+        raise ValueError(f"{kind} must be an object")
+    unexpected = sorted(key for key in d if key not in allowed)
+    if unexpected:
+        raise ValueError(f"unexpected {kind} fields: {', '.join(unexpected)}")
+    return d
+
+
 @dataclass(frozen=True)
 class Record:
     id: str
@@ -37,11 +64,22 @@ class Record:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Record":
+        _reject_unknown_keys(d, _RECORD_KEYS, "record")
         return cls(_string(d["id"], "record id"), _string_tuple(d["claims"], "record claims"))
 
 
 @dataclass(frozen=True)
 class Evidence:
+    """Caller-declared supporting/contradicting evidence item.
+
+    Trust boundary: standalone transition verification (``verify`` /
+    ``store.run_case`` without transcript grounding) treats ``supports`` and
+    ``contradicts`` as caller-declared inputs and verifies internal consistency
+    against them.  External provenance binding requires transcript grounding
+    (``membud.conversation.verify_transcript_grounding`` or ``/verify`` with
+    ``transcript``) or a host-owned staging adapter.
+    """
+
     id: str
     supports: tuple[str, ...]
     source: str = ""
@@ -50,6 +88,7 @@ class Evidence:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Evidence":
+        _reject_unknown_keys(d, _EVIDENCE_KEYS, "evidence")
         return cls(
             _string(d["id"], "evidence id"),
             _string_tuple(d["supports"], "evidence supports"),
@@ -70,8 +109,7 @@ class DeletionAuthorization:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "DeletionAuthorization":
-        if not isinstance(d, dict):
-            raise ValueError("deletion authorization must be an object")
+        _reject_unknown_keys(d, _AUTHORIZATION_KEYS, "deletion authorization")
         return cls(
             _non_empty_string(d["source"], "authorization source"),
             _non_empty_string(d["evidence_id"], "authorization evidence_id"),
@@ -90,6 +128,7 @@ class Operation:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Operation":
+        _reject_unknown_keys(d, _OPERATION_KEYS, "operation")
         record_id, target_id = d.get("record_id"), d.get("target_id")
         if record_id is not None and not isinstance(record_id, str):
             raise ValueError("operation record_id must be a string or null")
@@ -109,6 +148,15 @@ class Operation:
 
 @dataclass(frozen=True)
 class Transition:
+    """Canonical memory-state transition validated before verification/commit.
+
+    Note on the evidence trust boundary: ``verify(t)`` proves that ``candidate``
+    and ``operations`` are consistent with the supplied ``before`` state,
+    ``required_claims``, and caller-declared ``evidence``; it does not by itself
+    authenticate that ``evidence`` came from a real user turn unless coupled
+    with transcript grounding or a trusted host adapter.
+    """
+
     case_id: str
     before: tuple[Record, ...]
     candidate: tuple[Record, ...]  # Full proposed resulting state.
@@ -121,6 +169,9 @@ class Transition:
     def from_dict(cls, d: dict[str, Any]) -> "Transition":
         if not isinstance(d, dict):
             raise ValueError("transition must be a mapping")
+        unexpected = sorted(key for key in d if key not in _TRANSITION_KEYS)
+        if unexpected:
+            raise ValueError(f"unexpected transition fields: {', '.join(unexpected)}")
         # Version-less input is treated as frozen v1 legacy data: it is still
         # loadable for archival/reproducibility, but strict operation-coverage
         # invariants only apply to schema_version 2 transitions.
@@ -174,22 +225,45 @@ class Transition:
             )
         if self.schema_version not in _SUPPORTED_SCHEMA_VERSIONS:
             raise ValueError(f"unsupported schema_version: {self.schema_version}")
-        if not self.case_id.strip():
-            raise ValueError("case_id must be non-empty")
-        for label, records in (("before", self.before), ("candidate", self.candidate)):
-            ids = [r.id for r in records]
-            if any(not x.strip() for x in ids) or len(ids) != len(set(ids)):
-                raise ValueError(f"{label} record IDs must be non-empty and unique")
-            for record in records:
-                if not record.claims or any(not c.strip() for c in record.claims):
-                    raise ValueError(f"record {record.id} must have non-empty claims")
+        _non_empty_string(self.case_id, "case_id")
 
+        for field_name, items in (
+            ("before", self.before),
+            ("candidate", self.candidate),
+            ("evidence", self.evidence),
+            ("operations", self.operations),
+        ):
+            if isinstance(items, (str, bytes)) or not isinstance(items, (list, tuple)):
+                raise ValueError(f"{field_name} must be a sequence")
+
+        for label, records in (("before", self.before), ("candidate", self.candidate)):
+            for record in records:
+                if not isinstance(record, Record):
+                    raise ValueError(f"{label} entries must be Record instances")
+                _non_empty_string(record.id, f"{label} record ID")
+                claims = _string_tuple(record.claims, f"record {record.id} claims")
+                if not claims or any(not c.strip() for c in claims):
+                    raise ValueError(f"record {record.id} must have non-empty claims")
+            ids = [r.id for r in records]
+            if len(ids) != len(set(ids)):
+                raise ValueError(f"{label} record IDs must be non-empty and unique")
+
+        for item in self.evidence:
+            if not isinstance(item, Evidence):
+                raise ValueError("evidence entries must be Evidence instances")
+            _non_empty_string(item.id, "evidence ID")
+            _string(item.source, "evidence source")
+            _string(item.text, "evidence text")
+            supports = _string_tuple(item.supports, "evidence supports")
+            contradicts = _string_tuple(item.contradicts, "evidence contradicts")
+            if any(not c.strip() for c in (*supports, *contradicts)):
+                raise ValueError("evidence claims must be non-empty")
         evidence_ids = [e.id for e in self.evidence]
-        if any(not x.strip() for x in evidence_ids) or len(evidence_ids) != len(set(evidence_ids)):
+        if len(evidence_ids) != len(set(evidence_ids)):
             raise ValueError("evidence IDs must be non-empty and unique")
-        if any(not c.strip() for e in self.evidence for c in (*e.supports, *e.contradicts)):
-            raise ValueError("evidence claims must be non-empty")
-        if any(not c.strip() for c in self.required_claims):
+
+        required_claims = _string_tuple(self.required_claims, "required_claims")
+        if any(not c.strip() for c in required_claims):
             raise ValueError("required claims must be non-empty")
 
         evidence_id_set = set(evidence_ids)
@@ -201,7 +275,21 @@ class Transition:
         seen_targets: set[str] = set()
         seen_candidate_records: set[str] = set()
         for operation in self.operations:
-            kind = operation.type
+            if not isinstance(operation, Operation):
+                raise ValueError("operations entries must be Operation instances")
+            kind = _non_empty_string(operation.type, "operation type")
+            if operation.record_id is not None and not isinstance(operation.record_id, str):
+                raise ValueError("operation record_id must be a string or null")
+            if operation.target_id is not None and not isinstance(operation.target_id, str):
+                raise ValueError("operation target_id must be a string or null")
+            _string(operation.reason, "operation reason")
+            if operation.authorization is not None:
+                if not isinstance(operation.authorization, DeletionAuthorization):
+                    raise ValueError("operation authorization must be a DeletionAuthorization instance")
+                _non_empty_string(operation.authorization.source, "authorization source")
+                _non_empty_string(operation.authorization.evidence_id, "authorization evidence_id")
+                _non_empty_string(operation.authorization.target_id, "authorization target_id")
+                _non_empty_string(operation.authorization.rationale, "authorization rationale")
             if kind not in {"WRITE", "REVISE", "DELETE", "NOOP", "SUPERSEDE"}:
                 raise ValueError(f"unsupported operation type: {kind}")
             if kind == "NOOP":

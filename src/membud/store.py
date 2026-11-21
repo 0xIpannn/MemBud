@@ -26,6 +26,7 @@ state. A persistent ``<store>.lock`` file is used for an exclusive POSIX
 ``flock`` around load -> verify -> write -> audit; the lock file itself carries
 no state.
 """
+import errno
 import json
 import os
 import tempfile
@@ -206,14 +207,23 @@ def _append_event(path: Path, event: dict[str, Any]) -> None:
         os.fsync(handle.fileno())
 
 
-def _acquire_store_lock(store_path: Path) -> tuple[Any, bool]:
-    """Take an exclusive flock on ``<store>.lock``; degrade to a no-op.
+def _acquire_store_lock(
+    store_path: Path, *, timeout_seconds: float | None = None
+) -> tuple[Any, bool]:
+    """Take an exclusive flock on ``<store>.lock``; degrade to a no-op by default.
 
     Returns ``(handle, acquired)``. Locking is advisory and local-filesystem
     based; when ``fcntl`` is unavailable (e.g. Windows) or the lock file cannot
     be opened/flocked, the run proceeds unlocked and reports
-    ``lock_acquired`` false instead of failing.
+    ``lock_acquired`` false instead of failing unless the caller passes
+    ``require_lock=True`` to :func:`run_case`.
+
+    When ``timeout_seconds`` is provided, polls ``LOCK_EX | LOCK_NB`` until the
+    deadline expires and raises :class:`TimeoutError` instead of blocking
+    indefinitely across a slow verifier callback.
     """
+    if timeout_seconds is not None and timeout_seconds < 0:
+        raise ValueError("lock_timeout_seconds must be non-negative")
     if fcntl is None:
         return None, False
     lock_path = Path(str(store_path) + ".lock")
@@ -222,15 +232,40 @@ def _acquire_store_lock(store_path: Path) -> tuple[Any, bool]:
         handle = os.fdopen(descriptor, "a+", encoding="utf-8")
     except OSError:
         return None, False
-    try:
-        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
-    except OSError:
+    if timeout_seconds is None:
         try:
-            handle.close()
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
         except OSError:
-            pass
-        return None, False
-    return handle, True
+            try:
+                handle.close()
+            except OSError:
+                pass
+            return None, False
+        return handle, True
+
+    deadline = time.monotonic() + timeout_seconds
+    while True:
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return handle, True
+        except OSError as exc:
+            if exc.errno in {errno.EACCES, errno.EAGAIN}:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    try:
+                        handle.close()
+                    except OSError:
+                        pass
+                    raise TimeoutError(
+                        f"timed out after {timeout_seconds}s waiting for exclusive store lock on {lock_path}"
+                    ) from exc
+                time.sleep(min(0.01, max(0.001, remaining)))
+                continue
+            try:
+                handle.close()
+            except OSError:
+                pass
+            return None, False
 
 
 def _release_store_lock(lock: tuple[Any, bool] | None) -> None:
@@ -309,11 +344,18 @@ def run_case(
     expected_version: int | None = None,
     verifier: Callable[[Transition, str, Any], Result] | None = None,
     allow_legacy: bool = False,
+    require_lock: bool = False,
+    lock_timeout_seconds: float | None = None,
 ) -> Result:
     """Load a versioned JSON store, verify, conditionally commit, and audit.
 
     The whole load -> verify -> write -> audit sequence runs under an exclusive
-    POSIX ``flock`` on ``<store_path>.lock`` when locking is available. The
+    POSIX ``flock`` on ``<store_path>.lock`` when locking is available.  By
+    default (``require_lock=False``), platforms or filesystems without working
+    ``flock`` degrade to unlocked execution and record ``lock_acquired: false``;
+    pass ``require_lock=True`` to fail closed if the lock cannot be acquired,
+    and ``lock_timeout_seconds`` to bound waiting when a lock is held across a
+    slow verifier callback (such as an LLM call).  The
     loaded store must describe the same prior state as ``t.before`` or the run
     fails closed with an audit error. When ``expected_version`` is given, the
     on-disk store version (0 when the store is absent) must match it or the run
@@ -328,14 +370,16 @@ def run_case(
     ``rolled_back=True``. A process death between the two cannot be caught and
     is the documented unaudited-ACCEPT crash window.
     """
+    if lock_timeout_seconds is not None and lock_timeout_seconds < 0:
+        raise ValueError("lock_timeout_seconds must be non-negative")
     started = time.perf_counter()
     started_at = datetime.now(timezone.utc).isoformat()
     run_id = run_id or str(uuid.uuid4())
     store_path, log_path = Path(store_path), Path(log_path)
     store_path.parent.mkdir(parents=True, exist_ok=True)
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    lock = _acquire_store_lock(store_path)
-    lock_acquired = bool(lock and lock[1])
+    lock: tuple[Any, bool] | None = None
+    lock_acquired = False
     previous_store_text: str | None = None
     schema_version_before: int | None = None
     version_before = 0
@@ -348,6 +392,12 @@ def run_case(
     rollback_failed = False
     try:
         try:
+            lock = _acquire_store_lock(store_path, timeout_seconds=lock_timeout_seconds)
+            lock_acquired = bool(lock and lock[1])
+            if require_lock and not lock_acquired:
+                raise ValueError(
+                    f"failed to acquire exclusive store lock on {store_path}.lock"
+                )
             _recover_stray_temp_files(store_path)
             if store_path.exists():
                 previous_store_text = store_path.read_text(encoding="utf-8")

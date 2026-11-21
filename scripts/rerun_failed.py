@@ -1,6 +1,6 @@
 """Rerun only the failed rows of a pilot summary, cache-first and budget-capped.
 
-The script reuses the persistent DeepSeek response cache for any completion that
+The script reuses the persistent provider response cache for any completion that
 already succeeded, so only previously failed case/condition rows make new API
 calls. It aborts before the next call if the accumulated reported token usage
 exceeds --max-total-tokens, and writes both a rerun summary and a merged summary
@@ -32,6 +32,11 @@ def main() -> None:
     parser.add_argument("--run-id", default="")
     parser.add_argument("--max-total-tokens", type=int, default=200_000)
     parser.add_argument("--max-attempts", type=int, default=3)
+    parser.add_argument(
+        "--provider",
+        choices=("claude", "gemini", "deepseek", "commandcode"),
+        default="claude",
+    )
     args = parser.parse_args()
 
     manifest_path = Path(args.manifest)
@@ -53,9 +58,9 @@ def main() -> None:
     if output.exists() and any(output.rglob("*")):
         raise SystemExit(f"{output} already exists and is not empty; use a fresh output directory")
 
-    client = OpenAICompatibleChatClient.from_deepseek_env()
+    client = OpenAICompatibleChatClient.from_provider_env(args.provider)
     client.max_attempts = args.max_attempts
-    run_id = args.run_id or f"deepseek-rerun-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+    run_id = args.run_id or f"{args.provider}-rerun-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     print(f"rerunning {len(failed)} failed rows; token cap {args.max_total_tokens}; model {client.model}")
 
     rows: list[dict] = []
@@ -129,7 +134,7 @@ def main() -> None:
         "code_revision": args.code_revision,
         "manifest_id": manifest["manifest_id"],
         "manifest_sha256": manifest_sha,
-        "verifier": "llm:deepseek",
+        "verifier": f"llm:{args.provider}",
         "source_summary_sha256": hashlib.sha256(source_summary_path.read_bytes()).hexdigest(),
         "source_summary": str(source_summary_path),
         "max_total_tokens": args.max_total_tokens,

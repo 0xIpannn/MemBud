@@ -20,11 +20,20 @@
  * memory tool from running and surfaces the message as the tool-call error.
  * The plugin never mutates host state and never rewrites tool arguments.
  *
- * This module uses only Node.js built-ins (`node:fs/promises`, `node:path`)
- * and the platform `fetch`, so it loads with no package installation.  The
- * real opencode process is Bun, which runs this ESM file as-is.
+ * This module uses only Node.js built-ins (`node:fs`, `node:fs/promises`,
+ * `node:path`) and the platform `fetch`, so it loads with no package
+ * installation.  The real opencode process is Bun, which runs this ESM file as-is.
+ *
+ * Trust boundary (evidence vs. transcript grounding):
+ *   Without `transcriptPath` (or a host-supplied `transcript`), `buildTransition`
+ *   copies `args.evidence` from the model's `memory_write` arguments as
+ *   caller-declared evidence: `/verify` ACCEPT proves internal consistency
+ *   with those declared evidence items, not external transcript authenticity.
+ *   To bind evidence claims to actual conversation turns, configure a
+ *   host-controlled `transcriptPath` (or pass `transcript` from a trusted host).
  */
-import { appendFile, readFile } from "node:fs/promises";
+import { appendFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
 
 export const PLUGIN_ID = "membud-verify-guard";
@@ -56,8 +65,13 @@ function writeLoadProbe(input, settings) {
       toolNames: settings.toolNames,
       at: new Date().toISOString(),
     }) + "\n";
-  // Best effort: a broken probe path must never affect guard behavior.
-  void appendFile(probePath, line, "utf8").catch(() => {});
+  // Write synchronously so short-lived CLI smoke invocations (e.g. `opencode debug agents`)
+  // retain the probe line before process exit; a broken probe path never breaks the guard.
+  try {
+    appendFileSync(probePath, line, "utf8");
+  } catch {
+    // Best effort only.
+  }
 }
 
 /** Error thrown from the hook to deny a tool call (fail closed). */
@@ -261,7 +275,13 @@ export function deriveOperations(beforeRecords, candidateRecords) {
   return operations;
 }
 
-/** Build the canonical schema-v2 transition posted to the sidecar. */
+/**
+ * Build the canonical schema-v2 transition posted to the sidecar.
+ *
+ * Trust boundary: ``args.evidence`` is copied as caller-declared evidence;
+ * authenticity against real dialogue requires host-configured
+ * ``transcriptPath`` grounding in ``verifyMemoryWrite``.
+ */
 export function buildTransition(args, beforeRecords, callID) {
   if (!args || typeof args !== "object" || Array.isArray(args)) {
     deny(`MemBud guard failed closed: memory_write args must be a JSON object`, { stage: "args" });
@@ -397,14 +417,29 @@ export function createGuardHooks(input, options = {}) {
 }
 
 /**
- * opencode 1.19.5 plugin loader requires a *default export object* with a
- * `server()` function (verified from the 1.19.5 binary).  Named exports are
- * kept for older loaders/tests and are harmless.
+ * opencode 1.19.x loads a default export `{ id, server }`, while opencode 2.x
+ * expects `{ id, setup(ctx) }` (with `ctx.tool.hook("execute.before", ...)`).
+ * Exporting both keeps the plugin loadable across both opencode generations.
  */
 const plugin = {
   id: PLUGIN_ID,
   server: async (input, options) => createGuardHooks(input, options),
+  setup: async (ctx, options) => {
+    const resolvedOptions = options ?? ctx?.options ?? {};
+    const input = { directory: ctx?.directory || process.cwd() };
+    const hooks = createGuardHooks(input, resolvedOptions);
+    if (typeof ctx?.tool?.hook === "function") {
+      ctx.tool.hook("execute.before", async (event) => {
+        const tool = event?.tool ?? event?.name ?? event?.id;
+        const callID = event?.callID ?? event?.callId ?? event?.id;
+        const args = event?.args ?? event?.input ?? {};
+        await hooks["tool.execute.before"]({ tool, callID }, { args });
+      });
+    }
+    return hooks;
+  },
 };
 
 export default plugin;
 export const server = plugin.server;
+export const setup = plugin.setup;

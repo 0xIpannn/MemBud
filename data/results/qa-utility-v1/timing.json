@@ -1,0 +1,35 @@
+{
+  "note": "per-proposal verification wall-clock at the primary fault rate; machine dependent",
+  "per_policy": {
+    "text_k1_optimistic": {
+      "proposals": 5003,
+      "median_ms": 0.2729,
+      "mean_ms": 0.2704,
+      "p95_ms": 0.4539
+    },
+    "text_k1_pessimistic": {
+      "proposals": 5003,
+      "median_ms": 0.1352,
+      "mean_ms": 0.1386,
+      "p95_ms": 0.2207
+    },
+    "text_k2_optimistic": {
+      "proposals": 5003,
+      "median_ms": 0.2681,
+      "mean_ms": 0.2621,
+      "p95_ms": 0.4424
+    },
+    "text_closure": {
+      "proposals": 5003,
+      "median_ms": 0.2655,
+      "mean_ms": 0.2586,
+      "p95_ms": 0.4302
+    },
+    "graph": {
+      "proposals": 5003,
+      "median_ms": 0.2538,
+      "mean_ms": 0.2908,
+      "p95_ms": 0.577
+    }
+  }
+}

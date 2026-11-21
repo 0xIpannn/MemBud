@@ -1,0 +1,17 @@
+{
+  "by_store_size": {
+    "0": {
+      "accept_ms_median": 20.5,
+      "hold_ms_median": 14.3
+    },
+    "100": {
+      "accept_ms_median": 60.6,
+      "hold_ms_median": 45.4
+    },
+    "500": {
+      "accept_ms_median": 225.6,
+      "hold_ms_median": 146.9
+    }
+  },
+  "note": "machine-dependent latency of guarded add (shadow clone is O(N))"
+}

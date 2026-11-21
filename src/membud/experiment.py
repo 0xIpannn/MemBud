@@ -19,14 +19,29 @@ from .store import run_case
 CONDITIONS = ("unguarded", "graph", "text")
 
 
-def source_fingerprint() -> str:
-    """Hash executable package/config files for a reproducible dirty-tree label."""
+def source_fingerprint(extra_paths: Iterable[str | Path] = ()) -> str:
+    """Hash executable package, runner/analysis scripts, and config files."""
     root = Path(__file__).resolve().parents[2]
-    paths = sorted((root / "src/membud").rglob("*.py")) + [root / "pyproject.toml"]
+    candidates: list[Path] = (
+        sorted((root / "src/membud").rglob("*.py"))
+        + sorted((root / "scripts").rglob("*.py"))
+        + [root / "pyproject.toml"]
+    )
+    for extra in extra_paths:
+        candidates.append(Path(extra))
+    keyed: dict[str, Path] = {}
+    for raw_path in candidates:
+        resolved = raw_path.resolve()
+        if not resolved.is_file():
+            continue
+        try:
+            label = resolved.relative_to(root).as_posix()
+        except ValueError:
+            label = resolved.as_posix()
+        keyed[label] = resolved
     digest = hashlib.sha256()
-    for path in paths:
-        relative = path.relative_to(root).as_posix().encode("utf-8")
-        digest.update(relative + b"\0" + path.read_bytes() + b"\0")
+    for label in sorted(keyed):
+        digest.update(label.encode("utf-8") + b"\0" + keyed[label].read_bytes() + b"\0")
     return "working-tree-sha256:" + digest.hexdigest()
 
 
@@ -478,7 +493,11 @@ def main() -> None:
         ),
     )
     parser.add_argument("--verifier", choices=("rules", "llm"), default="rules")
-    parser.add_argument("--provider", choices=("deepseek", "commandcode"), default="deepseek")
+    parser.add_argument(
+        "--provider",
+        choices=("claude", "gemini", "deepseek", "commandcode"),
+        default="claude",
+    )
     args = parser.parse_args()
 
     expected_decisions: dict[str, str] | None = None
@@ -507,11 +526,7 @@ def main() -> None:
         from .llm import OpenAICompatibleChatClient
         from .verification import verify_with_llm
 
-        client = (
-            OpenAICompatibleChatClient.from_deepseek_env()
-            if args.provider == "deepseek"
-            else OpenAICompatibleChatClient.from_env()
-        )
+        client = OpenAICompatibleChatClient.from_provider_env(args.provider)
         verifier = lambda t, representation, prepared: verify_with_llm(
             t, client, representation, prepared_input=prepared
         )

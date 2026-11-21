@@ -256,8 +256,12 @@ def verify_with_llm(
             )
             for name in _REQUIRED_CHECKS
         ]
-        attempts = getattr(exc, "attempts", None)
-        usage = {"api_attempts": attempts, "cache_hit": 0} if isinstance(attempts, int) else {}
+        exc_usage = getattr(exc, "usage", None)
+        if isinstance(exc_usage, dict):
+            usage = dict(exc_usage)
+        else:
+            attempts = getattr(exc, "attempts", None)
+            usage = {"api_attempts": attempts, "cache_hit": 0} if isinstance(attempts, int) else {}
         verifier = model
         latency_ms = None
         raw_response = None

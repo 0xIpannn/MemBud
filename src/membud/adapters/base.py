@@ -127,7 +127,14 @@ def capture_prior_state(
     )
 
 
+def records_match(first: Iterable[Record], second: Iterable[Record]) -> bool:
+    """Return True when two canonical record collections hold the same claims by ID."""
+    return {record.id: frozenset(record.claims) for record in first} == {
+        record.id: frozenset(record.claims) for record in second
+    }
+
+
 def prior_state_matches(adapter: MemoryAdapter, scope: Mapping[str, str], prior: PriorState) -> bool:
-    """Return True when a fresh backend snapshot equals ``prior`` exactly."""
+    """Return True when a fresh backend snapshot has the same claims by ID as ``prior``."""
     current = capture_prior_state(adapter, scope)
-    return current.records == prior.records
+    return current.claims_by_id() == prior.claims_by_id()

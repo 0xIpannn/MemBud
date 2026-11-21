@@ -19,11 +19,12 @@ are executed:
 
 The script is a manual integration check, not part of the default test suite:
 it makes **paid provider calls** and therefore requires
-``--confirm-paid-call`` plus a ``DEEPSEEK_API_KEY`` in the environment. The
-committed evidence run (``integrations/opencode/live/EVIDENCE.md``) reports
-1,042 input / 435 output tokens and an estimated $0.00053286 (opencode's
-provider-side estimate, not a bill). No API key is ever printed or written to
-disk.
+``--confirm-paid-call`` plus the chosen provider's API key (``ANTHROPIC_API_KEY``
+for ``claude`` [default] or ``GEMINI_API_KEY`` for ``gemini``) in the
+environment. The committed DeepSeek evidence run
+(``integrations/opencode/live/EVIDENCE.md``) reports 1,042 input / 435 output
+tokens and an estimated $0.00053286 (opencode's provider-side estimate, not
+a bill). No API key is ever printed or written to disk.
 
 Requirements
 ------------
@@ -32,14 +33,14 @@ Requirements
   (default ``~/.config/opencode/node_modules``; ``--plugin-package-root``)
 * opencode's cached model catalog (default ``~/.cache/opencode/models.json``;
   ``--models-cache``) so no model-fetch network call is needed
-* ``DEEPSEEK_API_KEY`` in the environment
+* ``ANTHROPIC_API_KEY`` (or ``GEMINI_API_KEY`` with ``--provider gemini``) in the environment
 * the MemBud Python environment that can import ``membud`` (``PYTHONPATH`` is
   set automatically from this repository's ``src/``)
 
 Usage
 -----
-    DEEPSEEK_API_KEY=... .venv/bin/python scripts/run_live_opencode_denial.py \
-        --confirm-paid-call --workdir .tmp-live-denial
+    ANTHROPIC_API_KEY=... .venv/bin/python scripts/run_live_opencode_denial.py \
+        --provider claude --confirm-paid-call --workdir .tmp-live-denial
 
 The script prints a JSON evidence summary and writes ``evidence.json`` under
 the work directory. On failure it keeps the work directory for inspection.
@@ -67,8 +68,35 @@ TOOL_PLUGIN = REPO_ROOT / "integrations/opencode/live/memory-tool-plugin.mjs"
 SIDECAR_MODULE = "membud.service"
 SIDECAR_HOST = "127.0.0.1"
 SIDECAR_PORT = 8787
-MODEL = "deepseek/deepseek-flash"
-PROVIDER = "deepseek"
+PROVIDER_SPECS: dict[str, dict[str, str]] = {
+    "claude": {
+        "provider": "anthropic",
+        "model": "anthropic/claude-haiku-4-5-20251001",
+        "env_key": "ANTHROPIC_API_KEY",
+    },
+    "gemini": {
+        "provider": "google",
+        "model": "google/gemini-2.5-flash",
+        "env_key": "GEMINI_API_KEY",
+    },
+    "deepseek": {
+        "provider": "deepseek",
+        "model": "deepseek/deepseek-flash",
+        "env_key": "DEEPSEEK_API_KEY",
+    },
+}
+DEFAULT_PROVIDER_CHOICE = "claude"
+MODEL = PROVIDER_SPECS[DEFAULT_PROVIDER_CHOICE]["model"]
+PROVIDER = PROVIDER_SPECS[DEFAULT_PROVIDER_CHOICE]["provider"]
+
+
+def provider_spec(provider: str = DEFAULT_PROVIDER_CHOICE) -> dict[str, str]:
+    """Return opencode provider/model/env-key configuration for ``provider``."""
+    key = provider.strip().lower()
+    if key not in PROVIDER_SPECS:
+        supported = ", ".join(PROVIDER_SPECS)
+        raise ValueError(f"unsupported provider {provider!r}; expected one of: {supported}")
+    return PROVIDER_SPECS[key]
 INITIAL_STATE = {
     "schema_version": 2,
     "version": 0,
@@ -301,16 +329,18 @@ def build_config(
     guard_plugin: Path,
     tool_plugin: Path,
     sidecar_url: str,
+    provider: str = DEFAULT_PROVIDER_CHOICE,
 ) -> dict[str, Any]:
     """Build the isolated opencode config used by the live test."""
+    spec = provider_spec(provider)
     return {
         "$schema": "https://opencode.ai/config.json",
-        "model": MODEL,
+        "model": spec["model"],
         "autoupdate": False,
         "permission": {"edit": "allow", "bash": "allow"},
         "provider": {
-            PROVIDER: {
-                "options": {"apiKey": "{env:DEEPSEEK_API_KEY}"},
+            spec["provider"]: {
+                "options": {"apiKey": f"{{env:{spec['env_key']}}}"},
             }
         },
         "plugin": [
@@ -336,6 +366,7 @@ def prepare_workspace(
     models_cache: Path,
     guard_plugin: Path,
     tool_plugin: Path,
+    provider: str = DEFAULT_PROVIDER_CHOICE,
 ) -> dict[str, Path]:
     """Create the isolated HOME/project/plugin layout and config file."""
     home = workdir / "home"
@@ -374,6 +405,7 @@ def prepare_workspace(
         guard_plugin=guard_plugin,
         tool_plugin=plugins_dir / tool_plugin.name,
         sidecar_url=f"http://{SIDECAR_HOST}:{SIDECAR_PORT}",
+        provider=provider,
     )
     (config_dir / "opencode.json").write_text(
         json.dumps(config, indent=2) + "\n", encoding="utf-8"
@@ -463,6 +495,7 @@ def run_session(
     env: dict[str, str],
     opencode_bin: str,
     timeout: float,
+    model: str = MODEL,
 ) -> dict[str, Any]:
     stdout_path = paths["logs"] / f"{name}.json"
     stderr_path = paths["logs"] / f"{name}.stderr.log"
@@ -471,7 +504,7 @@ def run_session(
             opencode_bin,
             "run",
             "--model",
-            MODEL,
+            model,
             "--auto",
             "--format",
             "json",
@@ -508,6 +541,12 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
+        "--provider",
+        choices=("claude", "gemini", "deepseek"),
+        default=DEFAULT_PROVIDER_CHOICE,
+        help="LLM provider to drive the live opencode session",
+    )
+    parser.add_argument(
         "--confirm-paid-call",
         action="store_true",
         help="required acknowledgement that this runs real paid model calls",
@@ -540,8 +579,10 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 2
-    if not os.environ.get("DEEPSEEK_API_KEY", "").strip():
-        print("DEEPSEEK_API_KEY must be set in the environment", file=sys.stderr)
+    spec = provider_spec(args.provider)
+    env_key = spec["env_key"]
+    if not os.environ.get(env_key, "").strip():
+        print(f"{env_key} must be set in the environment", file=sys.stderr)
         return 2
     if not Path(args.opencode_bin).exists() and shutil.which(args.opencode_bin) is None:
         print(f"opencode binary not found: {args.opencode_bin}", file=sys.stderr)
@@ -550,7 +591,10 @@ def main(argv: list[str] | None = None) -> int:
     workdir_given = args.workdir is not None
     workdir = Path(args.workdir).expanduser() if workdir_given else Path(tempfile.mkdtemp(prefix="membud-live-"))
     print(f"workdir: {workdir}")
-    print(f"model: {MODEL}; this run is expected to use on the order of 1k input tokens (a fraction of a cent).")
+    print(
+        f"provider={args.provider} model={spec['model']}; "
+        "this run is expected to use on the order of 1k input tokens (a fraction of a cent)."
+    )
 
     sidecar: subprocess.Popen | None = None
     try:
@@ -560,6 +604,7 @@ def main(argv: list[str] | None = None) -> int:
             models_cache=Path(args.models_cache).expanduser(),
             guard_plugin=Path(args.guard_plugin).expanduser(),
             tool_plugin=Path(args.tool_plugin).expanduser(),
+            provider=args.provider,
         )
         env = _base_env(paths, workdir)
         sidecar = start_sidecar(workdir, env)
@@ -573,6 +618,7 @@ def main(argv: list[str] | None = None) -> int:
             env=env,
             opencode_bin=args.opencode_bin,
             timeout=args.timeout,
+            model=spec["model"],
         )
         hold = assert_hold_outcome(
             hold_result,
@@ -588,6 +634,7 @@ def main(argv: list[str] | None = None) -> int:
             env=env,
             opencode_bin=args.opencode_bin,
             timeout=args.timeout,
+            model=spec["model"],
         )
         accept = assert_accept_outcome(
             accept_result,
@@ -598,7 +645,8 @@ def main(argv: list[str] | None = None) -> int:
         evidence = {
             "test": "live-opencode-membud-denial",
             "date": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "model": MODEL,
+            "provider": args.provider,
+            "model": spec["model"],
             "opencode_bin": args.opencode_bin,
             "hold": hold,
             "accept": accept,

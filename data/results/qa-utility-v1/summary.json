@@ -1,0 +1,2571 @@
+{
+  "benchmark_id": "qa-utility-v1",
+  "paid_api_calls": 0,
+  "unit_of_analysis": "conversation (paired across policies: identical proposals and questions)",
+  "primary_fault_rate": 0.35,
+  "policies": [
+    "unguarded",
+    "text_k1_optimistic",
+    "text_k1_pessimistic",
+    "text_k2_optimistic",
+    "text_closure",
+    "graph",
+    "oracle_gate"
+  ],
+  "metrics": {
+    "overall_em": "exact match over all functional questions (user + friend), averaged over sessions",
+    "user_em": "exact match on the user's functional attributes, averaged over sessions",
+    "final_user_em": "user exact match after the last session only",
+    "friend_em": "exact match on the friend's functional attributes (collateral damage)",
+    "likes_f1": "set F1 of the user's many-valued likes",
+    "user_stale": "share of user answers that are a previously true value",
+    "user_wrong": "share of user answers that were never true for the user",
+    "user_missing": "share of user questions with no stored answer"
+  },
+  "runs": [
+    {
+      "config": {
+        "conversations": 200,
+        "sessions": 6,
+        "updates_per_session": 3,
+        "fault_rate": 0.15,
+        "summary_depth_max": 3,
+        "alias_depth_max": 3,
+        "seed": 20261119
+      },
+      "policies": {
+        "unguarded": {
+          "metrics_mean": {
+            "overall_em": 0.934306,
+            "user_em": 0.940833,
+            "final_user_em": 0.886667,
+            "friend_em": 0.927778,
+            "likes_f1": 0.980112,
+            "user_stale": 0.0175,
+            "user_wrong": 0.041667,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 395,
+            "accepted_valid": 4608,
+            "fallbacks": 39,
+            "held_invalid": 0,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 395,
+            "denominator": 395,
+            "rate": 1.0,
+            "low": 0.990368,
+            "high": 1.0
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 4608,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.000833
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 115,
+              "HOLD": 0
+            },
+            "misattribution": {
+              "ACCEPT": 80,
+              "HOLD": 0
+            },
+            "stale_revival": {
+              "ACCEPT": 56,
+              "HOLD": 0
+            },
+            "stale_target": {
+              "ACCEPT": 63,
+              "HOLD": 0
+            },
+            "update": {
+              "ACCEPT": 4608,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 81,
+              "HOLD": 0
+            }
+          }
+        },
+        "text_k1_optimistic": {
+          "metrics_mean": {
+            "overall_em": 0.953056,
+            "user_em": 0.928056,
+            "final_user_em": 0.885,
+            "friend_em": 0.978056,
+            "likes_f1": 0.99277,
+            "user_stale": 0.056944,
+            "user_wrong": 0.015,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 123,
+            "accepted_valid": 4568,
+            "fallbacks": 33,
+            "held_invalid": 278,
+            "held_valid": 34
+          },
+          "false_accept_rate": {
+            "numerator": 123,
+            "denominator": 401,
+            "rate": 0.306733,
+            "low": 0.26361,
+            "high": 0.353524
+          },
+          "false_hold_rate": {
+            "numerator": 34,
+            "denominator": 4602,
+            "rate": 0.007388,
+            "low": 0.005292,
+            "high": 0.010306
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 46,
+              "HOLD": 69
+            },
+            "misattribution": {
+              "ACCEPT": 19,
+              "HOLD": 61
+            },
+            "stale_revival": {
+              "ACCEPT": 33,
+              "HOLD": 23
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 63
+            },
+            "update": {
+              "ACCEPT": 4568,
+              "HOLD": 34
+            },
+            "wrong_target": {
+              "ACCEPT": 25,
+              "HOLD": 62
+            }
+          }
+        },
+        "text_k1_pessimistic": {
+          "metrics_mean": {
+            "overall_em": 0.256111,
+            "user_em": 0.377222,
+            "final_user_em": 0.393333,
+            "friend_em": 0.135,
+            "likes_f1": 0.65541,
+            "user_stale": 0.242778,
+            "user_wrong": 0.004444,
+            "user_missing": 0.375556
+          },
+          "commits": {
+            "accepted_invalid": 10,
+            "accepted_valid": 2154,
+            "fallbacks": 188,
+            "held_invalid": 236,
+            "held_valid": 2603
+          },
+          "false_accept_rate": {
+            "numerator": 10,
+            "denominator": 246,
+            "rate": 0.04065,
+            "low": 0.022228,
+            "high": 0.073198
+          },
+          "false_hold_rate": {
+            "numerator": 2603,
+            "denominator": 4757,
+            "rate": 0.547194,
+            "low": 0.533016,
+            "high": 0.561295
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 115
+            },
+            "misattribution": {
+              "ACCEPT": 10,
+              "HOLD": 41
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 42
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 22
+            },
+            "update": {
+              "ACCEPT": 2154,
+              "HOLD": 2603
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 16
+            }
+          }
+        },
+        "text_k2_optimistic": {
+          "metrics_mean": {
+            "overall_em": 0.9675,
+            "user_em": 0.943056,
+            "final_user_em": 0.915,
+            "friend_em": 0.991944,
+            "likes_f1": 0.997175,
+            "user_stale": 0.051667,
+            "user_wrong": 0.005278,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 51,
+            "accepted_valid": 4590,
+            "fallbacks": 31,
+            "held_invalid": 352,
+            "held_valid": 10
+          },
+          "false_accept_rate": {
+            "numerator": 51,
+            "denominator": 403,
+            "rate": 0.126551,
+            "low": 0.097579,
+            "high": 0.162575
+          },
+          "false_hold_rate": {
+            "numerator": 10,
+            "denominator": 4600,
+            "rate": 0.002174,
+            "low": 0.001181,
+            "high": 0.003997
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 23,
+              "HOLD": 92
+            },
+            "misattribution": {
+              "ACCEPT": 3,
+              "HOLD": 77
+            },
+            "stale_revival": {
+              "ACCEPT": 16,
+              "HOLD": 40
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 63
+            },
+            "update": {
+              "ACCEPT": 4590,
+              "HOLD": 10
+            },
+            "wrong_target": {
+              "ACCEPT": 9,
+              "HOLD": 80
+            }
+          }
+        },
+        "text_closure": {
+          "metrics_mean": {
+            "overall_em": 0.975417,
+            "user_em": 0.950833,
+            "final_user_em": 0.928333,
+            "friend_em": 1.0,
+            "likes_f1": 1.0,
+            "user_stale": 0.049167,
+            "user_wrong": 0.0,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 0,
+            "accepted_valid": 4600,
+            "fallbacks": 31,
+            "held_invalid": 403,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 403,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.009442
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 4600,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.000834
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 115
+            },
+            "misattribution": {
+              "ACCEPT": 0,
+              "HOLD": 80
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 56
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 63
+            },
+            "update": {
+              "ACCEPT": 4600,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 89
+            }
+          }
+        },
+        "graph": {
+          "metrics_mean": {
+            "overall_em": 0.975417,
+            "user_em": 0.950833,
+            "final_user_em": 0.928333,
+            "friend_em": 1.0,
+            "likes_f1": 1.0,
+            "user_stale": 0.049167,
+            "user_wrong": 0.0,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 0,
+            "accepted_valid": 4600,
+            "fallbacks": 31,
+            "held_invalid": 403,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 403,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.009442
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 4600,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.000834
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 115
+            },
+            "misattribution": {
+              "ACCEPT": 0,
+              "HOLD": 80
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 56
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 63
+            },
+            "update": {
+              "ACCEPT": 4600,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 89
+            }
+          }
+        },
+        "oracle_gate": {
+          "metrics_mean": {
+            "overall_em": 0.975417,
+            "user_em": 0.950833,
+            "final_user_em": 0.928333,
+            "friend_em": 1.0,
+            "likes_f1": 1.0,
+            "user_stale": 0.049167,
+            "user_wrong": 0.0,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 0,
+            "accepted_valid": 4600,
+            "fallbacks": 31,
+            "held_invalid": 403,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 403,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.009442
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 4600,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.000834
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 115
+            },
+            "misattribution": {
+              "ACCEPT": 0,
+              "HOLD": 80
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 56
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 63
+            },
+            "update": {
+              "ACCEPT": 4600,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 89
+            }
+          }
+        }
+      },
+      "paired_comparisons": [
+        {
+          "left": "graph",
+          "right": "unguarded",
+          "overall_em": {
+            "mean_diff": 0.041111,
+            "ci95_low": 0.032778,
+            "ci95_high": 0.050278,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.01,
+            "ci95_low": -0.003056,
+            "ci95_high": 0.023333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.041667,
+            "ci95_low": 0.008333,
+            "ci95_high": 0.075,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.072222,
+            "ci95_low": 0.056111,
+            "ci95_high": 0.089167,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.019888,
+            "ci95_low": 0.010389,
+            "ci95_high": 0.031265,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.031667,
+            "ci95_low": 0.020278,
+            "ci95_high": 0.044167,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.041667,
+            "ci95_low": -0.050278,
+            "ci95_high": -0.033056,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "text_closure",
+          "right": "unguarded",
+          "overall_em": {
+            "mean_diff": 0.041111,
+            "ci95_low": 0.032361,
+            "ci95_high": 0.050278,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.01,
+            "ci95_low": -0.003611,
+            "ci95_high": 0.023333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.041667,
+            "ci95_low": 0.008333,
+            "ci95_high": 0.076667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.072222,
+            "ci95_low": 0.056667,
+            "ci95_high": 0.09,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.019888,
+            "ci95_low": 0.010065,
+            "ci95_high": 0.03125,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.031667,
+            "ci95_low": 0.019722,
+            "ci95_high": 0.043611,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.041667,
+            "ci95_low": -0.050556,
+            "ci95_high": -0.033333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_k1_optimistic",
+          "overall_em": {
+            "mean_diff": 0.022361,
+            "ci95_low": 0.016111,
+            "ci95_high": 0.029306,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.022778,
+            "ci95_low": 0.014167,
+            "ci95_high": 0.031389,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.043333,
+            "ci95_low": 0.023333,
+            "ci95_high": 0.065,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.021944,
+            "ci95_low": 0.013056,
+            "ci95_high": 0.031667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.00723,
+            "ci95_low": 0.001659,
+            "ci95_high": 0.015127,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": -0.007778,
+            "ci95_low": -0.015,
+            "ci95_high": -0.001111,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.015,
+            "ci95_low": -0.021389,
+            "ci95_high": -0.009444,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_k1_pessimistic",
+          "overall_em": {
+            "mean_diff": 0.719306,
+            "ci95_low": 0.692778,
+            "ci95_high": 0.744028,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.573611,
+            "ci95_low": 0.541111,
+            "ci95_high": 0.6075,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.535,
+            "ci95_low": 0.49,
+            "ci95_high": 0.58,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.865,
+            "ci95_low": 0.823333,
+            "ci95_high": 0.903333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.34459,
+            "ci95_low": 0.308074,
+            "ci95_high": 0.382617,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": -0.193611,
+            "ci95_low": -0.220833,
+            "ci95_high": -0.167222,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.004444,
+            "ci95_low": -0.008611,
+            "ci95_high": -0.001111,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": -0.375556,
+            "ci95_low": -0.419167,
+            "ci95_high": -0.333056,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_k2_optimistic",
+          "overall_em": {
+            "mean_diff": 0.007917,
+            "ci95_low": 0.004583,
+            "ci95_high": 0.011667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.007778,
+            "ci95_low": 0.003333,
+            "ci95_high": 0.013056,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.013333,
+            "ci95_low": 0.003333,
+            "ci95_high": 0.025,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.008056,
+            "ci95_low": 0.003056,
+            "ci95_high": 0.014444,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.002825,
+            "ci95_low": 0.000357,
+            "ci95_high": 0.006667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": -0.0025,
+            "ci95_low": -0.005556,
+            "ci95_high": 0.000278,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.005278,
+            "ci95_low": -0.01,
+            "ci95_high": -0.001667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_closure",
+          "overall_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "oracle_gate",
+          "right": "graph",
+          "overall_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        }
+      ]
+    },
+    {
+      "config": {
+        "conversations": 200,
+        "sessions": 6,
+        "updates_per_session": 3,
+        "fault_rate": 0.35,
+        "summary_depth_max": 3,
+        "alias_depth_max": 3,
+        "seed": 20261119
+      },
+      "policies": {
+        "unguarded": {
+          "metrics_mean": {
+            "overall_em": 0.852083,
+            "user_em": 0.848333,
+            "final_user_em": 0.791667,
+            "friend_em": 0.855833,
+            "likes_f1": 0.927137,
+            "user_stale": 0.043889,
+            "user_wrong": 0.107778,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 952,
+            "accepted_valid": 4051,
+            "fallbacks": 103,
+            "held_invalid": 0,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 952,
+            "denominator": 952,
+            "rate": 1.0,
+            "low": 0.995981,
+            "high": 1.0
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 4051,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.000947
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 282,
+              "HOLD": 0
+            },
+            "misattribution": {
+              "ACCEPT": 219,
+              "HOLD": 0
+            },
+            "stale_revival": {
+              "ACCEPT": 151,
+              "HOLD": 0
+            },
+            "stale_target": {
+              "ACCEPT": 140,
+              "HOLD": 0
+            },
+            "update": {
+              "ACCEPT": 4051,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 160,
+              "HOLD": 0
+            }
+          }
+        },
+        "text_k1_optimistic": {
+          "metrics_mean": {
+            "overall_em": 0.897083,
+            "user_em": 0.823611,
+            "final_user_em": 0.746667,
+            "friend_em": 0.970556,
+            "likes_f1": 0.979701,
+            "user_stale": 0.127778,
+            "user_wrong": 0.048611,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 283,
+            "accepted_valid": 3983,
+            "fallbacks": 87,
+            "held_invalid": 685,
+            "held_valid": 52
+          },
+          "false_accept_rate": {
+            "numerator": 283,
+            "denominator": 968,
+            "rate": 0.292355,
+            "low": 0.264568,
+            "high": 0.321784
+          },
+          "false_hold_rate": {
+            "numerator": 52,
+            "denominator": 4035,
+            "rate": 0.012887,
+            "low": 0.009841,
+            "high": 0.01686
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 108,
+              "HOLD": 174
+            },
+            "misattribution": {
+              "ACCEPT": 46,
+              "HOLD": 173
+            },
+            "stale_revival": {
+              "ACCEPT": 94,
+              "HOLD": 57
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 129
+            },
+            "update": {
+              "ACCEPT": 3983,
+              "HOLD": 52
+            },
+            "wrong_target": {
+              "ACCEPT": 35,
+              "HOLD": 152
+            }
+          }
+        },
+        "text_k1_pessimistic": {
+          "metrics_mean": {
+            "overall_em": 0.250278,
+            "user_em": 0.365556,
+            "final_user_em": 0.366667,
+            "friend_em": 0.135,
+            "likes_f1": 0.681318,
+            "user_stale": 0.239444,
+            "user_wrong": 0.008056,
+            "user_missing": 0.386944
+          },
+          "commits": {
+            "accepted_invalid": 16,
+            "accepted_valid": 1994,
+            "fallbacks": 452,
+            "held_invalid": 587,
+            "held_valid": 2406
+          },
+          "false_accept_rate": {
+            "numerator": 16,
+            "denominator": 603,
+            "rate": 0.026534,
+            "low": 0.016397,
+            "high": 0.042665
+          },
+          "false_hold_rate": {
+            "numerator": 2406,
+            "denominator": 4400,
+            "rate": 0.546818,
+            "low": 0.532075,
+            "high": 0.56148
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 282
+            },
+            "misattribution": {
+              "ACCEPT": 16,
+              "HOLD": 117
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 114
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 43
+            },
+            "update": {
+              "ACCEPT": 1994,
+              "HOLD": 2406
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 31
+            }
+          }
+        },
+        "text_k2_optimistic": {
+          "metrics_mean": {
+            "overall_em": 0.921111,
+            "user_em": 0.852222,
+            "final_user_em": 0.78,
+            "friend_em": 0.99,
+            "likes_f1": 0.992762,
+            "user_stale": 0.125833,
+            "user_wrong": 0.021944,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 135,
+            "accepted_valid": 4003,
+            "fallbacks": 78,
+            "held_invalid": 842,
+            "held_valid": 23
+          },
+          "false_accept_rate": {
+            "numerator": 135,
+            "denominator": 977,
+            "rate": 0.138178,
+            "low": 0.117953,
+            "high": 0.161238
+          },
+          "false_hold_rate": {
+            "numerator": 23,
+            "denominator": 4026,
+            "rate": 0.005713,
+            "low": 0.00381,
+            "high": 0.008558
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 53,
+              "HOLD": 229
+            },
+            "misattribution": {
+              "ACCEPT": 17,
+              "HOLD": 202
+            },
+            "stale_revival": {
+              "ACCEPT": 53,
+              "HOLD": 98
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 131
+            },
+            "update": {
+              "ACCEPT": 4003,
+              "HOLD": 23
+            },
+            "wrong_target": {
+              "ACCEPT": 12,
+              "HOLD": 182
+            }
+          }
+        },
+        "text_closure": {
+          "metrics_mean": {
+            "overall_em": 0.942222,
+            "user_em": 0.884444,
+            "final_user_em": 0.836667,
+            "friend_em": 1.0,
+            "likes_f1": 1.0,
+            "user_stale": 0.115556,
+            "user_wrong": 0.0,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 0,
+            "accepted_valid": 4027,
+            "fallbacks": 79,
+            "held_invalid": 976,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 976,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.00392
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 4027,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.000953
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 282
+            },
+            "misattribution": {
+              "ACCEPT": 0,
+              "HOLD": 219
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 151
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 129
+            },
+            "update": {
+              "ACCEPT": 4027,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 195
+            }
+          }
+        },
+        "graph": {
+          "metrics_mean": {
+            "overall_em": 0.942222,
+            "user_em": 0.884444,
+            "final_user_em": 0.836667,
+            "friend_em": 1.0,
+            "likes_f1": 1.0,
+            "user_stale": 0.115556,
+            "user_wrong": 0.0,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 0,
+            "accepted_valid": 4027,
+            "fallbacks": 79,
+            "held_invalid": 976,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 976,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.00392
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 4027,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.000953
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 282
+            },
+            "misattribution": {
+              "ACCEPT": 0,
+              "HOLD": 219
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 151
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 129
+            },
+            "update": {
+              "ACCEPT": 4027,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 195
+            }
+          }
+        },
+        "oracle_gate": {
+          "metrics_mean": {
+            "overall_em": 0.942222,
+            "user_em": 0.884444,
+            "final_user_em": 0.836667,
+            "friend_em": 1.0,
+            "likes_f1": 1.0,
+            "user_stale": 0.115556,
+            "user_wrong": 0.0,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 0,
+            "accepted_valid": 4027,
+            "fallbacks": 79,
+            "held_invalid": 976,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 976,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.00392
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 4027,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.000953
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 282
+            },
+            "misattribution": {
+              "ACCEPT": 0,
+              "HOLD": 219
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 151
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 129
+            },
+            "update": {
+              "ACCEPT": 4027,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 195
+            }
+          }
+        }
+      },
+      "paired_comparisons": [
+        {
+          "left": "graph",
+          "right": "unguarded",
+          "overall_em": {
+            "mean_diff": 0.090139,
+            "ci95_low": 0.079444,
+            "ci95_high": 0.101389,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.036111,
+            "ci95_low": 0.013611,
+            "ci95_high": 0.059167,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.045,
+            "ci95_low": 0.001667,
+            "ci95_high": 0.09,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.144167,
+            "ci95_low": 0.1225,
+            "ci95_high": 0.166944,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.072863,
+            "ci95_low": 0.051226,
+            "ci95_high": 0.097,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.071667,
+            "ci95_low": 0.054722,
+            "ci95_high": 0.088611,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.107778,
+            "ci95_low": -0.123056,
+            "ci95_high": -0.093333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "text_closure",
+          "right": "unguarded",
+          "overall_em": {
+            "mean_diff": 0.090139,
+            "ci95_low": 0.079167,
+            "ci95_high": 0.10125,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.036111,
+            "ci95_low": 0.014444,
+            "ci95_high": 0.057778,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.045,
+            "ci95_low": 0.001667,
+            "ci95_high": 0.088333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.144167,
+            "ci95_low": 0.122778,
+            "ci95_high": 0.166667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.072863,
+            "ci95_low": 0.050325,
+            "ci95_high": 0.096727,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.071667,
+            "ci95_low": 0.054167,
+            "ci95_high": 0.089444,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.107778,
+            "ci95_low": -0.123056,
+            "ci95_high": -0.093889,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_k1_optimistic",
+          "overall_em": {
+            "mean_diff": 0.045139,
+            "ci95_low": 0.037361,
+            "ci95_high": 0.053472,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.060833,
+            "ci95_low": 0.0475,
+            "ci95_high": 0.075,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.09,
+            "ci95_low": 0.061667,
+            "ci95_high": 0.116667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.029444,
+            "ci95_low": 0.018889,
+            "ci95_high": 0.040556,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.020299,
+            "ci95_low": 0.008968,
+            "ci95_high": 0.034817,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": -0.012222,
+            "ci95_low": -0.021944,
+            "ci95_high": -0.0025,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.048611,
+            "ci95_low": -0.06,
+            "ci95_high": -0.038056,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_k1_pessimistic",
+          "overall_em": {
+            "mean_diff": 0.691944,
+            "ci95_low": 0.664444,
+            "ci95_high": 0.717639,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.518889,
+            "ci95_low": 0.483333,
+            "ci95_high": 0.554722,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.47,
+            "ci95_low": 0.423333,
+            "ci95_high": 0.516667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.865,
+            "ci95_low": 0.823333,
+            "ci95_high": 0.903333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.318682,
+            "ci95_low": 0.279123,
+            "ci95_high": 0.360179,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": -0.123889,
+            "ci95_low": -0.150556,
+            "ci95_high": -0.098056,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.008056,
+            "ci95_low": -0.0125,
+            "ci95_high": -0.004444,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": -0.386944,
+            "ci95_low": -0.430833,
+            "ci95_high": -0.345278,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_k2_optimistic",
+          "overall_em": {
+            "mean_diff": 0.021111,
+            "ci95_low": 0.015556,
+            "ci95_high": 0.026944,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.032222,
+            "ci95_low": 0.023056,
+            "ci95_high": 0.042222,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.056667,
+            "ci95_low": 0.036667,
+            "ci95_high": 0.078333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.01,
+            "ci95_low": 0.004444,
+            "ci95_high": 0.016667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.007238,
+            "ci95_low": 0.000968,
+            "ci95_high": 0.016627,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": -0.010278,
+            "ci95_low": -0.016944,
+            "ci95_high": -0.003889,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.021944,
+            "ci95_low": -0.031111,
+            "ci95_high": -0.013889,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_closure",
+          "overall_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "oracle_gate",
+          "right": "graph",
+          "overall_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        }
+      ]
+    },
+    {
+      "config": {
+        "conversations": 200,
+        "sessions": 6,
+        "updates_per_session": 3,
+        "fault_rate": 0.55,
+        "summary_depth_max": 3,
+        "alias_depth_max": 3,
+        "seed": 20261119
+      },
+      "policies": {
+        "unguarded": {
+          "metrics_mean": {
+            "overall_em": 0.767778,
+            "user_em": 0.768611,
+            "final_user_em": 0.673333,
+            "friend_em": 0.766944,
+            "likes_f1": 0.879396,
+            "user_stale": 0.07,
+            "user_wrong": 0.161389,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 1487,
+            "accepted_valid": 3516,
+            "fallbacks": 185,
+            "held_invalid": 0,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 1487,
+            "denominator": 1487,
+            "rate": 1.0,
+            "low": 0.997423,
+            "high": 1.0
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 3516,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.001091
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 430,
+              "HOLD": 0
+            },
+            "misattribution": {
+              "ACCEPT": 324,
+              "HOLD": 0
+            },
+            "stale_revival": {
+              "ACCEPT": 240,
+              "HOLD": 0
+            },
+            "stale_target": {
+              "ACCEPT": 236,
+              "HOLD": 0
+            },
+            "update": {
+              "ACCEPT": 3516,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 257,
+              "HOLD": 0
+            }
+          }
+        },
+        "text_k1_optimistic": {
+          "metrics_mean": {
+            "overall_em": 0.837917,
+            "user_em": 0.730278,
+            "final_user_em": 0.59,
+            "friend_em": 0.945556,
+            "likes_f1": 0.954536,
+            "user_stale": 0.195,
+            "user_wrong": 0.074722,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 454,
+            "accepted_valid": 3401,
+            "fallbacks": 142,
+            "held_invalid": 1076,
+            "held_valid": 72
+          },
+          "false_accept_rate": {
+            "numerator": 454,
+            "denominator": 1530,
+            "rate": 0.296732,
+            "low": 0.274374,
+            "high": 0.320108
+          },
+          "false_hold_rate": {
+            "numerator": 72,
+            "denominator": 3473,
+            "rate": 0.020731,
+            "low": 0.016495,
+            "high": 0.026026
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 172,
+              "HOLD": 258
+            },
+            "misattribution": {
+              "ACCEPT": 62,
+              "HOLD": 263
+            },
+            "stale_revival": {
+              "ACCEPT": 155,
+              "HOLD": 85
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 221
+            },
+            "update": {
+              "ACCEPT": 3401,
+              "HOLD": 72
+            },
+            "wrong_target": {
+              "ACCEPT": 65,
+              "HOLD": 249
+            }
+          }
+        },
+        "text_k1_pessimistic": {
+          "metrics_mean": {
+            "overall_em": 0.245139,
+            "user_em": 0.355278,
+            "final_user_em": 0.366667,
+            "friend_em": 0.135,
+            "likes_f1": 0.7138,
+            "user_stale": 0.240833,
+            "user_wrong": 0.018611,
+            "user_missing": 0.385278
+          },
+          "commits": {
+            "accepted_invalid": 30,
+            "accepted_valid": 1845,
+            "fallbacks": 744,
+            "held_invalid": 898,
+            "held_valid": 2230
+          },
+          "false_accept_rate": {
+            "numerator": 30,
+            "denominator": 928,
+            "rate": 0.032328,
+            "low": 0.022737,
+            "high": 0.045774
+          },
+          "false_hold_rate": {
+            "numerator": 2230,
+            "denominator": 4075,
+            "rate": 0.547239,
+            "low": 0.531919,
+            "high": 0.562471
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 430
+            },
+            "misattribution": {
+              "ACCEPT": 30,
+              "HOLD": 159
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 177
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 84
+            },
+            "update": {
+              "ACCEPT": 1845,
+              "HOLD": 2230
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 48
+            }
+          }
+        },
+        "text_k2_optimistic": {
+          "metrics_mean": {
+            "overall_em": 0.875556,
+            "user_em": 0.764167,
+            "final_user_em": 0.641667,
+            "friend_em": 0.986944,
+            "likes_f1": 0.978722,
+            "user_stale": 0.199444,
+            "user_wrong": 0.036389,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 208,
+            "accepted_valid": 3436,
+            "fallbacks": 132,
+            "held_invalid": 1332,
+            "held_valid": 27
+          },
+          "false_accept_rate": {
+            "numerator": 208,
+            "denominator": 1540,
+            "rate": 0.135065,
+            "low": 0.118899,
+            "high": 0.153047
+          },
+          "false_hold_rate": {
+            "numerator": 27,
+            "denominator": 3463,
+            "rate": 0.007797,
+            "low": 0.005364,
+            "high": 0.01132
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 83,
+              "HOLD": 347
+            },
+            "misattribution": {
+              "ACCEPT": 23,
+              "HOLD": 302
+            },
+            "stale_revival": {
+              "ACCEPT": 87,
+              "HOLD": 153
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 217
+            },
+            "update": {
+              "ACCEPT": 3436,
+              "HOLD": 27
+            },
+            "wrong_target": {
+              "ACCEPT": 15,
+              "HOLD": 313
+            }
+          }
+        },
+        "text_closure": {
+          "metrics_mean": {
+            "overall_em": 0.900556,
+            "user_em": 0.801111,
+            "final_user_em": 0.685,
+            "friend_em": 1.0,
+            "likes_f1": 1.0,
+            "user_stale": 0.198889,
+            "user_wrong": 0.0,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 0,
+            "accepted_valid": 3461,
+            "fallbacks": 130,
+            "held_invalid": 1542,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 1542,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.002485
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 3461,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.001109
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 430
+            },
+            "misattribution": {
+              "ACCEPT": 0,
+              "HOLD": 326
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 240
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 211
+            },
+            "update": {
+              "ACCEPT": 3461,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 335
+            }
+          }
+        },
+        "graph": {
+          "metrics_mean": {
+            "overall_em": 0.900556,
+            "user_em": 0.801111,
+            "final_user_em": 0.685,
+            "friend_em": 1.0,
+            "likes_f1": 1.0,
+            "user_stale": 0.198889,
+            "user_wrong": 0.0,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 0,
+            "accepted_valid": 3461,
+            "fallbacks": 130,
+            "held_invalid": 1542,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 1542,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.002485
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 3461,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.001109
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 430
+            },
+            "misattribution": {
+              "ACCEPT": 0,
+              "HOLD": 326
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 240
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 211
+            },
+            "update": {
+              "ACCEPT": 3461,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 335
+            }
+          }
+        },
+        "oracle_gate": {
+          "metrics_mean": {
+            "overall_em": 0.900556,
+            "user_em": 0.801111,
+            "final_user_em": 0.685,
+            "friend_em": 1.0,
+            "likes_f1": 1.0,
+            "user_stale": 0.198889,
+            "user_wrong": 0.0,
+            "user_missing": 0.0
+          },
+          "commits": {
+            "accepted_invalid": 0,
+            "accepted_valid": 3461,
+            "fallbacks": 130,
+            "held_invalid": 1542,
+            "held_valid": 0
+          },
+          "false_accept_rate": {
+            "numerator": 0,
+            "denominator": 1542,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.002485
+          },
+          "false_hold_rate": {
+            "numerator": 0,
+            "denominator": 3461,
+            "rate": 0.0,
+            "low": 0.0,
+            "high": 0.001109
+          },
+          "decisions_by_proposal_kind": {
+            "hallucination": {
+              "ACCEPT": 0,
+              "HOLD": 430
+            },
+            "misattribution": {
+              "ACCEPT": 0,
+              "HOLD": 326
+            },
+            "stale_revival": {
+              "ACCEPT": 0,
+              "HOLD": 240
+            },
+            "stale_target": {
+              "ACCEPT": 0,
+              "HOLD": 211
+            },
+            "update": {
+              "ACCEPT": 3461,
+              "HOLD": 0
+            },
+            "wrong_target": {
+              "ACCEPT": 0,
+              "HOLD": 335
+            }
+          }
+        }
+      },
+      "paired_comparisons": [
+        {
+          "left": "graph",
+          "right": "unguarded",
+          "overall_em": {
+            "mean_diff": 0.132778,
+            "ci95_low": 0.120694,
+            "ci95_high": 0.145278,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.0325,
+            "ci95_low": 0.006389,
+            "ci95_high": 0.058611,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.011667,
+            "ci95_low": -0.043333,
+            "ci95_high": 0.066667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.233056,
+            "ci95_low": 0.208611,
+            "ci95_high": 0.258611,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.120604,
+            "ci95_low": 0.093405,
+            "ci95_high": 0.151623,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.128889,
+            "ci95_low": 0.108889,
+            "ci95_high": 0.148889,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.161389,
+            "ci95_low": -0.1775,
+            "ci95_high": -0.145278,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "text_closure",
+          "right": "unguarded",
+          "overall_em": {
+            "mean_diff": 0.132778,
+            "ci95_low": 0.120833,
+            "ci95_high": 0.145139,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.0325,
+            "ci95_low": 0.006944,
+            "ci95_high": 0.058889,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.011667,
+            "ci95_low": -0.045,
+            "ci95_high": 0.068333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.233056,
+            "ci95_low": 0.209167,
+            "ci95_high": 0.2575,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.120604,
+            "ci95_low": 0.091876,
+            "ci95_high": 0.150193,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.128889,
+            "ci95_low": 0.108889,
+            "ci95_high": 0.148611,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.161389,
+            "ci95_low": -0.177222,
+            "ci95_high": -0.145556,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_k1_optimistic",
+          "overall_em": {
+            "mean_diff": 0.062639,
+            "ci95_low": 0.053333,
+            "ci95_high": 0.072222,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.070833,
+            "ci95_low": 0.054444,
+            "ci95_high": 0.088056,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.095,
+            "ci95_low": 0.061667,
+            "ci95_high": 0.128333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.054444,
+            "ci95_low": 0.040833,
+            "ci95_high": 0.068333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.045464,
+            "ci95_low": 0.028583,
+            "ci95_high": 0.065143,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.003889,
+            "ci95_low": -0.009167,
+            "ci95_high": 0.016667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.074722,
+            "ci95_low": -0.09,
+            "ci95_high": -0.060833,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_k1_pessimistic",
+          "overall_em": {
+            "mean_diff": 0.655417,
+            "ci95_low": 0.62875,
+            "ci95_high": 0.680694,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.445833,
+            "ci95_low": 0.409444,
+            "ci95_high": 0.481389,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.318333,
+            "ci95_low": 0.266667,
+            "ci95_high": 0.371667,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.865,
+            "ci95_low": 0.823333,
+            "ci95_high": 0.903333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.2862,
+            "ci95_low": 0.246538,
+            "ci95_high": 0.328437,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": -0.041944,
+            "ci95_low": -0.070556,
+            "ci95_high": -0.014167,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.018611,
+            "ci95_low": -0.026944,
+            "ci95_high": -0.011389,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": -0.385278,
+            "ci95_low": -0.427222,
+            "ci95_high": -0.343333,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_k2_optimistic",
+          "overall_em": {
+            "mean_diff": 0.025,
+            "ci95_low": 0.019306,
+            "ci95_high": 0.030972,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.036944,
+            "ci95_low": 0.026111,
+            "ci95_high": 0.048056,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.043333,
+            "ci95_low": 0.023333,
+            "ci95_high": 0.065,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.013056,
+            "ci95_low": 0.006667,
+            "ci95_high": 0.020278,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.021278,
+            "ci95_low": 0.01,
+            "ci95_high": 0.0345,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": -0.000556,
+            "ci95_low": -0.008889,
+            "ci95_high": 0.008333,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": -0.036389,
+            "ci95_low": -0.0475,
+            "ci95_high": -0.026389,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "graph",
+          "right": "text_closure",
+          "overall_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        },
+        {
+          "left": "oracle_gate",
+          "right": "graph",
+          "overall_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "final_user_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "friend_em": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "likes_f1": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_stale": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_wrong": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          },
+          "user_missing": {
+            "mean_diff": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "units": 200,
+            "resamples": 4000
+          }
+        }
+      ]
+    }
+  ]
+}

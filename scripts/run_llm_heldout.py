@@ -60,19 +60,20 @@ Cache hits replay exactly as in a normal run and are reported with zero new
 token usage.  Cache key material is unchanged, so this flag can replay a
 previous paid run without altering cached entries.
 
-Usage (the Lead supplies the real key; never commit it)::
+Usage (supply the real key in process environment; never commit it)::
 
     set -a; source .env; set +a
-    export DEEPSEEK_CACHE_PATH="$PWD/.cache/membud/deepseek-cache.sqlite3"
+    export CLAUDE_CACHE_PATH="$PWD/.cache/membud/claude-cache.sqlite3"
     mkdir -p .tmp-llm
     TMPDIR="$PWD/.tmp-llm" PYTHONPATH=src .venv/bin/python scripts/run_llm_heldout.py \
+        --provider claude \
         --manifest data/manifests/evaluation-v2.json \
         --split heldout \
         --output data/results/llm-heldout-v2 \
         --conditions graph,text,semantic \
         --max-total-tokens 250000 \
         --max-attempts 3 \
-        --cache-path "$DEEPSEEK_CACHE_PATH"
+        --cache-path "$CLAUDE_CACHE_PATH"
 
 Tests inject ``FakeClient``/``FakeComparator`` objects and make no
 network or paid calls.  This module itself never constructs an LLM client at
@@ -176,7 +177,13 @@ COMPARISON_POLICY = (
 _ATTEMPTED_STATUSES = frozenset(
     {"completed", "verifier_error", "error", "recovered_without_audit"}
 )
+_COMPLETED_STATUSES = frozenset({"completed", "recovered_without_audit"})
+_ERROR_STATUSES = frozenset({"verifier_error", "error"})
 _SAFE_DECISIONS = frozenset({"HOLD", "INVALID_INPUT"})
+
+
+def _default_code_revision() -> str:
+    return source_fingerprint((Path(__file__),))
 
 
 # ---------------------------------------------------------------------------
@@ -827,6 +834,22 @@ def _condition_metrics(
 
     attempted_faulty = [row for row in attempted if row["case_id"] in faulty_hold_ids]
     attempted_valid = [row for row in attempted if row["case_id"] in expected_accept_ids]
+    completed_faulty = [
+        row for row in attempted_faulty if row["status"] in _COMPLETED_STATUSES
+    ]
+    completed_valid = [
+        row for row in attempted_valid if row["status"] in _COMPLETED_STATUSES
+    ]
+    error_faulty = [
+        row
+        for row in attempted_faulty
+        if row["status"] in _ERROR_STATUSES or row["decision"] == "ERROR"
+    ]
+    error_valid = [
+        row
+        for row in attempted_valid
+        if row["status"] in _ERROR_STATUSES or row["decision"] == "ERROR"
+    ]
     recorded_invalid = [
         row
         for row in condition_rows
@@ -834,16 +857,29 @@ def _condition_metrics(
     ]
     combined_faulty = attempted_faulty + recorded_invalid
 
-    hold_detections = [row for row in attempted_faulty if row["decision"] == "HOLD"]
+    hold_detections = [row for row in completed_faulty if row["decision"] == "HOLD"]
     combined_detections = [
-        row for row in combined_faulty if row["decision"] in _SAFE_DECISIONS
+        row
+        for row in (completed_faulty + recorded_invalid)
+        if row["decision"] in _SAFE_DECISIONS
     ]
-    false_accepts = [row for row in attempted_faulty if row["decision"] == "ACCEPT"]
-    false_holds = [row for row in attempted_valid if row["decision"] == "HOLD"]
+    false_accepts = [row for row in completed_faulty if row["decision"] == "ACCEPT"]
+    completed_valid_accepts = [
+        row for row in completed_valid if row["decision"] == "ACCEPT"
+    ]
+    completed_valid_holds = [
+        row for row in completed_valid if row["decision"] != "ACCEPT"
+    ]
+    # Over attempted valid rows, both explicit HOLDs and error rows leave the
+    # transition unaccepted, so false_holds + valid_acceptance == 1.0.
+    false_holds = [row for row in attempted_valid if row["decision"] != "ACCEPT"]
     valid_accepts = [row for row in attempted_valid if row["decision"] == "ACCEPT"]
+    faulty_not_accepted = [
+        row for row in attempted_faulty if row["decision"] != "ACCEPT"
+    ]
 
     verifier_error_rows = [
-        row for row in attempted if row["status"] in {"verifier_error", "error"}
+        row for row in attempted if row["status"] in _ERROR_STATUSES
     ]
     semantic_rows = [row for row in attempted if condition == "semantic"]
     semantic_abstentions = [
@@ -881,6 +917,58 @@ def _condition_metrics(
     def ids(rows_: list[dict[str, Any]]) -> list[str]:
         return sorted({row["case_id"] for row in rows_})
 
+    unattempted_faulty = len(faulty_hold_ids) - len(attempted_faulty)
+    unattempted_valid = len(expected_accept_ids) - len(attempted_valid)
+    as_completed = {
+        "faulty": {
+            "completed": len(completed_faulty),
+            "flagged": len(hold_detections),
+            "detection_rate": _rate(len(hold_detections), len(completed_faulty)),
+            "false_accepts": len(false_accepts),
+            "false_accept_rate": _rate(len(false_accepts), len(completed_faulty)),
+            "case_ids": ids(hold_detections),
+        },
+        "valid": {
+            "completed": len(completed_valid),
+            "accepted": len(completed_valid_accepts),
+            "acceptance_rate": _rate(len(completed_valid_accepts), len(completed_valid)),
+            "held": len(completed_valid_holds),
+            "false_hold_rate": _rate(len(completed_valid_holds), len(completed_valid)),
+            "case_ids": ids(completed_valid_accepts),
+        },
+    }
+    fail_closed_itt = {
+        "faulty": {
+            "cases": len(faulty_hold_ids),
+            "held_with_decision": len(hold_detections),
+            "error_holds": len(error_faulty),
+            "error_hold_case_ids": ids(error_faulty),
+            "unattempted_cases": unattempted_faulty,
+            "accepted": len(false_accepts),
+            "false_accept_rate": _rate(len(false_accepts), len(faulty_hold_ids)),
+            "detection_rate": _rate(len(hold_detections), len(faulty_hold_ids)),
+            "not_accepted_rate": _rate(
+                len(faulty_hold_ids) - len(false_accepts), len(faulty_hold_ids)
+            ),
+        },
+        "valid": {
+            "cases": len(expected_accept_ids),
+            "accepted": len(completed_valid_accepts),
+            "held_with_decision": len(completed_valid_holds),
+            "error_holds": len(error_valid),
+            "error_hold_case_ids": ids(error_valid),
+            "unattempted_cases": unattempted_valid,
+            "not_accepted": len(expected_accept_ids) - len(completed_valid_accepts),
+            "acceptance_rate": _rate(
+                len(completed_valid_accepts), len(expected_accept_ids)
+            ),
+            "false_hold_rate": _rate(
+                len(expected_accept_ids) - len(completed_valid_accepts),
+                len(expected_accept_ids),
+            ),
+        },
+    }
+
     return {
         "condition": condition,
         "row_count": len(condition_rows),
@@ -889,16 +977,25 @@ def _condition_metrics(
         "planned_non_invalid_cases": len(non_invalid_ids),
         "case_coverage": _rate(len(attempted_ids & non_invalid_ids), len(non_invalid_ids)),
         "decision_counts": dict(sorted(decision_counts.items())),
+        "as_completed": as_completed,
+        "fail_closed_itt": fail_closed_itt,
         "faulty_detection_hold_only": {
             **_rate(len(hold_detections), len(attempted_faulty)),
             "case_ids": ids(hold_detections),
+            "error_holds": len(error_faulty),
+            "error_hold_case_ids": ids(error_faulty),
+            "not_accepted": {
+                **_rate(len(faulty_not_accepted), len(attempted_faulty)),
+                "case_ids": ids(faulty_not_accepted),
+            },
         },
         "faulty_detection_combined": {
             **_rate(len(combined_detections), len(combined_faulty)),
             "case_ids": ids(combined_detections),
             "note": (
-                "Combined safe-rejection view: HOLD or INVALID_INPUT across expected "
-                "HOLD cases plus recorded expected-invalid (INVALID_INPUT) cases. "
+                "Combined safe-rejection view: completed HOLD or INVALID_INPUT across "
+                "expected HOLD cases plus recorded expected-invalid (INVALID_INPUT) cases. "
+                "Error-holds are excluded from explicit detections. "
                 "Denominators use rows actually attempted (plus always-recorded "
                 "expected-invalid rows); see case_coverage for split coverage."
             ),
@@ -910,6 +1007,10 @@ def _condition_metrics(
         "false_holds": {
             **_rate(len(false_holds), len(attempted_valid)),
             "case_ids": ids(false_holds),
+            "decision_holds": len(completed_valid_holds),
+            "decision_hold_case_ids": ids(completed_valid_holds),
+            "error_holds": len(error_valid),
+            "error_hold_case_ids": ids(error_valid),
         },
         "valid_acceptance": {
             **_rate(len(valid_accepts), len(attempted_valid)),
@@ -1098,7 +1199,7 @@ def run_heldout(
 
     output.mkdir(parents=True, exist_ok=True)
     run_id = run_id or f"llm-heldout-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
-    code_revision = code_revision or source_fingerprint()
+    code_revision = code_revision or _default_code_revision()
     generated_at = _iso_now()
 
     model = getattr(client, "model", "") or ""
@@ -1409,14 +1510,37 @@ def run_heldout(
 
 
 def build_client(
-    *, max_attempts: int, cache_path: str | None = None, require_cache: bool = False
+    *,
+    max_attempts: int,
+    cache_path: str | None = None,
+    require_cache: bool = False,
+    provider: str = "claude",
 ) -> Any:
-    """Build the paid DeepSeek client (only called from the CLI, never tests).
+    """Build the configured provider client (only called from the CLI, never tests).
 
     ``require_cache=True`` enables the client's cache-only mode: a cache miss
     raises :class:`membud.llm.client.CacheMissError` before any network I/O.
     """
-    client = OpenAICompatibleChatClient.from_deepseek_env(require_cache=require_cache)
+    factory_name = {
+        "claude": "from_claude_env",
+        "anthropic": "from_claude_env",
+        "gemini": "from_gemini_env",
+        "google": "from_gemini_env",
+        "deepseek": "from_deepseek_env",
+        "commandcode": "from_env",
+    }.get(provider.strip().lower())
+    if factory_name and hasattr(OpenAICompatibleChatClient, factory_name):
+        client = getattr(OpenAICompatibleChatClient, factory_name)(
+            require_cache=require_cache
+        )
+    elif hasattr(OpenAICompatibleChatClient, "from_provider_env"):
+        client = OpenAICompatibleChatClient.from_provider_env(
+            provider, require_cache=require_cache
+        )
+    else:
+        client = OpenAICompatibleChatClient.from_deepseek_env(
+            require_cache=require_cache
+        )
     client.max_attempts = max_attempts
     if cache_path:
         client.cache_path = Path(cache_path).expanduser()
@@ -1427,6 +1551,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Budget-capped LLM + semantic held-out evaluation harness.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--provider",
+        choices=("claude", "gemini", "deepseek", "commandcode"),
+        default="claude",
+        help="LLM provider to use for completions",
     )
     parser.add_argument(
         "--manifest", default=str(DEFAULT_MANIFEST), help="hash-pinned manifest"
@@ -1464,8 +1594,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--cache-path",
         default=None,
         help=(
-            "SQLite response cache path; defaults to DEEPSEEK_CACHE_PATH or "
-            "~/.cache/membud/deepseek-cache.sqlite3"
+            "SQLite response cache path; defaults to provider env "
+            "(e.g. CLAUDE_CACHE_PATH or GEMINI_CACHE_PATH)"
         ),
     )
     parser.add_argument(
@@ -1508,7 +1638,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--price-source",
         default="",
-        help="price provenance source, e.g. a quote URL or 'DeepSeek pricing page'",
+        help="price provenance source, e.g. a quote URL or 'Anthropic / Gemini pricing page'",
     )
     parser.add_argument(
         "--price-date",
@@ -1537,7 +1667,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         source=args.price_source,
         date=args.price_date,
     )
-    code_revision = args.code_revision or source_fingerprint()
+    code_revision = args.code_revision or _default_code_revision()
     run_id = args.run_id or (
         f"llm-heldout-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     )
@@ -1545,6 +1675,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         max_attempts=args.max_attempts,
         cache_path=args.cache_path,
         require_cache=args.require_cache,
+        provider=args.provider,
     )
     summary = run_heldout(
         manifest_path=args.manifest,

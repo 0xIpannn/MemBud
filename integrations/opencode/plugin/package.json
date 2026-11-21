@@ -1,0 +1,11 @@
+{
+  "name": "membud-verify-guard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./membud-verify-guard.js",
+  "exports": {
+    ".": "./membud-verify-guard.js",
+    "./server": "./membud-verify-guard.js"
+  }
+}

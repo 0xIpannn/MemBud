@@ -247,15 +247,26 @@ def test_build_config_wires_guard_and_tool_plugins(tmp_path):
         tool_plugin=ROOT / "integrations/opencode/live/memory-tool-plugin.mjs",
         sidecar_url="http://127.0.0.1:8787",
     )
-    assert config["model"] == "deepseek/deepseek-flash"
+    assert config["model"] == "anthropic/claude-haiku-4-5-20251001"
     assert config["permission"] == {"edit": "allow", "bash": "allow"}
-    assert config["provider"]["deepseek"]["options"]["apiKey"] == "{env:DEEPSEEK_API_KEY}"
+    assert config["provider"]["anthropic"]["options"]["apiKey"] == "{env:ANTHROPIC_API_KEY}"
     guard_spec, guard_options = config["plugin"][0]
     assert guard_spec.startswith("file://")
     assert guard_options["toolNames"] == ["memory_write"]
     assert guard_options["verifyUrl"] == "http://127.0.0.1:8787/verify"
     assert guard_options["memoryStatePath"].endswith(".membud-memory.json")
     assert config["plugin"][1].startswith("file://")
+
+    gemini_config = harness.build_config(
+        home=tmp_path / "home",
+        project=tmp_path / "project",
+        guard_plugin=ROOT / "integrations/opencode/plugin/membud-verify-guard.js",
+        tool_plugin=ROOT / "integrations/opencode/live/memory-tool-plugin.mjs",
+        sidecar_url="http://127.0.0.1:8787",
+        provider="gemini",
+    )
+    assert gemini_config["model"] == "google/gemini-2.5-flash"
+    assert gemini_config["provider"]["google"]["options"]["apiKey"] == "{env:GEMINI_API_KEY}"
 
 
 def test_prepare_workspace_creates_isolated_layout(tmp_path):
@@ -308,6 +319,10 @@ def test_main_refuses_without_paid_call_confirmation(capsys):
 
 
 def test_main_refuses_without_api_key(monkeypatch, capsys):
-    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     assert harness.main(["--confirm-paid-call"]) == 2
-    assert "DEEPSEEK_API_KEY" in capsys.readouterr().err
+    assert "ANTHROPIC_API_KEY" in capsys.readouterr().err
+
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    assert harness.main(["--provider", "gemini", "--confirm-paid-call"]) == 2
+    assert "GEMINI_API_KEY" in capsys.readouterr().err
