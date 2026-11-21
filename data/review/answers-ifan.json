@@ -1,0 +1,151 @@
+{
+  "reviewer": "Ifan",
+  "manifest_id": "membud-evaluation-v2",
+  "manifest_sha256": "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a",
+  "answers": {
+    "DEV-05": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "DEV-04": {
+      "decision": "HOLD",
+      "note": "in my opinion catatan langganan gym =/= kepemilikan langganan gym"
+    },
+    "HELD-11": {
+      "decision": "HOLD",
+      "note": "evidence bermain tenis tapi memory yang masuk memiliki jet pribadi"
+    },
+    "DEV-18": {
+      "decision": "HOLD",
+      "note": "tidak ada evidence untuk remove r2"
+    },
+    "DEV-11": {
+      "decision": "HOLD",
+      "note": "r3 tidak relevan dengan evidence"
+    },
+    "HELD-02": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "DEV-12": {
+      "decision": "HOLD",
+      "note": "tidak ada evidence yang support gaji 25 juta"
+    },
+    "HELD-03": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "HELD-14": {
+      "decision": "INVALID_INPUT",
+      "note": ""
+    },
+    "DEV-03": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "DEV-15": {
+      "decision": "INVALID_INPUT",
+      "note": ""
+    },
+    "DEV-10": {
+      "decision": "HOLD",
+      "note": ""
+    },
+    "HELD-08": {
+      "decision": "HOLD",
+      "note": ""
+    },
+    "DEV-14": {
+      "decision": "INVALID_INPUT",
+      "note": ""
+    },
+    "DEV-09": {
+      "decision": "HOLD",
+      "note": ""
+    },
+    "DEV-17": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "HELD-04": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "HELD-01": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "HELD-05": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "DEV-02": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "HELD-15": {
+      "decision": "INVALID_INPUT",
+      "note": ""
+    },
+    "HELD-07": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "DEV-13": {
+      "decision": "HOLD",
+      "note": ""
+    },
+    "HELD-10": {
+      "decision": "HOLD",
+      "note": ""
+    },
+    "HELD-16": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "HELD-18": {
+      "decision": "HOLD",
+      "note": ""
+    },
+    "HELD-09": {
+      "decision": "INVALID_INPUT",
+      "note": ""
+    },
+    "DEV-06": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "HELD-17": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "DEV-08": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "DEV-07": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "HELD-12": {
+      "decision": "HOLD",
+      "note": ""
+    },
+    "DEV-16": {
+      "decision": "INVALID_INPUT",
+      "note": "no operation declared"
+    },
+    "HELD-06": {
+      "decision": "ACCEPT",
+      "note": ""
+    },
+    "DEV-01": {
+      "decision": "HOLD",
+      "note": "tidak ada subjek siapa yang berkerja di tokopedia bada record, bisa di misinterpretasikan"
+    },
+    "HELD-13": {
+      "decision": "HOLD",
+      "note": ""
+    }
+  }
+}

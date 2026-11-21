@@ -1,0 +1,792 @@
+{
+  "schema_version": 1,
+  "kind": "membud-review-agreement",
+  "reviewer": "Ifan",
+  "timestamp_utc": "2026-11-19T12:32:56Z",
+  "manifest_id": "membud-evaluation-v2",
+  "manifest_sha256": "e1adf173a3f84d4f8d4ca910bdcabb2e6dd69a0f64be4509395090f5507d527a",
+  "manifest_path": "/home/ifan/Projects/MemBud/data/manifests/evaluation-v2.json",
+  "cases_sha256": "40558746e915c6f5296235109900c050da61f87fe4f4fe320bf0290af9aa432d",
+  "labels_sha256": "9280d3e8e2aa7a61df31bed689647f768a98361bb7509e7f8d172bb376989a14",
+  "answers_file": "data/review/answers-ifan.json",
+  "coverage": {
+    "total": 36,
+    "answered": 36,
+    "blank": 0,
+    "rate": 1.0,
+    "blank_case_ids": []
+  },
+  "overall": {
+    "cases": 36,
+    "answered": 36,
+    "blank": 0,
+    "agreements": 27,
+    "disagreements": 9,
+    "agreement_rate": 0.75,
+    "reviewer_decision_counts": {
+      "ACCEPT": 16,
+      "HOLD": 14,
+      "INVALID_INPUT": 6
+    },
+    "expected_decision_counts": {
+      "ACCEPT": 14,
+      "HOLD": 12,
+      "INVALID_INPUT": 10
+    }
+  },
+  "splits": {
+    "dev": {
+      "cases": 18,
+      "answered": 18,
+      "blank": 0,
+      "agreements": 13,
+      "disagreements": 5,
+      "agreement_rate": 0.7222,
+      "reviewer_decision_counts": {
+        "ACCEPT": 7,
+        "HOLD": 8,
+        "INVALID_INPUT": 3
+      },
+      "expected_decision_counts": {
+        "ACCEPT": 7,
+        "HOLD": 6,
+        "INVALID_INPUT": 5
+      }
+    },
+    "heldout": {
+      "cases": 18,
+      "answered": 18,
+      "blank": 0,
+      "agreements": 14,
+      "disagreements": 4,
+      "agreement_rate": 0.7778,
+      "reviewer_decision_counts": {
+        "ACCEPT": 9,
+        "HOLD": 6,
+        "INVALID_INPUT": 3
+      },
+      "expected_decision_counts": {
+        "ACCEPT": 7,
+        "HOLD": 6,
+        "INVALID_INPUT": 5
+      }
+    }
+  },
+  "cases": [
+    {
+      "case_id": "DEV-01",
+      "split": "dev",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "ACCEPT",
+      "agree": false
+    },
+    {
+      "case_id": "DEV-02",
+      "split": "dev",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-03",
+      "split": "dev",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-04",
+      "split": "dev",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "ACCEPT",
+      "agree": false
+    },
+    {
+      "case_id": "DEV-05",
+      "split": "dev",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-06",
+      "split": "dev",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-07",
+      "split": "dev",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-08",
+      "split": "dev",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "HOLD",
+      "agree": false
+    },
+    {
+      "case_id": "DEV-09",
+      "split": "dev",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "HOLD",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-10",
+      "split": "dev",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "HOLD",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-11",
+      "split": "dev",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "HOLD",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-12",
+      "split": "dev",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "HOLD",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-13",
+      "split": "dev",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "HOLD",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-14",
+      "split": "dev",
+      "reviewer_decision": "INVALID_INPUT",
+      "expected_decision": "INVALID_INPUT",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-15",
+      "split": "dev",
+      "reviewer_decision": "INVALID_INPUT",
+      "expected_decision": "INVALID_INPUT",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-16",
+      "split": "dev",
+      "reviewer_decision": "INVALID_INPUT",
+      "expected_decision": "INVALID_INPUT",
+      "agree": true
+    },
+    {
+      "case_id": "DEV-17",
+      "split": "dev",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "INVALID_INPUT",
+      "agree": false
+    },
+    {
+      "case_id": "DEV-18",
+      "split": "dev",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "INVALID_INPUT",
+      "agree": false
+    },
+    {
+      "case_id": "HELD-01",
+      "split": "heldout",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-02",
+      "split": "heldout",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-03",
+      "split": "heldout",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-04",
+      "split": "heldout",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-05",
+      "split": "heldout",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-06",
+      "split": "heldout",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-07",
+      "split": "heldout",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "ACCEPT",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-08",
+      "split": "heldout",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "HOLD",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-09",
+      "split": "heldout",
+      "reviewer_decision": "INVALID_INPUT",
+      "expected_decision": "HOLD",
+      "agree": false
+    },
+    {
+      "case_id": "HELD-10",
+      "split": "heldout",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "HOLD",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-11",
+      "split": "heldout",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "HOLD",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-12",
+      "split": "heldout",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "HOLD",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-13",
+      "split": "heldout",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "HOLD",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-14",
+      "split": "heldout",
+      "reviewer_decision": "INVALID_INPUT",
+      "expected_decision": "INVALID_INPUT",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-15",
+      "split": "heldout",
+      "reviewer_decision": "INVALID_INPUT",
+      "expected_decision": "INVALID_INPUT",
+      "agree": true
+    },
+    {
+      "case_id": "HELD-16",
+      "split": "heldout",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "INVALID_INPUT",
+      "agree": false
+    },
+    {
+      "case_id": "HELD-17",
+      "split": "heldout",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "INVALID_INPUT",
+      "agree": false
+    },
+    {
+      "case_id": "HELD-18",
+      "split": "heldout",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "INVALID_INPUT",
+      "agree": false
+    }
+  ],
+  "disagreements": [
+    {
+      "case_id": "DEV-01",
+      "split": "dev",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "ACCEPT",
+      "reviewer_note": "tidak ada subjek siapa yang berkerja di tokopedia bada record, bisa di misinterpretasikan",
+      "case_summary": {
+        "schema_version": 2,
+        "before": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Bandung"
+            ]
+          }
+        ],
+        "candidate": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Bandung"
+            ]
+          },
+          {
+            "id": "r2",
+            "claims": [
+              "bekerja di Tokopedia"
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "e1",
+            "source": "synthetic:employment",
+            "text": "Ia bekerja di Tokopedia.",
+            "supports": [
+              "bekerja di Tokopedia"
+            ]
+          }
+        ],
+        "required_claims": [
+          "tinggal di Bandung",
+          "bekerja di Tokopedia"
+        ],
+        "operations": [
+          {
+            "type": "WRITE",
+            "record_id": "r2"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "DEV-04",
+      "split": "dev",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "ACCEPT",
+      "reviewer_note": "in my opinion catatan langganan gym =/= kepemilikan langganan gym",
+      "case_summary": {
+        "schema_version": 2,
+        "before": [
+          {
+            "id": "r1",
+            "claims": [
+              "bekerja di Tokopedia"
+            ]
+          },
+          {
+            "id": "r2",
+            "claims": [
+              "memiliki langganan gym"
+            ]
+          },
+          {
+            "id": "r3",
+            "claims": [
+              "tinggal di Bandung"
+            ]
+          }
+        ],
+        "candidate": [
+          {
+            "id": "r1",
+            "claims": [
+              "bekerja di Tokopedia"
+            ]
+          },
+          {
+            "id": "r3",
+            "claims": [
+              "tinggal di Bandung"
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "e3",
+            "source": "synthetic:user-request",
+            "text": "Tolong hapus catatan langganan gym saya.",
+            "supports": []
+          }
+        ],
+        "required_claims": [
+          "bekerja di Tokopedia",
+          "tinggal di Bandung"
+        ],
+        "operations": [
+          {
+            "type": "DELETE",
+            "target_id": "r2",
+            "reason": "pengguna meminta penghapusan eksplisit",
+            "authorization": {
+              "source": "synthetic:user-request",
+              "evidence_id": "e3",
+              "target_id": "r2",
+              "rationale": "pengguna secara eksplisit meminta catatan langganan gym dihapus"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "DEV-08",
+      "split": "dev",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "HOLD",
+      "reviewer_note": "",
+      "case_summary": {
+        "schema_version": 2,
+        "before": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Bandung"
+            ]
+          }
+        ],
+        "candidate": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Bandung"
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "e1",
+            "source": "synthetic:employment",
+            "text": "Ia bekerja di Tokopedia.",
+            "supports": [
+              "bekerja di Tokopedia"
+            ]
+          }
+        ],
+        "required_claims": [
+          "tinggal di Bandung",
+          "bekerja di Tokopedia"
+        ],
+        "operations": [
+          {
+            "type": "NOOP"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "DEV-17",
+      "split": "dev",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "INVALID_INPUT",
+      "reviewer_note": "",
+      "case_summary": {
+        "schema_version": 2,
+        "before": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Bandung"
+            ]
+          }
+        ],
+        "candidate": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Surabaya"
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "e1",
+            "source": "synthetic:correction",
+            "text": "Maaf, saya salah. Saya tinggal di Surabaya.",
+            "supports": [
+              "tinggal di Surabaya"
+            ]
+          }
+        ],
+        "required_claims": [
+          "tinggal di Surabaya"
+        ],
+        "operations": []
+      }
+    },
+    {
+      "case_id": "DEV-18",
+      "split": "dev",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "INVALID_INPUT",
+      "reviewer_note": "tidak ada evidence untuk remove r2",
+      "case_summary": {
+        "schema_version": 2,
+        "before": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Bandung"
+            ]
+          },
+          {
+            "id": "r2",
+            "claims": [
+              "bekerja di Tokopedia"
+            ]
+          }
+        ],
+        "candidate": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Bandung"
+            ]
+          },
+          {
+            "id": "r3",
+            "claims": [
+              "belajar bahasa Jepang"
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "e1",
+            "source": "synthetic:hobby",
+            "text": "Saya mulai belajar bahasa Jepang.",
+            "supports": [
+              "belajar bahasa Jepang"
+            ]
+          }
+        ],
+        "required_claims": [
+          "tinggal di Bandung",
+          "bekerja di Tokopedia",
+          "belajar bahasa Jepang"
+        ],
+        "operations": [
+          {
+            "type": "WRITE",
+            "record_id": "r3"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "HELD-09",
+      "split": "heldout",
+      "reviewer_decision": "INVALID_INPUT",
+      "expected_decision": "HOLD",
+      "reviewer_note": "",
+      "case_summary": {
+        "schema_version": 2,
+        "before": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Solo"
+            ]
+          },
+          {
+            "id": "r2",
+            "claims": [
+              "bekerja di industri batik"
+            ]
+          }
+        ],
+        "candidate": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Jakarta"
+            ]
+          },
+          {
+            "id": "r2",
+            "claims": [
+              "bekerja di industri batik"
+            ]
+          }
+        ],
+        "evidence": [],
+        "required_claims": [
+          "tinggal di Solo",
+          "bekerja di industri batik"
+        ],
+        "operations": [
+          {
+            "type": "REVISE",
+            "record_id": "r1",
+            "target_id": "r1"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "HELD-16",
+      "split": "heldout",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "INVALID_INPUT",
+      "reviewer_note": "",
+      "case_summary": {
+        "schema_version": 2,
+        "before": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Makassar"
+            ]
+          }
+        ],
+        "candidate": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Makassar"
+            ]
+          },
+          {
+            "id": "r2",
+            "claims": [
+              "bekerja di bank"
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "e1",
+            "source": "synthetic:employment",
+            "text": "Saya bekerja di bank.",
+            "supports": [
+              "bekerja di bank"
+            ]
+          }
+        ],
+        "required_claims": [
+          "tinggal di Makassar",
+          "bekerja di bank"
+        ],
+        "operations": []
+      }
+    },
+    {
+      "case_id": "HELD-17",
+      "split": "heldout",
+      "reviewer_decision": "ACCEPT",
+      "expected_decision": "INVALID_INPUT",
+      "reviewer_note": "",
+      "case_summary": {
+        "schema_version": 2,
+        "before": [
+          {
+            "id": "r1",
+            "claims": [
+              "memiliki satu anjing"
+            ]
+          }
+        ],
+        "candidate": [
+          {
+            "id": "r1",
+            "claims": [
+              "memiliki dua anjing"
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "e1",
+            "source": "synthetic:possession",
+            "text": "Sekarang saya memiliki dua anjing.",
+            "supports": [
+              "memiliki dua anjing"
+            ]
+          }
+        ],
+        "required_claims": [
+          "memiliki dua anjing"
+        ],
+        "operations": []
+      }
+    },
+    {
+      "case_id": "HELD-18",
+      "split": "heldout",
+      "reviewer_decision": "HOLD",
+      "expected_decision": "INVALID_INPUT",
+      "reviewer_note": "",
+      "case_summary": {
+        "schema_version": 2,
+        "before": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Papua"
+            ]
+          },
+          {
+            "id": "r2",
+            "claims": [
+              "bekerja di tambang"
+            ]
+          }
+        ],
+        "candidate": [
+          {
+            "id": "r1",
+            "claims": [
+              "tinggal di Papua"
+            ]
+          },
+          {
+            "id": "r3",
+            "claims": [
+              "pindah tugas"
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "e1",
+            "source": "synthetic:relocation",
+            "text": "Saya pindah tugas.",
+            "supports": [
+              "pindah tugas"
+            ]
+          }
+        ],
+        "required_claims": [
+          "tinggal di Papua",
+          "bekerja di tambang",
+          "pindah tugas"
+        ],
+        "operations": [
+          {
+            "type": "WRITE",
+            "record_id": "r3"
+          }
+        ]
+      }
+    }
+  ]
+}
