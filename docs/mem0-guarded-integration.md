@@ -214,3 +214,10 @@ holds are mostly correct: the model added "Germany", "October 2026" and "Novembe
 said; one write was held as a whole because its second claim ("favorite" vs "favourite") was unsupported, which also
 blocked the supported claim (all-or-nothing per write). Real-model ACCEPT evidence now exists on two backends
 (Mem0 2.2.1: 1 accept; LangMem 0.0.30: 3 accepts), each with one free model, add only.
+
+Third-backend probes (executable findings, `tests/test_llamaindex_findings.py`, `tests/test_autogen_findings.py`):
+LlamaIndex `FactExtractionMemoryBlock` (llama-index-core 0.14.26) keeps facts as bare strings without ids, extracts
+them only when the token budget overflows (not on `Memory.aput`), and rewrites the whole list when `max_facts` is
+exceeded; an id-based black-box diff cannot track updates without an adapter-side id registry, which was not built.
+AutoGen's `Memory` (autogen-core 0.7.5) has `add`/`query`/`clear` only and no native write, so it is a plain store.
+autogen-ext's Chroma-backed memory was not checked. Net: still two real backend families through the black-box path.

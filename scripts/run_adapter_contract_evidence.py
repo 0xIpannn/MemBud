@@ -62,6 +62,13 @@ findings = {
                              "Neo4j/FalkorDB need a server"]},
     "letta": {"pinned": "letta==0.16.4 (Python server line; current PyPI letta 0.34.x is the Node CLI)", "status": "NOT RUNNABLE OFFLINE",
               "reasons": ["782 MB / 244 packages, asyncpg and pgvector needed manually", "startup requires Postgres on localhost:5432; no SQLite path"]},
+    "llamaindex": {"pinned": "llama-index-core==0.14.26 (FactExtractionMemoryBlock)", "status": "NOT STAGEABLE AS-IS", "executable_proof": "tests/test_llamaindex_findings.py",
+                   "reasons": ["facts are bare strings in a list with no ids, so an id-based diff cannot tell an update from delete+add; only an adapter-side id registry (a workaround, not done) could supply identity",
+                               "Memory.aput stores chat history and extracts facts only when the token budget overflows, so the only synchronous native write is block.aput, below the front door",
+                               "exceeding max_facts replaces the entire list with a model condensation (wholesale rewrite cascade)"]},
+    "autogen": {"pinned": "autogen-core==0.7.5 (Memory / ListMemory)", "status": "NOT A MEMORY SYSTEM TO GUARD", "executable_proof": "tests/test_autogen_findings.py",
+                "reasons": ["interface is add/query/clear/update_context: no update or delete by id, no ids", "add stores exactly what it is given; there is no native write (extraction) to stage, so it is a plain store like the stdlib fake and adds nothing for RQ2",
+                            "autogen-ext Chroma-backed memory was not checked"]},
     "zep": {"status": "NOT TRIED", "reasons": ["Zep Cloud is SaaS, not offline"]},
 }
 (OUT / "findings.json").write_text(json.dumps(findings, indent=2, sort_keys=True) + "\n", encoding="utf-8")

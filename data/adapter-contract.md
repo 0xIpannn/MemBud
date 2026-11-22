@@ -162,6 +162,8 @@ foreign-scope/history rewrites rejected. Every adapter must pass all of it.
 | stdlib SQLite fake | `BlackBoxStaged` | 16/16 | schema yes, hidden table no |
 | LangMem 0.0.30 over LangGraph `InMemoryStore` (pinned in `requirements-langmem.txt`) | `BlackBoxStaged` via `langgraph_store_ops` | 15/16, 1 skipped (no history surface to rewrite) | **no** schema/index/vector writes (accepted, unseen); foreign namespaces yes |
 | A-Mem (git `ceffb86`) | none | not stageable (finding) | n/a |
+| LlamaIndex `FactExtractionMemoryBlock` (llama-index-core 0.14.26) | none | not stageable as-is (finding): no ids, facts extracted only on overflow, wholesale condensation | n/a |
+| AutoGen `Memory` (autogen-core 0.7.5) | none | no native write and no update/delete by id (plain store) | n/a |
 | Graphiti 0.31.2 / Letta 0.16.4 / Zep | none | not runnable offline (finding) | n/a |
 
 Evidence: `data/results/adapter-contract-v1/<backend>/evidence.json` and `findings.json`

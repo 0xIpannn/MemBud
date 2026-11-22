@@ -1,0 +1,3 @@
+# Probe only (Python 3.12): LlamaIndex fact memory staging findings, tests/test_llamaindex_findings.py
+llama-index-core==0.14.26
+pytest>=8
