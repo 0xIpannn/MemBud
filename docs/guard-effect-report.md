@@ -167,3 +167,31 @@ Neither extractor produced more flagged claims, so there is nothing for a guard 
 * No validated labels exist for the claim-level guard; its drop decisions rest on the unvalidated DeepSeek judge.
 * A higher-error condition was not achieved (see above). Fault injection (already reported) is the only setting with a measurable error rate.
 * The two extra extractors were not scored with the official metrics, repaired, or run through LongMemEval.
+
+## Guard on injected faults, official metrics (47 sessions)
+
+Built by `scripts/run_halumem_inject.py` from the recorded Mem0 extractions: in a seeded 50% of the 97 sessions (47 selected) one extracted claim was replaced by a corrupted version (phase-1 injector, `_corrupt_claim_text`) and one hallucinated claim was appended (`_pick_hallucinated_claim`), 94 injected claims in all. Only these 47 sessions were scored (`--only-injected`; spend). Same DeepSeek claim judge and official judge prompts, same repair loop (max 2 retries). **These faults are synthetic and the injected labels are circular by construction: this shows what the guard does when errors exist, not how often they occur naturally. Official-metric judge is DeepSeek, unvalidated.**
+
+Claim judge on the injected claims: 47/47 hallucinations flagged, 31/47 corruptions flagged. Every injected session therefore contains a flag, so the session-level guard holds all 47 (recall 0, a degenerate result; not reported further). Repair recovered all 54 held sessions (including 7 held for Mem0's own natural flags), 58 attempts; 0/47 hallucinations and 12/47 corruptions remain in the repaired output (the unflagged ones the judge missed).
+
+| Metric (47 injected sessions) | Unguarded | Claim drop | Guard + repair | Repair minus unguarded (paired 95% CI) |
+|---|---|---|---|---|
+| Weighted accuracy (all) | 0.8757 | 0.9600 | 0.9641 | **+0.0884 (0.0764, 0.1029)** |
+| Recall (all) | 0.9384 | 0.8814 | 0.9244 | -0.0140 (-0.0325, -0.0010) |
+| Weighted recall (all) | 0.9645 | 0.9192 | 0.9599 | -0.0047 (-0.0146, 0.0038) |
+| Target precision (all) | 0.9836 | 0.9835 | 0.9833 | -0.0004 (-0.0030, 0.0013) |
+| F1 | 0.9605 | 0.9296 | 0.9529 | -0.0075 (-0.0174, -0.0004) |
+
+Claim drop minus unguarded: weighted accuracy +0.0843 (0.0734, 0.0979), recall -0.0570 (-0.0839, -0.0354).
+User-split (descriptive; nothing tuned on either half): weighted accuracy gain of repair is +0.0833 (0.0697, 0.0998) on the 33 tuning-half sessions and +0.1031 (0.0806, 0.1329) on the 14 final-half sessions.
+
+Reading:
+* With injected errors the guard **helps on the official metric that penalizes false memories**: weighted accuracy rises by about 8 to 9 points, consistent across both halves. The gain exists mainly because the guard removes the injected claims the official judge scores as wrong; it is the mechanism result in official-metric form.
+* Target precision does not move: it only counts claims flagged as included in the gold memories, so injected fabrications do not enter it. Do not read the flat precision as "no benefit".
+* Recall drops. Corruptions replace real claims by construction, so removing them loses recall; plain claim drop pays 5.7 points, repair recovers most of it (1.4 points). The loss is partly an artifact of how corruption was injected.
+* The same weighted-accuracy metric on Mem0's natural output (97 sessions) changes by +0.0019 (-0.0003, 0.0056): no measurable effect.
+* Together: the guard-and-repair pipeline works when errors exist at roughly 7% of claims, and has no measurable effect at Mem0's natural 1.6% flagged rate. Whether natural errors are frequent enough in other systems or datasets to matter was not tested.
+
+Spend (estimated from token counts): injection and judging $0.06, repair $0.12, official scoring $0.85; with step 2 and the extractor attempts (about $0.45) the total is about $1.5 of the $2.00 cap.
+
+Not done: 16/47 injected corruptions were not flagged by the judge and the 12 that survive repair were not examined individually; injected-fault results were not run through LongMemEval; no reviewer labels exist for injected claims (the injector's label is the only label).

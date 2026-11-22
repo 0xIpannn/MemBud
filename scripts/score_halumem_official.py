@@ -95,6 +95,7 @@ def build_items(run: Path, halumem_path: Path) -> list[dict]:
         items.append({
             "case_id": cid, "sid": sid, "uuid": d["user_uuid"],
             "extracted": extracted,
+            "injected": d.get("injected") or [],
             "dialogue": dialogue_string(s),
             "gold_str": "\n".join(m["memory_content"] for m in gold if m["memory_source"] != "interference"),
             "gold": [m for m in gold if str(m.get("is_update")) != "True"],
@@ -259,7 +260,7 @@ def paired_bootstrap(items, cache, base="unguarded", other="guard_judge_claims",
     for it in items:
         r, _ = _session_conditions(it, cache)
         per.append((r[base][:2], r[other][:2]))
-    keys = ("recall(all)", "weighted_recall(all)", "fmr(all)", "target_precision(all)", "f1")
+    keys = ("recall(all)", "weighted_recall(all)", "fmr(all)", "target_precision(all)", "weighted_accuracy(all)", "f1")
 
     def agg(sample, side):
         integ = [x for p in sample for x in p[side][0]]
@@ -296,6 +297,8 @@ def main() -> int:
     mode.add_argument("--estimate", action="store_true")
     mode.add_argument("--run", action="store_true")
     mode.add_argument("--score", action="store_true")
+    ap.add_argument("--only-injected", action="store_true",
+                    help="score only sessions into which run_halumem_inject.py injected faults")
     ap.add_argument("--allow-paid", action="store_true")
     ap.add_argument("--max-spend-usd", type=float)
     a = ap.parse_args()
@@ -306,7 +309,10 @@ def main() -> int:
     cache_path = out_dir / "judge-results.jsonl"
     prompts = load_prompts(Path(a.reference_repo))
     items = build_items(run, Path(a.halumem_path))
+    if a.only_injected:
+        items = [i for i in items if i["injected"]]
     job_list = list(jobs(items, prompts)) + list(repair_jobs(items, prompts)) + list(drop_jobs(items, prompts))
+    job_list.sort(key=lambda j: j[0].split("|")[1])  # per-session order: a spend-cap stop leaves whole sessions judged
     cache = load_cache(cache_path)
 
     if a.estimate:
