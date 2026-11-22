@@ -13,7 +13,7 @@ pilot-output/
 .cache/
 .tmp-*/
 *.lock
-.venv-mem0/
+.venv-*/
 
 # Thesis/paper drafts are kept local only
 paper/
