@@ -883,8 +883,17 @@ def verify_transcript_grounding(
     *,
     allowed_roles: Iterable[str] = DEFAULT_GROUNDING_ROLES,
     require_claim_lexical_overlap: bool = True,
+    allow_reply_context: bool = False,
 ) -> Check:
-    """Verify that transition evidence and DELETE authorizations are grounded in ``transcript``."""
+    """Verify that transition evidence and DELETE authorizations are grounded in ``transcript``.
+
+    ``allow_reply_context`` (opt-in prototype, default off): an evidence claim that shares no
+    content token with its cited *user* turn is still accepted when the claim does overlap
+    the assistant turn that user turn directly replies to. The cited quote and role rules are
+    unchanged (the quote is still a verbatim user turn). This only checks that the citation is
+    adjacent to an assistant turn carrying the claim; whether the user actually accepted it is
+    the grounder's judgement, not verified here.
+    """
     transition.validate()
     if not isinstance(transcript, ConversationTranscript):
         raise ConversationError("transcript must be a ConversationTranscript instance")
@@ -941,9 +950,19 @@ def verify_transcript_grounding(
             ungrounded_quotes.append(ev.id)
         elif require_claim_lexical_overlap:
             quote_tokens = _content_tokens(ev.text)
+            reply_norm, reply_tokens = "", set()
+            if allow_reply_context and turn.role == "user":
+                idx = next((i for i, t in enumerate(transcript.turns) if t is turn), -1)
+                prev = transcript.turns[idx - 1] if idx > 0 else None
+                if prev is not None and prev.role == "assistant":
+                    reply_norm = _normalize_ws(prev.content).lower()
+                    reply_tokens = _content_tokens(prev.content)
             for claim in (*ev.supports, *ev.contradicts):
-                if not _claim_grounded_in_quote(claim, quote_norm, quote_tokens):
-                    ungrounded_claims.append(claim)
+                if _claim_grounded_in_quote(claim, quote_norm, quote_tokens):
+                    continue
+                if reply_norm and _claim_grounded_in_quote(claim, reply_norm, reply_tokens):
+                    continue
+                ungrounded_claims.append(claim)
 
     for operation in transition.operations:
         if operation.type != "DELETE":
@@ -1039,6 +1058,7 @@ def verify_with_transcript(
     allowed_roles: Iterable[str] = DEFAULT_GROUNDING_ROLES,
     require_claim_lexical_overlap: bool = True,
     fair_text: bool = False,
+    allow_reply_context: bool = False,
 ) -> Result:
     """Verify a transition and enforce transcript grounding over ``transcript``."""
     if semantic_comparator is not None:
@@ -1053,6 +1073,7 @@ def verify_with_transcript(
         transcript,
         allowed_roles=allowed_roles,
         require_claim_lexical_overlap=require_claim_lexical_overlap,
+        allow_reply_context=allow_reply_context,
     )
     checks = list(base.checks) + [grounding_check]
     decision = "ACCEPT" if all(c.status == "PASS" and c.passed for c in checks) else "HOLD"

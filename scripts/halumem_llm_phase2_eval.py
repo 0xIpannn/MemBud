@@ -61,12 +61,12 @@ For SUPPORTED claims, "turns" lists the numbers of the [user] turns that state, 
 Answer with JSON only: {"claims": [{"i": <claim number>, "verdict": "SUPPORTED" or "UNSUPPORTED", "turns": [..]}, ...]} with one entry per claim."""
 
 
-def decide(cond, t, transcript):
+def decide(cond, t, transcript, reply_context=False):
     if cond == "unguarded":
         return "ACCEPT"
     if cond == "text_fair":
-        return verify_with_transcript(t, transcript, "text", fair_text=True).decision
-    return verify_with_transcript(t, transcript, cond, fair_text=False).decision
+        return verify_with_transcript(t, transcript, "text", fair_text=True, allow_reply_context=reply_context).decision
+    return verify_with_transcript(t, transcript, cond, fair_text=False, allow_reply_context=reply_context).decision
 
 
 def main() -> int:
@@ -78,6 +78,8 @@ def main() -> int:
     ap.add_argument("--policy", choices=("strict", "accepted"), default="strict",
                     help="accepted: assistant-introduced facts count when the user accepts them or they rest on earlier user statements; "
                          "only proposals the strict run flagged are re-judged (the rest reuse cached strict verdicts)")
+    ap.add_argument("--reply-context", action="store_true",
+                    help="prototype: opt-in reply-context quote check; a judge citation of an assistant turn is mapped to the user turn that replies to it")
     ap.add_argument("--allow-paid", action="store_true")
     ap.add_argument("--max-spend-usd", type=float, required=True)
     a = ap.parse_args()
@@ -99,7 +101,7 @@ def main() -> int:
     if a.policy == "accepted":
         flagged_cases = {v["case_id"] for v in map(json.loads, (run / "llm-claim-verdicts.jsonl").read_text().splitlines())
                          if not v["judge_supported"]}
-    suffix = "-accepted" if a.policy == "accepted" else ""
+    suffix = ("-accepted" if a.policy == "accepted" else "") + ("-replyctx" if a.reply_context else "")
     out = {"schema": "membud-halumem-phase2-llm-evidence-v1", "policy": a.policy, "validated": False, "model": str(client.model),
            "cap_usd": a.max_spend_usd, "per_proposal": [], "aborted": ""}
     cases, verdicts_all = [], {}
@@ -124,6 +126,10 @@ def main() -> int:
             if turn.role == "user":
                 d2u[di] = k
                 k += 1
+        if a.reply_context:  # an assistant turn maps to the user turn that directly replies to it
+            for di, turn in enumerate(s.dialogue):
+                if turn.role != "user" and di + 1 < len(s.dialogue) and s.dialogue[di + 1].role == "user":
+                    d2u[di] = d2u[di + 1]
         memo: dict[str, JudgeVerdict] = {}
 
         def judge(claim, sources, _added=added, _s=s, _t=t, _memo=memo, _d2u=d2u, _cid=cid):
@@ -163,7 +169,7 @@ def main() -> int:
         silver = derive_silver_label(t_rec, s, user_uuid=u.uuid, omission_scope="prior_only", normalize_numerals=True).primary_label
         cases.append((cid, tt, tr, silver, len(added), reasons))
 
-    dec = {c: [decide(c, tt, tr) for _, tt, tr, _, _, _ in cases] for c in CONDITIONS}
+    dec = {c: [decide(c, tt, tr, a.reply_context) for _, tt, tr, _, _, _ in cases] for c in CONDITIONS}
     n = len(cases)
     summ = {c: {"hold": sum(d == "HOLD" for d in dec[c]), "of": n} for c in CONDITIONS}
     g, tf = dec["graph"], dec["text_fair"]
@@ -173,7 +179,7 @@ def main() -> int:
     for (_, tt, tr, _, _, rs), d in zip(cases, g):
         if d != "HOLD":
             continue
-        res = verify_with_transcript(tt, tr, "graph", fair_text=False)
+        res = verify_with_transcript(tt, tr, "graph", fair_text=False, allow_reply_context=a.reply_context)
         cs = sorted({c.reason_code for c in res.checks if getattr(c, "reason_code", None) and getattr(c, "status", "") != "PASS"})
         for c in cs:
             codes[c] = codes.get(c, 0) + 1
