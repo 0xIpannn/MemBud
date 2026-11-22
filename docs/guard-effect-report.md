@@ -107,3 +107,15 @@ Failures: 0 judge errors across 3,523 HaluMem judge calls, 0 extractor errors in
 - LongMemEval S/M (distractor haystacks) and any run beyond 30 questions; GPT-4o judging.
 - Extension beyond the 97-session pilot (not done because the pilot showed no benefit to chase).
 - Verification of the paper's own metric text beyond the reference code.
+
+## Why the guard hurts recall (HaluMem, 97 sessions)
+
+Decomposition from the cached official judge scores (offline):
+
+- The guard holds 14 sessions containing **230** extracted claims, of which only **20** (8.7%) were flagged. Holding discards the other 210.
+- Each held session writes nothing, so every gold point scores 0. That costs **41** gold points the unguarded run had recalled: 2.2% of the 1,862 non-interference gold points, which is the -2.2 point recall difference.
+- Repair keeps unflagged claims and drops only the flagged ones. It loses just **2** of those 41 net. So the flagged claims carried almost none of the recall; the loss is the collateral of an all-or-nothing, per-session decision (Mem0 proposes about 13 claims per session, so one flagged claim holds the rest).
+- This is structural: any per-session guard with a nonzero flag rate behaves this way. It would be worth the cost only if the flags were mostly real hallucinations; the two-reviewer check found they mostly are not (1/8 and 0/8 confirmed).
+- Inspection of 8 of the 20 flagged claims (not checked against the dialogue): mostly assistant-introduced or inferred facts (income and health-status changes, a diagnosis, a new medication), the case the accepted-assistant-facts rule is meant to cover.
+
+This explains the mechanism with the same unvalidated judge; it is not new evidence about the judge.
