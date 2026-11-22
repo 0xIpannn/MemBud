@@ -42,7 +42,7 @@ from membud.halumem_metrics import (  # noqa: E402
 
 DEFAULT_RUN = ROOT / "data" / "halumem-runs" / "phase2-deepseek"
 DEFAULT_REPO = Path.home() / "Repositories" / "HaluMem-repo"
-CONDITIONS = ("unguarded", "guard_strict_recorded", "guard_judge_claims")
+CONDITIONS = ("unguarded", "guard_strict_recorded", "guard_judge_claims", "guard_repair")
 
 
 def load_prompts(repo: Path) -> dict[str, str]:
@@ -81,6 +81,11 @@ def build_items(run: Path, halumem_path: Path) -> list[dict]:
         for v in map(json.loads, (run / "llm-claim-verdicts-accepted-replyctx.jsonl").read_text().splitlines())
         if not v["judge_supported"]
     }
+    repaired = {}
+    rp = run / "repair" / "results.jsonl"
+    if rp.exists():
+        for r in map(json.loads, rp.read_text().splitlines()):
+            repaired[r["case_id"]] = r
     items = []
     for cid, d in props.items():
         sid = d["session_index"] - 1
@@ -96,6 +101,8 @@ def build_items(run: Path, halumem_path: Path) -> list[dict]:
             "update_points_excluded": sum(str(m.get("is_update")) == "True" for m in gold),
             "questions": len(s.get("questions", [])),
             "guard_judge_commits": cid not in unsupported_cases,
+            "repair_attempted": cid in repaired,
+            "repair_claims": (repaired[cid]["final_claims"] if cid in repaired and repaired[cid]["final_decision"] == "ACCEPT" else None),
         })
     return items
 
@@ -115,6 +122,23 @@ def jobs(items, prompts):
             yield f"A|{it['case_id']}|{k}", "accuracy", p
 
 
+def repair_jobs(items, prompts):
+    """Judge calls for repaired (committed) extractions, keyed with an R prefix."""
+    for it in items:
+        rc = it.get("repair_claims")
+        if not rc:
+            continue
+        ext = "\n".join(rc)
+        for g in it["gold"]:
+            p = prompts["EVALUATION_PROMPT_FOR_MEMORY_INTEGRITY"].format(memories=ext, expected_memory_point=g["memory_content"])
+            yield f"RI|{it['case_id']}|{g['index']}", "integrity", p
+        for k, m in enumerate(rc):
+            cand = {"uuid": it["uuid"], "ssession_id": it["sid"], "memory_content": m}
+            p = prompts["EVALUATION_PROMPT_FOR_MEMORY_ACCURACY"].format(
+                dialogue=it["dialogue"], golden_memories=it["gold_str"], candidate_memory=cand)
+            yield f"RA|{it['case_id']}|{k}", "accuracy", p
+
+
 def load_cache(path: Path) -> dict:
     if not path.exists():
         return {}
@@ -129,25 +153,46 @@ def _int_or_none(x):
         return None
 
 
+def _records(it, cache, pre="", extracted=None):
+    ext = it["extracted"] if extracted is None else extracted
+    nonempty = bool("\n".join(ext).strip())
+    integ, acc, missing = [], [], 0
+    for g in it["gold"]:
+        r = cache.get(f"{pre}I|{it['case_id']}|{g['index']}")
+        sc = 0 if not nonempty else (_int_or_none(r["score"]) if r else None)
+        missing += (r is None and nonempty)
+        integ.append(IntegrityRecord(g["memory_source"], float(g.get("importance", 0)), sc))
+    for k, _ in enumerate(ext):
+        r = cache.get(f"{pre}A|{it['case_id']}|{k}")
+        missing += r is None
+        acc.append(AccuracyRecord(_int_or_none(r["score"]) if r else None, str(r.get("included")).lower() == "true" if r else False))
+    return integ, acc, missing
+
+
 def score(items, cache) -> dict:
     out, per_session = {}, {c: [] for c in CONDITIONS}
     missing = 0
     for it in items:
-        integ, acc = [], []
-        for g in it["gold"]:
-            r = cache.get(f"I|{it['case_id']}|{g['index']}")
-            sc = 0 if not "\n".join(it["extracted"]).strip() else (_int_or_none(r["score"]) if r else None)
-            missing += (r is None and bool("\n".join(it["extracted"]).strip()))
-            integ.append(IntegrityRecord(g["memory_source"], float(g.get("importance", 0)), sc))
-        for k, _ in enumerate(it["extracted"]):
-            r = cache.get(f"A|{it['case_id']}|{k}")
-            missing += r is None
-            acc.append(AccuracyRecord(_int_or_none(r["score"]) if r else None,
-                                      str(r.get("included")).lower() == "true" if r else False))
+        integ, acc, m = _records(it, cache)
+        missing += m
+        rep = None
+        if not it["guard_judge_commits"] and it.get("repair_claims"):
+            rep = _records(it, cache, pre="R", extracted=it["repair_claims"])
+            missing += rep[2]
         commits = {"unguarded": True, "guard_strict_recorded": False, "guard_judge_claims": it["guard_judge_commits"]}
         for c in CONDITIONS:
-            i2, a2 = apply_commit_decision(integ, acc, commits[c])
-            per_session[c].append({"case_id": it["case_id"], "committed": commits[c], "integrity": i2, "accuracy": a2})
+            if c == "guard_repair":
+                if it["guard_judge_commits"]:
+                    i2, a2, committed = integ, acc, True
+                elif rep is not None:
+                    i2, a2, committed = rep[0], rep[1], True
+                else:
+                    i2, a2 = apply_commit_decision(integ, acc, False)
+                    committed = False
+            else:
+                i2, a2 = apply_commit_decision(integ, acc, commits[c])
+                committed = commits[c]
+            per_session[c].append({"case_id": it["case_id"], "committed": committed, "integrity": i2, "accuracy": a2})
     for c in CONDITIONS:
         out[c] = aggregate_extraction([r for s in per_session[c] for r in s["integrity"]],
                                       [r for s in per_session[c] for r in s["accuracy"]])
@@ -160,6 +205,8 @@ def fully_judged(items, cache):
     out = []
     for it in items:
         keys = [f"A|{it['case_id']}|{k}" for k in range(len(it["extracted"]))] + [f"I|{it['case_id']}|{g['index']}" for g in it["gold"]]
+        if it.get("repair_claims"):
+            keys += [f"RA|{it['case_id']}|{k}" for k in range(len(it["repair_claims"]))] + [f"RI|{it['case_id']}|{g['index']}" for g in it["gold"]]
         if all(k in cache for k in keys):
             out.append(it)
     return out
@@ -216,7 +263,7 @@ def main() -> int:
     cache_path = out_dir / "judge-results.jsonl"
     prompts = load_prompts(Path(a.reference_repo))
     items = build_items(run, Path(a.halumem_path))
-    job_list = list(jobs(items, prompts))
+    job_list = list(jobs(items, prompts)) + list(repair_jobs(items, prompts))
     cache = load_cache(cache_path)
 
     if a.estimate:
@@ -284,6 +331,8 @@ def main() -> int:
     res["_paired_fully_judged_sessions"] = {
         "n_sessions": len(full), "n_users": len({i["uuid"] for i in full}),
         "guard_judge_claims_minus_unguarded": paired_bootstrap(full, cache) if full else None,
+        "guard_repair_minus_unguarded": paired_bootstrap(full, cache, other="guard_repair") if full else None,
+        "guard_repair_minus_guard_judge_claims": paired_bootstrap(full, cache, base="guard_judge_claims", other="guard_repair") if full else None,
         "sessions_held_by_guard": sum(not i["guard_judge_commits"] for i in full),
     }
     (out_dir / "official-metrics.json").write_text(json.dumps(res, indent=2, sort_keys=True) + "\n")
