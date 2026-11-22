@@ -177,6 +177,8 @@ def main() -> int:
         "graph_holds_without_judge_unsupported_claim": held_other,
         "spend_estimated_peak_rate_usd": round(spend["est"], 6), "paid_requests": spend["calls"], "cached_requests": spend["cached"], "tokens": spend["tokens"],
     })
+    (run / "llm-claim-verdicts.jsonl").write_text("".join(
+        json.dumps({"case_id": k[0], "claim": k[1], "judge_supported": v}, ensure_ascii=False) + "\n" for k, v in verdicts_all.items()))
     (run / "llm-phase2-eval.json").write_text(json.dumps(out, indent=2, sort_keys=True) + "\n")
     print(json.dumps({k: v for k, v in out.items() if k != "per_proposal"}, indent=2, sort_keys=True))
     return 1 if out["aborted"] else 0

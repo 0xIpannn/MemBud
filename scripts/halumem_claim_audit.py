@@ -34,6 +34,8 @@ from membud.schemas import Transition  # noqa: E402
 
 MANIFEST_ID = "membud-halumem-claim-audit-v1"
 OUT = "claim-audit"
+JUDGE_MANIFEST_ID = "membud-halumem-claim-audit-v2-judge"
+JUDGE_OUT = "claim-audit-v2"
 DECISIONS = ("SUPPORTED", "UNSUPPORTED", "UNSURE")
 
 
@@ -93,6 +95,48 @@ def build(run: Path, halumem: str, revision: str, proposals_n: int, per_proposal
     print(f"quiz: {out / 'claim-quiz.html'}")
 
 
+def build_judge(run: Path, halumem: str, revision: str, n_unsupported: int, n_supported: int, seed: int) -> None:
+    """Fresh blind sample for auditing the LLM judge: its unsupported claims (precision) and supported claims (recall).
+
+    Excludes every claim already labelled in claim-audit v1. The judge verdict is hidden from the reviewer.
+    """
+    _, users = load_halumem_dataset(halumem, dataset_revision=revision or "local")
+    lookup = {f"{u.uuid}__{s.session_id}": (u, s) for u in users for s in u.sessions}
+    seen = {(i["case_id"], i["claim"]) for i in map(json.loads, (run / OUT / "claim-items.jsonl").read_text().splitlines())}
+    verdicts = [json.loads(l) for l in (run / "llm-claim-verdicts.jsonl").read_text().splitlines()]
+    fresh = [v for v in verdicts if (v["case_id"], v["claim"]) not in seen]
+    rng = random.Random(seed)
+    uns = [v for v in fresh if not v["judge_supported"]]
+    sup = [v for v in fresh if v["judge_supported"]]
+    picked = rng.sample(uns, min(n_unsupported, len(uns))) + rng.sample(sup, min(n_supported, len(sup)))
+    transitions = {}
+    for f in (run / "proposals").glob("*.json"):
+        rec = json.loads(f.read_text(encoding="utf-8"))
+        transitions[rec["case_id"]] = Transition.from_dict(rec["transition"])
+    items, keys = [], []
+    for v in picked:
+        u, s = lookup[v["case_id"]]
+        t = transitions[v["case_id"]]
+        item_id = hashlib.sha256(f"{JUDGE_MANIFEST_ID}|{v['case_id']}|{v['claim']}".encode()).hexdigest()[:12]
+        items.append({"item_id": item_id, "case_id": v["case_id"], "claim": v["claim"],
+                      "prior_memory": [c for r in t.before for c in r.claims],
+                      "dialogue": [{"role": x.role, "content": x.content} for x in s.dialogue]})
+        keys.append({"item_id": item_id, "case_id": v["case_id"], "reference": "SUPPORTED" if v["judge_supported"] else "UNSUPPORTED"})
+    rng.shuffle(items)
+    out = run / JUDGE_OUT
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "claim-items.jsonl").write_text("".join(json.dumps(i, ensure_ascii=False) + "\n" for i in items), encoding="utf-8")
+    (out / "claim-silver-key.jsonl").write_text("".join(json.dumps(k) + "\n" for k in sorted(keys, key=lambda k: k["item_id"])), encoding="utf-8")
+    manifest = {"manifest_id": JUDGE_MANIFEST_ID, "seed": seed, "items": len(items), "items_sha256": _sha(out / "claim-items.jsonl"),
+                "key_sha256": _sha(out / "claim-silver-key.jsonl"), "reference": "llm-judge verdict (deepseek-flash batch)",
+                "excluded_already_labelled": len(seen), "item_ids": [i["item_id"] for i in items]}
+    (out / "claim-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (out / "claim-quiz.html").write_text(_html(items, manifest), encoding="utf-8")
+    nu = sum(k["reference"] == "UNSUPPORTED" for k in keys)
+    print(f"built {len(items)} fresh claims ({nu} judge-unsupported, {len(keys) - nu} judge-supported; {len(seen)} already-labelled excluded)")
+    print(f"quiz: {out / 'claim-quiz.html'}")
+
+
 def _html(items: list[dict], manifest: dict) -> str:
     data = json.dumps({"manifest_id": manifest["manifest_id"], "manifest_sha256": manifest["items_sha256"], "items": items}, ensure_ascii=False).replace("</", "<\\/")
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -136,8 +180,8 @@ const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=D.m
 </script></body></html>"""
 
 
-def grade(run: Path, answers_path: str) -> None:
-    out = run / OUT
+def grade(run: Path, answers_path: str, audit_dir: str = OUT) -> None:
+    out = run / audit_dir
     man = json.loads((out / "claim-manifest.json").read_text())
     ans = json.loads(Path(answers_path).read_text())
     if ans.get("manifest_sha256") != man["items_sha256"]:
@@ -146,7 +190,7 @@ def grade(run: Path, answers_path: str) -> None:
     rows = []
     for iid, k in key.items():
         d = (ans["answers"].get(iid) or {}).get("decision")
-        rows.append((k["silver"], d))
+        rows.append((k.get("reference") or k["silver"], d))
     answered = [(s, d) for s, d in rows if d in ("SUPPORTED", "UNSUPPORTED")]
     unsure = sum(d == "UNSURE" for _, d in rows)
     blank = sum(d is None for _, d in rows)
@@ -178,14 +222,24 @@ def main() -> int:
     b.add_argument("--proposals", type=int, default=24)
     b.add_argument("--per-proposal", type=int, default=3)
     b.add_argument("--seed", type=int, default=20261121)
+    j = sub.add_parser("build-judge", help="fresh blind sample to audit the LLM judge")
+    j.add_argument("--run-dir", required=True)
+    j.add_argument("--halumem-path", required=True)
+    j.add_argument("--dataset-revision", default="")
+    j.add_argument("--unsupported", type=int, default=24)
+    j.add_argument("--supported", type=int, default=16)
+    j.add_argument("--seed", type=int, default=20261122)
     g = sub.add_parser("grade")
     g.add_argument("--run-dir", required=True)
     g.add_argument("--answers", required=True)
+    g.add_argument("--audit-dir", default=OUT, help="claim-audit (v1 silver) or claim-audit-v2 (judge)")
     a = ap.parse_args()
-    if a.cmd == "build":
+    if a.cmd == "build-judge":
+        build_judge(Path(a.run_dir), a.halumem_path, a.dataset_revision, a.unsupported, a.supported, a.seed)
+    elif a.cmd == "build":
         build(Path(a.run_dir), a.halumem_path, a.dataset_revision, a.proposals, a.per_proposal, a.seed)
     else:
-        grade(Path(a.run_dir), a.answers)
+        grade(Path(a.run_dir), a.answers, a.audit_dir)
     return 0
 
 
