@@ -9,6 +9,19 @@ from .base import (
     records_match,
     scope_key,
 )
+from .blackbox import (
+    BlackBoxError,
+    BlackBoxHostAdapter,
+    BlackBoxOps,
+    BlackBoxOutcome,
+    BlackBoxStaged,
+    Observation,
+    PartialCommit,
+    StaleObservation,
+    TwinSeedError,
+    UnmodeledChange,
+    observe,
+)
 from .mem0_bridge import (
     MEM0_RELEASE,
     MEM0_SHAPE_CONTRACT,
@@ -33,6 +46,17 @@ from .mem0_staged import (
 from .reference import GuardedDecision, GuardedMemory, InMemoryBackend, SQLiteBackend
 
 __all__ = [
+    "BlackBoxError",
+    "BlackBoxHostAdapter",
+    "BlackBoxOps",
+    "BlackBoxOutcome",
+    "BlackBoxStaged",
+    "Observation",
+    "PartialCommit",
+    "StaleObservation",
+    "TwinSeedError",
+    "UnmodeledChange",
+    "observe",
     "AdapterContractError",
     "GuardedDecision",
     "GuardedMemory",
