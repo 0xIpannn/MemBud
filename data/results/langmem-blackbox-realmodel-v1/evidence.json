@@ -1,4 +1,5 @@
 {
+  "grounding": "SpeakerNormalizedGrounding (deterministic, offline)",
   "claim": "Real free-model extraction (real langmem + LangGraph InMemoryStore) through BlackBoxStaged; synthetic dialogues.",
   "environment": {
     "langmem": "0.0.30",
@@ -20,7 +21,7 @@
   },
   "usage": {
     "requests": 5,
-    "tokens": 5300,
+    "tokens": 11762,
     "errors": []
   },
   "sessions": [
@@ -44,50 +45,52 @@
       "changes": [
         {
           "kind": "add",
-          "id": "10e416ae-59fd-4ff9-be61-a10d3a24978c",
+          "id": "de1aa9e5-b124-43fb-bd03-3c33473bc466",
           "scope": {
             "user_id": "u1"
           },
           "old_text": null,
-          "new_text": "User resides in Berlin, Germany. This is a factual statement about the user's location, extracted from the interaction."
+          "new_text": "User resides in Berlin."
         }
       ],
       "id_map": {},
       "extracted": [
-        "User resides in Berlin, Germany. This is a factual statement about the user's location, extracted from the interaction."
+        "User resides in Berlin."
       ]
     },
     {
       "session": 1,
       "input": "I work at Acme Corp as an engineer.",
       "operation": "add",
-      "decision": "HOLD",
-      "applied": false,
-      "reason": "verification did not accept the candidate; backend state unchanged",
+      "decision": "ACCEPT",
+      "applied": true,
+      "reason": "verification accepted the candidate; candidate persisted exactly",
       "case_id": "s1",
       "scope": {
         "user_id": "u1"
       },
       "error_type": "",
       "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
-      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "959ccca6b0d471d87401ea441b073fce71a3f238cf604408b7d6b2f7e94d2533",
       "pending_side_effects": {
         "add": 1
       },
       "changes": [
         {
           "kind": "add",
-          "id": "43d4ce94-004a-474c-b445-761cf5db10b4",
+          "id": "77cda097-d633-4f7a-9a3e-f293055c8ed1",
           "scope": {
             "user_id": "u1"
           },
           "old_text": null,
-          "new_text": "User is an engineer employed at Acme Corp."
+          "new_text": "User is an engineer at Acme Corp."
         }
       ],
-      "id_map": {},
+      "id_map": {
+        "staged:77cda097-d633-4f7a-9a3e-f293055c8ed1": "995b3497a42349ae867e4774174a48e2"
+      },
       "extracted": [
-        "User is an engineer employed at Acme Corp."
+        "User is an engineer at Acme Corp."
       ]
     },
     {
@@ -102,15 +105,15 @@
         "user_id": "u1"
       },
       "error_type": "",
-      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
-      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pre_digest": "959ccca6b0d471d87401ea441b073fce71a3f238cf604408b7d6b2f7e94d2533",
+      "live_digest": "959ccca6b0d471d87401ea441b073fce71a3f238cf604408b7d6b2f7e94d2533",
       "pending_side_effects": {
         "add": 1
       },
       "changes": [
         {
           "kind": "add",
-          "id": "2549af8c-d84e-45c6-b065-f531cf7499f6",
+          "id": "feccb382-0de0-4f1d-9d3f-8da509f4b1f4",
           "scope": {
             "user_id": "u1"
           },
@@ -127,68 +130,76 @@
       "session": 3,
       "input": "I am allergic to peanuts.",
       "operation": "add",
-      "decision": "HOLD",
-      "applied": false,
-      "reason": "verification did not accept the candidate; backend state unchanged",
+      "decision": "ACCEPT",
+      "applied": true,
+      "reason": "verification accepted the candidate; candidate persisted exactly",
       "case_id": "s3",
       "scope": {
         "user_id": "u1"
       },
       "error_type": "",
-      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
-      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pre_digest": "959ccca6b0d471d87401ea441b073fce71a3f238cf604408b7d6b2f7e94d2533",
+      "live_digest": "741478c72acbfc9f829b66f0a9b90d8e169ec1c99a43bffe2a296f8bb7675322",
       "pending_side_effects": {
         "add": 1
       },
       "changes": [
         {
           "kind": "add",
-          "id": "e61b5ef1-0948-42b1-b312-326d5eb804da",
+          "id": "7567067d-a0de-4771-86b8-af4449b96307",
           "scope": {
             "user_id": "u1"
           },
           "old_text": null,
-          "new_text": "User has a peanut allergy (p ~ 0.99). This preference should be respected by avoiding any food or products containing peanuts and by reminding the user of potential allergen sources."
+          "new_text": "User is allergic to peanuts."
         }
       ],
-      "id_map": {},
+      "id_map": {
+        "staged:7567067d-a0de-4771-86b8-af4449b96307": "8fd9d3cc88cd4c7892c56e522503fe46"
+      },
       "extracted": [
-        "User has a peanut allergy (p ~ 0.99). This preference should be respected by avoiding any food or products containing peanuts and by reminding the user of potential allergen sources."
+        "User is allergic to peanuts."
       ]
     },
     {
       "session": 4,
       "input": "I adopted a dog named Biscuit.",
       "operation": "add",
-      "decision": "HOLD",
-      "applied": false,
-      "reason": "verification did not accept the candidate; backend state unchanged",
+      "decision": "ACCEPT",
+      "applied": true,
+      "reason": "verification accepted the candidate; candidate persisted exactly",
       "case_id": "s4",
       "scope": {
         "user_id": "u1"
       },
       "error_type": "",
-      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
-      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pre_digest": "741478c72acbfc9f829b66f0a9b90d8e169ec1c99a43bffe2a296f8bb7675322",
+      "live_digest": "6c742c54bc99f08226e85844496a9db5fabdc9fab500e4a7bde66ba7e210e0b0",
       "pending_side_effects": {
         "add": 1
       },
       "changes": [
         {
           "kind": "add",
-          "id": "a8489978-cf08-4417-8f13-ab0cc8c353ba",
+          "id": "e44d5df0-c63c-4319-9c91-ef7cce227bde",
           "scope": {
             "user_id": "u1"
           },
           "old_text": null,
-          "new_text": "User adopted a dog named Biscuit. This is a new episodic fact about the user's life, indicating potential future interests in pet care, outings, and responsibilities."
+          "new_text": "User adopted a dog named Biscuit."
         }
       ],
-      "id_map": {},
+      "id_map": {
+        "staged:e44d5df0-c63c-4319-9c91-ef7cce227bde": "6cfc7d66586647049a919019c081f61f"
+      },
       "extracted": [
-        "User adopted a dog named Biscuit. This is a new episodic fact about the user's life, indicating potential future interests in pet care, outings, and responsibilities."
+        "User adopted a dog named Biscuit."
       ]
     }
   ],
-  "final_live_memories": []
+  "final_live_memories": [
+    "User is an engineer at Acme Corp.",
+    "User is allergic to peanuts.",
+    "User adopted a dog named Biscuit."
+  ]
 }

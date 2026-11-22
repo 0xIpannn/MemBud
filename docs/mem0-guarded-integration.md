@@ -196,3 +196,13 @@ Real-model LangMem run (`scripts/run_langmem_realmodel.py`, free `nvidia/nemotro
 "I adopted a dog named Biscuit." (checked offline), i.e. third-person rewriting of first-person speech defeats the
 lexical policy. Some extractions also carried model-added commentary ("p ~ 0.99"), which a grounded check should
 hold. This shows fail-closed behaviour and the paraphrase false-hold problem, not an ACCEPT with a real model.
+
+Second LangMem run with `SpeakerNormalizedGrounding` (a `LexicalGrounding` subclass that drops the claim subject
+"User"/"User's"; deterministic, offline; `tests/test_speaker_grounding.py`): 3 of 5 sessions were ACCEPTed and
+persisted exactly the verified memory (engineer at Acme Corp; allergic to peanuts; adopted a dog named Biscuit), 2
+were HELD ("resides in Berlin" is a synonym of "live"; "favorite" vs the user's "favourite" is a spelling mismatch).
+Both holds are the intended conservative behaviour, and both are false holds (the facts are true), so this policy
+trades recall for safety. 5 requests, 11,762 tokens, $0, free `nvidia/nemotron-3.5-lightning:free`. First real-model
+ACCEPTs on any backend; one model, 5 synthetic sessions, add only (no real-model update/delete), Mem0 not re-run
+with this policy. Evidence: `data/results/langmem-blackbox-realmodel-v1/evidence.json` (overwritten by this run; the
+all-HOLD run is in the commit history).

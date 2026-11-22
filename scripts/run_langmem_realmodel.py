@@ -14,6 +14,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.store.memory import InMemoryStore
 from langmem import create_memory_store_manager
 from membud.adapters import BlackBoxStaged
+from membud.adapters.mem0_staged import SpeakerNormalizedGrounding
 from membud.adapters.blackbox_backends import langgraph_store_ops
 from membud.llm.client import enforce_openrouter_zero_price
 
@@ -71,7 +72,7 @@ def main() -> int:
     live = InMemoryStore()
     mk = lambda s, n="langmem": langgraph_store_ops(s, native_add, name=n)
     g = BlackBoxStaged(mk(live), lambda: mk(InMemoryStore(), "langmem-twin"),
-                       workdir=Path(tempfile.mkdtemp(prefix="lm-", dir=out)), scratch_closer=lambda o: None)
+                       workdir=Path(tempfile.mkdtemp(prefix="lm-", dir=out)), grounding=SpeakerNormalizedGrounding(), scratch_closer=lambda o: None)
     rows = []
     for i, text in enumerate(DIALOGUES):
         try:
@@ -81,6 +82,7 @@ def main() -> int:
             rows.append({"session": i, "input": text, "error": type(e).__name__, "message": str(e)[:200]})
     final = [r["text"] for r in mk(live).list(SCOPE)]
     ev = {
+        "grounding": "SpeakerNormalizedGrounding (deterministic, offline)",
         "claim": "Real free-model extraction (real langmem + LangGraph InMemoryStore) through BlackBoxStaged; synthetic dialogues.",
         "environment": {k: md.version(k) for k in ("langmem", "langgraph", "trustcall", "langchain-openai")} | {"model": a.model},
         "pricing": {k: pricing[k] for k in ("id", "is_free", "prompt_per_mtok", "completion_per_mtok")},
