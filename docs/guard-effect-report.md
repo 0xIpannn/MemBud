@@ -133,3 +133,37 @@ The claim-level guard judge was re-run on all 97 proposals with `particle-ai/par
 | Flags confirmed by reviewers in the 36-claim sample | ifan 1/8, nabhan 0/8 | ifan 0/6, nabhan 0/6 |
 
 Reading: the verdict replicates across model families. A second judge also holds sessions on claims neither reviewer confirms as unsupported (0 of 6 under each reviewer), and the recall cost of holding is **larger**, not smaller (4.1 points), because this judge is stricter. The guard's cost does not look specific to DeepSeek. Limits: agreement is high mostly because about 98% of claims are supported; the reviewer check covers only 6 flagged claims; official-metric scores are still the cached DeepSeek scores (only the guard decisions come from the second judge); repair and LongMemEval were not re-run with this judge; the model is unvalidated.
+
+## Claim-level guard (drop flagged claims instead of holding the session)
+
+The session-level guard discards every claim in a held session (about 210 supported claims to remove 20 flagged ones). The claim-level guard (`guard_claim_drop`) drops only the judge-flagged claims and commits the rest. Every gold point in the 14 affected sessions was re-scored against the kept claims (94 new judge calls on DeepSeek; accuracy scores for kept claims are reused). Nothing else changed: same 97 sessions, same judge, same cached scores. Judge is DeepSeek, not GPT-4o, and unvalidated.
+
+| Metric (97 sessions) | Unguarded | Session hold | Claim drop | Claim drop minus unguarded (paired 95% CI) |
+|---|---|---|---|---|
+| Recall (all) | 0.9409 | 0.9189 | 0.9398 | -0.0011 (-0.0042, 0.0020) |
+| Weighted recall (all) | 0.9675 | 0.9382 | 0.9664 | -0.0011 (-0.0031, 0.0007) |
+| Target precision (all) | 0.9852 | 0.9849 | 0.9850 | -0.0002 (-0.0004, -0.0001) |
+| F1 | 0.9626 | 0.9507 | 0.9619 | -0.0007 (-0.0023, 0.0009) |
+| FMR (all) | 0.3099 | 0.5352 | 0.3803 | +0.0704 (0.0128, 0.1408) |
+
+* The recall cost shrinks from 2.2 points (session hold) to 0.1 points (CI includes 0). Most of the earlier recall loss came from the all-or-nothing hold, not from the judge's flags.
+* Target precision does not improve. The flagged claims scored as accurate under the official accuracy judge, which matches the reviewers (flag precision 1/8 and 0/8). The small decrease is the removal of accurate claims.
+* FMR rises 7 points, but this is the artifact documented above: removing claims makes more interference gold points score 0. It is not evidence of benefit.
+* Verdict for this condition: no measurable benefit on the official metrics and a negligible cost.
+
+## Higher-error extractor attempts (step 3): no usable error rate
+
+Mem0 produces a judge-flagged unsupported rate of 1.6% (20 of 1,286 claims). To test whether the guard helps when errors are common, two other extractors were run on the same 97 sessions with the same batch claim judge and policy. Scripts: `scripts/run_halumem_eager.py`. Prior memory was copied from the recorded Mem0 transitions; the reply-context quote check was not applied.
+
+| Extractor | Claims | Flagged unsupported | Sessions with a flag |
+|---|---|---|---|
+| Mem0 (recorded) | 1,286 | 20 (1.6%) | 14 |
+| DeepSeek, over-inferring prompt | 1,722 | 20 (1.2%) | 15 |
+| `particle-ai/particle-1:free`, neutral prompt | 2,740 | 0 (0%) | 0 |
+
+Neither extractor produced more flagged claims, so there is nothing for a guard or repair loop to act on, and these runs were **not** scored with the official metrics (the guard would hold 0 to 15 sessions, about the same as the Mem0 case). The judge could be too lenient toward inferred claims; the reviewers' labels (1/8 and 0/8 flag precision) do not rule that out. This attempt therefore does not answer whether guard and repair help at high error rates. Spend for step 2 and 3 was about $0.45 of the $2.00 cap (estimated from token counts); the free extractor cost $0.
+
+## Not done in this round
+* No validated labels exist for the claim-level guard; its drop decisions rest on the unvalidated DeepSeek judge.
+* A higher-error condition was not achieved (see above). Fault injection (already reported) is the only setting with a measurable error rate.
+* The two extra extractors were not scored with the official metrics, repaired, or run through LongMemEval.
