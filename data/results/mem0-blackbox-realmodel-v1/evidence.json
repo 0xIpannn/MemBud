@@ -1,0 +1,235 @@
+{
+  "claim": "Real free-model extraction through BlackBoxStaged on Mem0; synthetic dialogues.",
+  "environment": {
+    "mem0ai": "2.2.1",
+    "model": "nvidia/nemotron-3.5-lightning:free",
+    "embedder": "local hash (offline)"
+  },
+  "pricing": {
+    "id": "nvidia/nemotron-3.5-lightning:free",
+    "is_free": true,
+    "prompt_per_mtok": 0.0,
+    "completion_per_mtok": 0.0
+  },
+  "caps": {
+    "max_requests": 40,
+    "max_tokens": 40000,
+    "cost_cap_usd": 0
+  },
+  "usage": {
+    "requests": 5,
+    "tokens": 8449,
+    "llm_errors": []
+  },
+  "sessions": [
+    {
+      "session": 0,
+      "operation": "add",
+      "decision": "HOLD",
+      "applied": false,
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "case_id": "s0",
+      "scope": {
+        "user_id": "u1"
+      },
+      "error_type": "",
+      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pending_side_effects": {
+        "add": 2
+      },
+      "changes": [
+        {
+          "kind": "add",
+          "id": "3694dd78-3cf0-40a7-8126-b02dd982d3a0",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User works at Acme Corp as an engineer"
+        },
+        {
+          "kind": "add",
+          "id": "76a4daa4-c635-44da-a9a4-e7657fe3726f",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User lives in Berlin, Germany"
+        }
+      ],
+      "id_map": {},
+      "proposals": [
+        {
+          "event": "ADD",
+          "id": "staged:3694dd78-3cf0-40a7-8126-b02dd982d3a0",
+          "memory": "User works at Acme Corp as an engineer"
+        },
+        {
+          "event": "ADD",
+          "id": "staged:76a4daa4-c635-44da-a9a4-e7657fe3726f",
+          "memory": "User lives in Berlin, Germany"
+        }
+      ]
+    },
+    {
+      "session": 1,
+      "operation": "add",
+      "decision": "HOLD",
+      "applied": false,
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "case_id": "s1",
+      "scope": {
+        "user_id": "u1"
+      },
+      "error_type": "",
+      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pending_side_effects": {
+        "add": 2
+      },
+      "changes": [
+        {
+          "kind": "add",
+          "id": "4b21a012-7715-489f-9ad3-1cd4cd86b544",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User's favorite food is ramen"
+        },
+        {
+          "kind": "add",
+          "id": "e745ea1b-72b9-464e-935a-96c51813b870",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User is allergic to peanuts"
+        }
+      ],
+      "id_map": {},
+      "proposals": [
+        {
+          "event": "ADD",
+          "id": "staged:4b21a012-7715-489f-9ad3-1cd4cd86b544",
+          "memory": "User's favorite food is ramen"
+        },
+        {
+          "event": "ADD",
+          "id": "staged:e745ea1b-72b9-464e-935a-96c51813b870",
+          "memory": "User is allergic to peanuts"
+        }
+      ]
+    },
+    {
+      "session": 2,
+      "operation": "add",
+      "decision": "HOLD",
+      "applied": false,
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "case_id": "s2",
+      "scope": {
+        "user_id": "u1"
+      },
+      "error_type": "",
+      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pending_side_effects": {
+        "add": 1
+      },
+      "changes": [
+        {
+          "kind": "add",
+          "id": "eb739176-8553-46a0-bb00-d857d5eb90ca",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User moved to Lisbon in October 2026"
+        }
+      ],
+      "id_map": {},
+      "proposals": [
+        {
+          "event": "ADD",
+          "id": "staged:eb739176-8553-46a0-bb00-d857d5eb90ca",
+          "memory": "User moved to Lisbon in October 2026"
+        }
+      ]
+    },
+    {
+      "session": 3,
+      "operation": "add",
+      "decision": "HOLD",
+      "applied": false,
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "case_id": "s3",
+      "scope": {
+        "user_id": "u1"
+      },
+      "error_type": "",
+      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pending_side_effects": {
+        "add": 1
+      },
+      "changes": [
+        {
+          "kind": "add",
+          "id": "23f7d8b1-7417-44d0-9c61-5517c9e8894e",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User adopted a dog named Biscuit"
+        }
+      ],
+      "id_map": {},
+      "proposals": [
+        {
+          "event": "ADD",
+          "id": "staged:23f7d8b1-7417-44d0-9c61-5517c9e8894e",
+          "memory": "User adopted a dog named Biscuit"
+        }
+      ]
+    },
+    {
+      "session": 4,
+      "operation": "add",
+      "decision": "HOLD",
+      "applied": false,
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "case_id": "s4",
+      "scope": {
+        "user_id": "u1"
+      },
+      "error_type": "",
+      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pending_side_effects": {
+        "add": 1
+      },
+      "changes": [
+        {
+          "kind": "add",
+          "id": "82c25e3a-c297-468f-9247-5c262b651560",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User switched jobs and now works at Globex"
+        }
+      ],
+      "id_map": {},
+      "proposals": [
+        {
+          "event": "ADD",
+          "id": "staged:82c25e3a-c297-468f-9247-5c262b651560",
+          "memory": "User switched jobs and now works at Globex"
+        }
+      ]
+    }
+  ],
+  "final_live_memories": []
+}
