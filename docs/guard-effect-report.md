@@ -119,3 +119,17 @@ Decomposition from the cached official judge scores (offline):
 - Inspection of 8 of the 20 flagged claims (not checked against the dialogue): mostly assistant-introduced or inferred facts (income and health-status changes, a diagnosis, a new medication), the case the accepted-assistant-facts rule is meant to cover.
 
 This explains the mechanism with the same unvalidated judge; it is not new evidence about the judge.
+
+## Second-judge replication (different model family, free tier)
+
+The claim-level guard judge was re-run on all 97 proposals with `particle-ai/particle-1:free` (OpenRouter free endpoint, $0, 97 requests, 0 failures), same prompt and accepted-assistant-facts policy as DeepSeek. `google/gemma-4-31b-it:free` and other free models were tried first but were rate-limited upstream (HTTP 429) or failed, so this is the only free model that served. Its provenance and quality are not independently known, so treat it as a robustness check, not a better judge. HaluMem text was sent to a free endpoint (owner confirmation 2026-11-22). Script: `scripts/halumem_second_judge.py` (not unit-tested).
+
+| Quantity | DeepSeek | particle-1 |
+|---|---|---|
+| Claims flagged UNSUPPORTED (of 1,286) | 20 | 34 (17 shared with DeepSeek) |
+| Sessions the guard would hold (of 97) | 14 | 23 (includes all 14 DeepSeek holds) |
+| Claim-level agreement with DeepSeek | - | 1,266/1,286 (98.4%, Wilson [97.6%, 99.0%]) |
+| Recalled gold points lost to holding | 41 (2.2% of 1,862) | 77 (4.1% of 1,862) |
+| Flags confirmed by reviewers in the 36-claim sample | ifan 1/8, nabhan 0/8 | ifan 0/6, nabhan 0/6 |
+
+Reading: the verdict replicates across model families. A second judge also holds sessions on claims neither reviewer confirms as unsupported (0 of 6 under each reviewer), and the recall cost of holding is **larger**, not smaller (4.1 points), because this judge is stricter. The guard's cost does not look specific to DeepSeek. Limits: agreement is high mostly because about 98% of claims are supported; the reviewer check covers only 6 flagged claims; official-metric scores are still the cached DeepSeek scores (only the guard decisions come from the second judge); repair and LongMemEval were not re-run with this judge; the model is unvalidated.
