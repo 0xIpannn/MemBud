@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / "src"))
 import logging; logging.disable(logging.CRITICAL)
 
 from membud.adapters import BlackBoxStaged
+from membud.adapters.mem0_staged import SpeakerNormalizedGrounding
 from membud.adapters.blackbox_backends import mem0_ops
 from membud.adapters.mem0_offline import OfflineHost
 from membud.llm.client import OpenAICompatibleChatClient, enforce_openrouter_zero_price
@@ -50,7 +51,7 @@ class CappedLLM:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="google/gemma-4-31b-it:free")
+    ap.add_argument("--model", default="nvidia/nemotron-3.5-lightning:free")
     ap.add_argument("--max-requests", type=int, default=40)
     ap.add_argument("--max-tokens", type=int, default=40000)
     ap.add_argument("--out", default=str(ROOT / "data/results/mem0-blackbox-realmodel-v1"))
@@ -68,7 +69,7 @@ def main() -> int:
         t = OfflineHost(work / f"twin{n[0]}"); t.memory.llm = llm
         ops = mem0_ops(t.memory, [SCOPE], name="mem0-twin"); ops.handle_host = t
         return ops
-    g = BlackBoxStaged(mem0_ops(host.memory, [SCOPE]), factory, workdir=work / "membud",
+    g = BlackBoxStaged(mem0_ops(host.memory, [SCOPE]), factory, workdir=work / "membud", grounding=SpeakerNormalizedGrounding(),
                        scratch_closer=lambda o: o.handle_host.close())
     rows = []
     for i, d in enumerate(DIALOGUES):
@@ -79,13 +80,14 @@ def main() -> int:
             rows.append({"session": i, "error": type(e).__name__, "message": str(e)[:200]})
     live = mem0_ops(host.memory, [SCOPE]).list(SCOPE)
     ev = {
+        "grounding": "SpeakerNormalizedGrounding (deterministic, offline)",
         "claim": "Real free-model extraction through BlackBoxStaged on Mem0; synthetic dialogues.",
         "environment": {"mem0ai": md.version("mem0ai"), "model": a.model, "embedder": "local hash (offline)"},
         "pricing": {k: pricing[k] for k in ("id", "is_free", "prompt_per_mtok", "completion_per_mtok")},
         "caps": {"max_requests": a.max_requests, "max_tokens": a.max_tokens, "cost_cap_usd": 0},
         "usage": {"requests": llm.requests, "tokens": llm.tokens, "llm_errors": llm.errors},
         "sessions": rows,
-        "final_live_memories": [getattr(x, "text", str(x)) for x in live],
+        "final_live_memories": [x["text"] for x in live],
     }
     (out / "evidence.json").write_text(json.dumps(ev, indent=2, default=str), encoding="utf-8")
     import shutil; shutil.rmtree(work, ignore_errors=True)

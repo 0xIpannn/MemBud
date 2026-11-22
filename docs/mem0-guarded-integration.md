@@ -206,3 +206,11 @@ trades recall for safety. 5 requests, 11,762 tokens, $0, free `nvidia/nemotron-3
 ACCEPTs on any backend; one model, 5 synthetic sessions, add only (no real-model update/delete), Mem0 not re-run
 with this policy. Evidence: `data/results/langmem-blackbox-realmodel-v1/evidence.json` (overwritten by this run; the
 all-HOLD run is in the commit history).
+
+Mem0 re-run with `SpeakerNormalizedGrounding` (`scripts/run_blackbox_realmodel.py`, same free model, 5 synthetic
+sessions, first execution 13,986 tokens, $0; the committed evidence file is the byte-identical-input re-run served
+from the client cache, so its token counter reads 0): 1 ACCEPT ("User adopted a dog named Biscuit"), 4 HOLD. The
+holds are mostly correct: the model added "Germany", "October 2026" and "November 22, 2026", none of which the user
+said; one write was held as a whole because its second claim ("favorite" vs "favourite") was unsupported, which also
+blocked the supported claim (all-or-nothing per write). Real-model ACCEPT evidence now exists on two backends
+(Mem0 2.2.1: 1 accept; LangMem 0.0.30: 3 accepts), each with one free model, add only.

@@ -1,4 +1,5 @@
 {
+  "grounding": "SpeakerNormalizedGrounding (deterministic, offline)",
   "claim": "Real free-model extraction through BlackBoxStaged on Mem0; synthetic dialogues.",
   "environment": {
     "mem0ai": "2.2.1",
@@ -18,7 +19,7 @@
   },
   "usage": {
     "requests": 5,
-    "tokens": 8449,
+    "tokens": 0,
     "llm_errors": []
   },
   "sessions": [
@@ -41,7 +42,7 @@
       "changes": [
         {
           "kind": "add",
-          "id": "3694dd78-3cf0-40a7-8126-b02dd982d3a0",
+          "id": "cf8db3c6-bdfa-447b-86cf-badb97f88fe6",
           "scope": {
             "user_id": "u1"
           },
@@ -50,7 +51,7 @@
         },
         {
           "kind": "add",
-          "id": "76a4daa4-c635-44da-a9a4-e7657fe3726f",
+          "id": "eae1c389-b92f-457a-806b-27fab92395ea",
           "scope": {
             "user_id": "u1"
           },
@@ -62,12 +63,12 @@
       "proposals": [
         {
           "event": "ADD",
-          "id": "staged:3694dd78-3cf0-40a7-8126-b02dd982d3a0",
+          "id": "staged:cf8db3c6-bdfa-447b-86cf-badb97f88fe6",
           "memory": "User works at Acme Corp as an engineer"
         },
         {
           "event": "ADD",
-          "id": "staged:76a4daa4-c635-44da-a9a4-e7657fe3726f",
+          "id": "staged:eae1c389-b92f-457a-806b-27fab92395ea",
           "memory": "User lives in Berlin, Germany"
         }
       ]
@@ -91,34 +92,34 @@
       "changes": [
         {
           "kind": "add",
-          "id": "4b21a012-7715-489f-9ad3-1cd4cd86b544",
-          "scope": {
-            "user_id": "u1"
-          },
-          "old_text": null,
-          "new_text": "User's favorite food is ramen"
-        },
-        {
-          "kind": "add",
-          "id": "e745ea1b-72b9-464e-935a-96c51813b870",
+          "id": "c51846c4-cef1-47e7-9aa7-55999088637a",
           "scope": {
             "user_id": "u1"
           },
           "old_text": null,
           "new_text": "User is allergic to peanuts"
+        },
+        {
+          "kind": "add",
+          "id": "feec2f37-d6a9-4245-92d5-98e1f3ec5a35",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User's favorite food is ramen"
         }
       ],
       "id_map": {},
       "proposals": [
         {
           "event": "ADD",
-          "id": "staged:4b21a012-7715-489f-9ad3-1cd4cd86b544",
-          "memory": "User's favorite food is ramen"
+          "id": "staged:c51846c4-cef1-47e7-9aa7-55999088637a",
+          "memory": "User is allergic to peanuts"
         },
         {
           "event": "ADD",
-          "id": "staged:e745ea1b-72b9-464e-935a-96c51813b870",
-          "memory": "User is allergic to peanuts"
+          "id": "staged:feec2f37-d6a9-4245-92d5-98e1f3ec5a35",
+          "memory": "User's favorite food is ramen"
         }
       ]
     },
@@ -141,7 +142,7 @@
       "changes": [
         {
           "kind": "add",
-          "id": "eb739176-8553-46a0-bb00-d857d5eb90ca",
+          "id": "0917a9dd-988d-40e8-b7f0-16364d6c0426",
           "scope": {
             "user_id": "u1"
           },
@@ -153,7 +154,7 @@
       "proposals": [
         {
           "event": "ADD",
-          "id": "staged:eb739176-8553-46a0-bb00-d857d5eb90ca",
+          "id": "staged:0917a9dd-988d-40e8-b7f0-16364d6c0426",
           "memory": "User moved to Lisbon in October 2026"
         }
       ]
@@ -161,23 +162,23 @@
     {
       "session": 3,
       "operation": "add",
-      "decision": "HOLD",
-      "applied": false,
-      "reason": "verification did not accept the candidate; backend state unchanged",
+      "decision": "ACCEPT",
+      "applied": true,
+      "reason": "verification accepted the candidate; candidate persisted exactly",
       "case_id": "s3",
       "scope": {
         "user_id": "u1"
       },
       "error_type": "",
       "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
-      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "fef100dfaa2cbc049e917f1cfdf3a1bb3ea06e124f9f4ce328cfef996bcea554",
       "pending_side_effects": {
         "add": 1
       },
       "changes": [
         {
           "kind": "add",
-          "id": "23f7d8b1-7417-44d0-9c61-5517c9e8894e",
+          "id": "4b1c1296-dc9f-45bd-9ebd-8be105173eb8",
           "scope": {
             "user_id": "u1"
           },
@@ -185,11 +186,13 @@
           "new_text": "User adopted a dog named Biscuit"
         }
       ],
-      "id_map": {},
+      "id_map": {
+        "staged:4b1c1296-dc9f-45bd-9ebd-8be105173eb8": "a5d2061c-fccb-4a4f-8646-0a607126c212"
+      },
       "proposals": [
         {
           "event": "ADD",
-          "id": "staged:23f7d8b1-7417-44d0-9c61-5517c9e8894e",
+          "id": "staged:4b1c1296-dc9f-45bd-9ebd-8be105173eb8",
           "memory": "User adopted a dog named Biscuit"
         }
       ]
@@ -205,31 +208,33 @@
         "user_id": "u1"
       },
       "error_type": "",
-      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
-      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pre_digest": "fef100dfaa2cbc049e917f1cfdf3a1bb3ea06e124f9f4ce328cfef996bcea554",
+      "live_digest": "fef100dfaa2cbc049e917f1cfdf3a1bb3ea06e124f9f4ce328cfef996bcea554",
       "pending_side_effects": {
         "add": 1
       },
       "changes": [
         {
           "kind": "add",
-          "id": "82c25e3a-c297-468f-9247-5c262b651560",
+          "id": "fdfc3dca-7b06-414e-b5fb-f9d676643803",
           "scope": {
             "user_id": "u1"
           },
           "old_text": null,
-          "new_text": "User switched jobs and now works at Globex"
+          "new_text": "User switched jobs and now works at Globex as of November 22, 2026"
         }
       ],
       "id_map": {},
       "proposals": [
         {
           "event": "ADD",
-          "id": "staged:82c25e3a-c297-468f-9247-5c262b651560",
-          "memory": "User switched jobs and now works at Globex"
+          "id": "staged:fdfc3dca-7b06-414e-b5fb-f9d676643803",
+          "memory": "User switched jobs and now works at Globex as of November 22, 2026"
         }
       ]
     }
   ],
-  "final_live_memories": []
+  "final_live_memories": [
+    "User adopted a dog named Biscuit"
+  ]
 }
