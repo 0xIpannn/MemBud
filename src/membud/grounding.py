@@ -17,6 +17,7 @@ text that reaches the verifier.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
@@ -33,6 +34,8 @@ NUMERAL_NOT_IN_ANY_TURN = "numeral_not_in_any_turn"
 NO_TOKEN_OVERLAP = "no_token_overlap"
 NEEDS_MULTIPLE_TURNS = "needs_multiple_turns"
 BELOW_THRESHOLD = "below_threshold"
+JUDGE_UNSUPPORTED = "judge_unsupported"
+JUDGE_INVALID_CITATION = "judge_invalid_citation"
 
 UNGROUNDED_REASONS = (
     EMPTY_CLAIM_TOKENS,
@@ -40,6 +43,8 @@ UNGROUNDED_REASONS = (
     NO_TOKEN_OVERLAP,
     NEEDS_MULTIPLE_TURNS,
     BELOW_THRESHOLD,
+    JUDGE_UNSUPPORTED,
+    JUDGE_INVALID_CITATION,
 )
 
 
@@ -220,6 +225,69 @@ class CoverageGrounder:
         return GroundingReport(evidence=evidence, claims=tuple(results))
 
 
+@dataclass(frozen=True)
+class JudgeVerdict:
+    """A semantic judge's answer for one claim: supported by which source indices."""
+
+    supported: bool
+    source_indices: tuple[int, ...] = ()
+    reason: str = ""
+
+
+@dataclass(frozen=True)
+class JudgeGrounder:
+    """Semantic grounder: an injected judge decides support, the host builds the evidence.
+
+    ``judge(claim, sources)`` may be an LLM or NLI model. It is only trusted to say
+    *whether* a claim is supported and *which* sources say so; the evidence quote is
+    always the verbatim source text, so the verifier's quote check still applies. A
+    "supported" verdict with no valid source index is rejected
+    (``judge_invalid_citation``): support without a citable turn is never invented.
+    """
+
+    judge: Callable[[str, Sequence[GroundingSource]], JudgeVerdict]
+    label: str = "judge"
+    evidence_prefix: str = "jev"
+
+    @property
+    def name(self) -> str:
+        return self.label
+
+    def ground(
+        self,
+        claims: Sequence[str],
+        sources: Sequence[GroundingSource],
+        *,
+        already_supported: frozenset[str] = frozenset(),
+    ) -> GroundingReport:
+        results: list[ClaimGrounding] = []
+        evidence: list[Evidence] = []
+        for claim in dict.fromkeys(claims):
+            if claim in already_supported:
+                results.append(ClaimGrounding(claim, ALREADY_SUPPORTED))
+                continue
+            verdict = self.judge(claim, sources)
+            if not verdict.supported:
+                results.append(ClaimGrounding(claim, JUDGE_UNSUPPORTED))
+                continue
+            valid = tuple(sorted({i for i in verdict.source_indices if 0 <= i < len(sources)}))
+            if not valid:
+                results.append(ClaimGrounding(claim, JUDGE_INVALID_CITATION))
+                continue
+            for i in valid:
+                evidence.append(
+                    Evidence(
+                        id=f"{self.evidence_prefix}-{len(evidence) + 1}",
+                        supports=(claim,),
+                        source=sources[i].ref,
+                        text=sources[i].text,
+                        contradicts=(),
+                    )
+                )
+            results.append(ClaimGrounding(claim, GROUNDED, source_ref=sources[valid[0]].ref))
+        return GroundingReport(evidence=tuple(evidence), claims=tuple(results))
+
+
 __all__ = [
     "ALREADY_SUPPORTED",
     "BELOW_THRESHOLD",
@@ -230,6 +298,10 @@ __all__ = [
     "GROUNDED",
     "GroundingReport",
     "GroundingSource",
+    "JUDGE_INVALID_CITATION",
+    "JUDGE_UNSUPPORTED",
+    "JudgeGrounder",
+    "JudgeVerdict",
     "NEEDS_MULTIPLE_TURNS",
     "NO_TOKEN_OVERLAP",
     "NUMERAL_NOT_IN_ANY_TURN",

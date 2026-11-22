@@ -102,3 +102,27 @@ def test_grounder_numnorm_grounds_iso_date_restatement_only_when_enabled():
     bad = CoverageGrounder(0.6, normalize_numerals=True).ground(["born May 7, 1983 in San Diego"], src)
     assert bad.claims[0].reason == g.NUMERAL_NOT_IN_ANY_TURN
     assert CoverageGrounder(0.6, normalize_numerals=True).name.endswith("numnorm")
+
+
+def test_judge_grounder_builds_verbatim_evidence_and_rejects_uncited_support():
+    from membud.grounding import JudgeGrounder, JudgeVerdict
+
+    def judge(claim, sources):
+        if "cello" in claim:
+            return JudgeVerdict(True, (0, 99))  # 99 is not a real source: ignored
+        if "bakery" in claim:
+            return JudgeVerdict(True, ())  # supported but nothing citable
+        return JudgeVerdict(False)
+
+    rep = JudgeGrounder(judge).ground(
+        ["enjoys music daily (cello)", "sister owns a bakery", "owns a spaceship", "known"],
+        SRC,
+        already_supported=frozenset({"known"}),
+    )
+    r = {c.claim: c.reason for c in rep.claims}
+    assert r["enjoys music daily (cello)"] == g.GROUNDED
+    assert r["sister owns a bakery"] == g.JUDGE_INVALID_CITATION
+    assert r["owns a spaceship"] == g.JUDGE_UNSUPPORTED
+    assert r["known"] == g.ALREADY_SUPPORTED
+    assert len(rep.evidence) == 1 and rep.evidence[0].text == SRC[0].text
+    assert rep.evidence[0].supports == ("enjoys music daily (cello)",)
