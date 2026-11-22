@@ -11,25 +11,29 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src")); sys.path.insert(0, str(ROOT / "tests"))
 from adapter_harness import HARNESSES  # noqa: E402
+TRUSTCALL = "0.0.39"
 
 VERSIONS = {
     "mem0-blackbox": {"mem0ai": "2.2.1", "spacy": "3.8.18"},
     "mem0-staged": {"mem0ai": "2.2.1", "spacy": "3.8.18"},
+    "langmem-blackbox": {"langmem": "0.0.30", "langgraph": "1.2.24", "trustcall": TRUSTCALL, "model": "scripted chat model (offline)"},
     "fake-blackbox": {"stdlib": "sqlite3 fake (tests/blackbox_fakes.py)"},
 }
+PYTHONS = {"langmem-blackbox": ROOT / ".venv-langmem/bin/python"}  # other backends use the current interpreter
 OUT = ROOT / "data/results/adapter-contract-v1"
 
 for name, cls in sorted(HARNESSES.items()):
     with tempfile.TemporaryDirectory() as td:
         xml = Path(td) / "r.xml"
-        subprocess.run([sys.executable, "-m", "pytest", "-q", "tests/test_adapter_contract.py",
+        subprocess.run([str(PYTHONS.get(name, sys.executable)), "-m", "pytest", "-q", "tests/test_adapter_contract.py",
                         "-k", name, f"--junitxml={xml}", "-p", "no:cacheprovider"],
                        cwd=ROOT, capture_output=True, text=True)
         cases = []
         for tc in ET.parse(xml).getroot().iter("testcase"):
             status = "failed" if tc.find("failure") is not None or tc.find("error") is not None else (
                 "skipped" if tc.find("skipped") is not None else "passed")
-            cases.append({"test": tc.get("name").replace(f"-{name}]", "]").replace(f"[{name}]", ""), "status": status})
+            skip_reason = tc.find("skipped").get("message") if status == "skipped" else None
+            cases.append({"test": tc.get("name").replace(f"-{name}]", "]").replace(f"[{name}]", ""), "status": status, **({"skip_reason": skip_reason} if skip_reason else {})})
     cases.sort(key=lambda c: c["test"])
     ev = {
         "backend": name,
@@ -38,6 +42,7 @@ for name, cls in sorted(HARNESSES.items()):
         "contract_suite": "tests/test_adapter_contract.py",
         "passed": sum(c["status"] == "passed" for c in cases),
         "failed": sum(c["status"] == "failed" for c in cases),
+        "skipped": sum(c["status"] == "skipped" for c in cases),
         "cases": cases,
         "detects_unmodeled_side_effects": cls.detects,
         "not_protected_against": [k for k, v in cls.detects.items() if not v],

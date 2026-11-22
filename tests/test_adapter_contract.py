@@ -152,6 +152,8 @@ def test_direct_writes_through_the_guard_are_refused(h):
 
 @pytest.mark.parametrize("kind", ["foreign_scope", "history_rewrite"])
 def test_unmodeled_side_effect_is_rejected_and_byte_identical(h, kind):
+    if kind == "history_rewrite" and not getattr(h, "has_history", True):
+        pytest.skip("backend exposes no history surface: a history rewrite is not expressible (documented blind spot)")
     seeded(h)
     before = h.surfaces()
     with h.tamper(kind):

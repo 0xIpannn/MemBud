@@ -81,5 +81,6 @@
   "passed": 16,
   "pinned": {
     "stdlib": "sqlite3 fake (tests/blackbox_fakes.py)"
-  }
+  },
+  "skipped": 0
 }

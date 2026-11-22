@@ -160,6 +160,7 @@ foreign-scope/history rewrites rejected. Every adapter must pass all of it.
 | Mem0 2.2.1 (pinned) | `StagedMem0` (shadow clone; needs storage layout) | 16/16 | yes (rejected) |
 | Mem0 2.2.1 (pinned) | `BlackBoxStaged` | 16/16 | **no** (accepted, unseen) |
 | stdlib SQLite fake | `BlackBoxStaged` | 16/16 | schema yes, hidden table no |
+| LangMem 0.0.30 over LangGraph `InMemoryStore` (pinned in `requirements-langmem.txt`) | `BlackBoxStaged` via `langgraph_store_ops` | 15/16, 1 skipped (no history surface to rewrite) | **no** schema/index/vector writes (accepted, unseen); foreign namespaces yes |
 | A-Mem (git `ceffb86`) | none | not stageable (finding) | n/a |
 | Graphiti 0.31.2 / Letta 0.16.4 / Zep | none | not runnable offline (finding) | n/a |
 
@@ -175,9 +176,12 @@ directly; O(n) cost per write (about 27 ms vs 17 ms for `mem0_staged` at 2 memor
 cannot enumerate scopes (hence an explicit `scopes` list) and silently truncates, so a result that fills
 the limit is refused.
 
-**Universality is not claimed.** Two real configurations (both Mem0) and one fake pass; the third real
-backend could not be staged safely or offline (see findings). Untested: Zep/Graphiti, Letta, any
-backend other than Mem0 through the black-box path, `AsyncMemory`, `delete_all`/`reset`, multi-process
+**Universality is not claimed.** Two real backend families pass the black-box path (Mem0 2.2.1, LangMem 0.0.30 on
+an in-memory LangGraph store) plus one stdlib fake; a third real backend could not be staged safely or offline
+(A-Mem, Graphiti, Letta; see findings). LangMem was exercised only on `InMemoryStore` with a scripted chat model
+(real `langmem` and `trustcall` code, fake LLM); its SQLite/Postgres stores, vector index, background manager
+and real models are untested. Untested: Zep/Graphiti, Letta, any
+backend other than Mem0 and LangMem through the black-box path, `AsyncMemory`, `delete_all`/`reset`, multi-process
 contention, and every Mem0 write path except add/update/delete. The default verifier is unchanged
 (deterministic, offline); no runtime dependency was added.
 

@@ -1,0 +1,9 @@
+# Pinned stack for the LangMem black-box contract run (Python 3.12). Offline: only the chat model is scripted.
+langmem==0.0.30
+langgraph==1.2.24
+trustcall==0.0.39
+langgraph-checkpoint==4.3.2
+langchain-core==1.8.4
+langgraph-prebuilt==1.1.3
+langgraph-sdk==0.4.14
+pytest>=8

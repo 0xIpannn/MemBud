@@ -80,5 +80,6 @@
   "pinned": {
     "mem0ai": "2.2.1",
     "spacy": "3.8.18"
-  }
+  },
+  "skipped": 0
 }

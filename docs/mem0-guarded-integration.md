@@ -183,3 +183,9 @@ not an ACCEPT with a real model. A first attempt on `google/gemma-4-31b-it:free`
 Findings for other backends (`data/results/adapter-contract-v1/findings.json`): A-Mem (commit `ceffb86`) cannot be
 staged through its public API (a second in-process instance destroys the first's chroma store; `add_note` always
 rewrites neighbours); Graphiti 0.31.2/Kuzu and Letta 0.16.4 do not run offline; Zep is SaaS.
+
+LangMem (0.0.30, `langgraph 1.2.24`, `trustcall 0.0.39`) was added as the second real backend through the same
+adapter (`langgraph_store_ops` over a LangGraph `BaseStore`): 15/16 contract cases pass; the skipped case is a
+history rewrite, which this store cannot express because it keeps no history. Its native write is one scripted LLM
+call plus plain puts (no cascades), which is why it stages cleanly where A-Mem does not. Blind spots: index/vector
+writes and any other store internals. Tested only with `InMemoryStore` and a scripted chat model.

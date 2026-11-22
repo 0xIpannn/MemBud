@@ -468,3 +468,8 @@ class Mem0Staged(_Mem0Base):
 
 
 HARNESSES = {"fake-blackbox": FakeBlackBox, "mem0-blackbox": Mem0BlackBox, "mem0-staged": Mem0Staged}
+
+
+from adapter_harness_langmem import LangMemBlackBox  # noqa: E402  (registered after the base classes exist)
+
+HARNESSES["langmem-blackbox"] = LangMemBlackBox

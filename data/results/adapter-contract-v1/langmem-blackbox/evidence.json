@@ -1,0 +1,92 @@
+{
+  "adapter": "BlackBoxStaged (public API only)",
+  "backend": "langmem-blackbox",
+  "cases": [
+    {
+      "status": "passed",
+      "test": "test_accept_add_persists_exactly_the_verified_state"
+    },
+    {
+      "status": "passed",
+      "test": "test_accept_update_and_delete_persist_exactly"
+    },
+    {
+      "status": "passed",
+      "test": "test_backend_error_while_staging_writes_nothing"
+    },
+    {
+      "status": "passed",
+      "test": "test_blind_spots_are_exactly_the_documented_ones[langmem-blackbox-hidden_surface]"
+    },
+    {
+      "status": "passed",
+      "test": "test_blind_spots_are_exactly_the_documented_ones[langmem-blackbox-schema_change]"
+    },
+    {
+      "status": "passed",
+      "test": "test_commit_failure_is_compensated_to_the_prior_public_state"
+    },
+    {
+      "status": "passed",
+      "test": "test_control_unguarded_write_changes_every_surface"
+    },
+    {
+      "status": "passed",
+      "test": "test_direct_writes_through_the_guard_are_refused"
+    },
+    {
+      "status": "passed",
+      "test": "test_hold_unsupported_add_is_byte_identical"
+    },
+    {
+      "status": "passed",
+      "test": "test_hold_unsupported_update_is_byte_identical"
+    },
+    {
+      "status": "passed",
+      "test": "test_other_scopes_are_untouched_by_an_accept"
+    },
+    {
+      "status": "passed",
+      "test": "test_stale_state_is_refused_and_the_intruder_survives"
+    },
+    {
+      "status": "passed",
+      "test": "test_unauthorized_delete_is_rejected_and_byte_identical"
+    },
+    {
+      "status": "passed",
+      "test": "test_unmodeled_side_effect_is_rejected_and_byte_identical[langmem-blackbox-foreign_scope]"
+    },
+    {
+      "skip_reason": "backend exposes no history surface: a history rewrite is not expressible (documented blind spot)",
+      "status": "skipped",
+      "test": "test_unmodeled_side_effect_is_rejected_and_byte_identical[langmem-blackbox-history_rewrite]"
+    },
+    {
+      "status": "passed",
+      "test": "test_unrecoverable_failure_is_loud_not_silent"
+    }
+  ],
+  "contract_suite": "tests/test_adapter_contract.py",
+  "detects_unmodeled_side_effects": {
+    "foreign_scope": true,
+    "hidden_surface": false,
+    "history_rewrite": false,
+    "schema_change": false
+  },
+  "failed": 0,
+  "not_protected_against": [
+    "history_rewrite",
+    "schema_change",
+    "hidden_surface"
+  ],
+  "passed": 15,
+  "pinned": {
+    "langgraph": "1.2.24",
+    "langmem": "0.0.30",
+    "model": "scripted chat model (offline)",
+    "trustcall": "0.0.39"
+  },
+  "skipped": 1
+}
