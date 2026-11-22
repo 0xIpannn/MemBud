@@ -189,3 +189,10 @@ adapter (`langgraph_store_ops` over a LangGraph `BaseStore`): 15/16 contract cas
 history rewrite, which this store cannot express because it keeps no history. Its native write is one scripted LLM
 call plus plain puts (no cascades), which is why it stages cleanly where A-Mem does not. Blind spots: index/vector
 writes and any other store internals. Tested only with `InMemoryStore` and a scripted chat model.
+
+Real-model LangMem run (`scripts/run_langmem_realmodel.py`, free `nvidia/nemotron-3.5-lightning:free`, $0, 5 requests,
+5,300 tokens, synthetic sessions): the real manager extracted facts, but all five proposals were HELD by the default
+`LexicalGrounding` and live state stayed empty. Even "User adopted a dog named Biscuit." is not grounded by
+"I adopted a dog named Biscuit." (checked offline), i.e. third-person rewriting of first-person speech defeats the
+lexical policy. Some extractions also carried model-added commentary ("p ~ 0.99"), which a grounded check should
+hold. This shows fail-closed behaviour and the paraphrase false-hold problem, not an ACCEPT with a real model.

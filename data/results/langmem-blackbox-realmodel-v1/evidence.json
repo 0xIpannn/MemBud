@@ -1,0 +1,194 @@
+{
+  "claim": "Real free-model extraction (real langmem + LangGraph InMemoryStore) through BlackBoxStaged; synthetic dialogues.",
+  "environment": {
+    "langmem": "0.0.30",
+    "langgraph": "1.2.24",
+    "trustcall": "0.0.39",
+    "langchain-openai": "1.8.5",
+    "model": "nvidia/nemotron-3.5-lightning:free"
+  },
+  "pricing": {
+    "id": "nvidia/nemotron-3.5-lightning:free",
+    "is_free": true,
+    "prompt_per_mtok": 0.0,
+    "completion_per_mtok": 0.0
+  },
+  "caps": {
+    "max_requests": 40,
+    "max_tokens": 40000,
+    "cost_cap_usd": 0
+  },
+  "usage": {
+    "requests": 5,
+    "tokens": 5300,
+    "errors": []
+  },
+  "sessions": [
+    {
+      "session": 0,
+      "input": "I live in Berlin.",
+      "operation": "add",
+      "decision": "HOLD",
+      "applied": false,
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "case_id": "s0",
+      "scope": {
+        "user_id": "u1"
+      },
+      "error_type": "",
+      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pending_side_effects": {
+        "add": 1
+      },
+      "changes": [
+        {
+          "kind": "add",
+          "id": "10e416ae-59fd-4ff9-be61-a10d3a24978c",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User resides in Berlin, Germany. This is a factual statement about the user's location, extracted from the interaction."
+        }
+      ],
+      "id_map": {},
+      "extracted": [
+        "User resides in Berlin, Germany. This is a factual statement about the user's location, extracted from the interaction."
+      ]
+    },
+    {
+      "session": 1,
+      "input": "I work at Acme Corp as an engineer.",
+      "operation": "add",
+      "decision": "HOLD",
+      "applied": false,
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "case_id": "s1",
+      "scope": {
+        "user_id": "u1"
+      },
+      "error_type": "",
+      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pending_side_effects": {
+        "add": 1
+      },
+      "changes": [
+        {
+          "kind": "add",
+          "id": "43d4ce94-004a-474c-b445-761cf5db10b4",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User is an engineer employed at Acme Corp."
+        }
+      ],
+      "id_map": {},
+      "extracted": [
+        "User is an engineer employed at Acme Corp."
+      ]
+    },
+    {
+      "session": 2,
+      "input": "My favourite food is ramen.",
+      "operation": "add",
+      "decision": "HOLD",
+      "applied": false,
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "case_id": "s2",
+      "scope": {
+        "user_id": "u1"
+      },
+      "error_type": "",
+      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pending_side_effects": {
+        "add": 1
+      },
+      "changes": [
+        {
+          "kind": "add",
+          "id": "2549af8c-d84e-45c6-b065-f531cf7499f6",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User's favorite food is ramen."
+        }
+      ],
+      "id_map": {},
+      "extracted": [
+        "User's favorite food is ramen."
+      ]
+    },
+    {
+      "session": 3,
+      "input": "I am allergic to peanuts.",
+      "operation": "add",
+      "decision": "HOLD",
+      "applied": false,
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "case_id": "s3",
+      "scope": {
+        "user_id": "u1"
+      },
+      "error_type": "",
+      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pending_side_effects": {
+        "add": 1
+      },
+      "changes": [
+        {
+          "kind": "add",
+          "id": "e61b5ef1-0948-42b1-b312-326d5eb804da",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User has a peanut allergy (p ~ 0.99). This preference should be respected by avoiding any food or products containing peanuts and by reminding the user of potential allergen sources."
+        }
+      ],
+      "id_map": {},
+      "extracted": [
+        "User has a peanut allergy (p ~ 0.99). This preference should be respected by avoiding any food or products containing peanuts and by reminding the user of potential allergen sources."
+      ]
+    },
+    {
+      "session": 4,
+      "input": "I adopted a dog named Biscuit.",
+      "operation": "add",
+      "decision": "HOLD",
+      "applied": false,
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "case_id": "s4",
+      "scope": {
+        "user_id": "u1"
+      },
+      "error_type": "",
+      "pre_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "live_digest": "c627067fd6b51a68cfb36bf1fc99bbc74fcc70249f172057ba3bff5851a9dcd5",
+      "pending_side_effects": {
+        "add": 1
+      },
+      "changes": [
+        {
+          "kind": "add",
+          "id": "a8489978-cf08-4417-8f13-ab0cc8c353ba",
+          "scope": {
+            "user_id": "u1"
+          },
+          "old_text": null,
+          "new_text": "User adopted a dog named Biscuit. This is a new episodic fact about the user's life, indicating potential future interests in pet care, outings, and responsibilities."
+        }
+      ],
+      "id_map": {},
+      "extracted": [
+        "User adopted a dog named Biscuit. This is a new episodic fact about the user's life, indicating potential future interests in pet care, outings, and responsibilities."
+      ]
+    }
+  ],
+  "final_live_memories": []
+}
