@@ -1,6 +1,6 @@
 # Does MemBud's guard change results? HaluMem and LongMemEval pilots
 
-Date: 2026-11-22. **Status: unvalidated.** Every number below depends on an LLM judge (DeepSeek `deepseek-flash`, not the benchmarks' GPT-4o) whose flags are not validated by a completed two-reviewer, inter-rater-checked label set. The dual-review quiz (`data/halumem-runs/phase2-deepseek/claim-audit-dual/claim-quiz.html`, rubric frozen in `docs/halumem-grounding-rubric.md`) was built but **no reviewer has labeled it**. The required "inter-rater-checked judge" condition is therefore **not met**.
+Date: 2026-11-22. **Status: the judge now has a two-reviewer check, but its weight is limited.** Every number still depends on an LLM judge (DeepSeek `deepseek-flash`, not the benchmarks' GPT-4o). Two reviewers (ifan, nabhan) labeled the same 36 fresh claims blind under the frozen rubric (`docs/halumem-grounding-rubric.md`); see the judge validity check below. Results are not described as validated: the check shows the judge's UNSUPPORTED flags are almost never confirmed, and the reviewers do not agree with each other on the unsupported class.
 
 ## Verdict
 
@@ -60,6 +60,22 @@ Paired difference, session-level bootstrap (2,000 resamples), 95% CI:
 
 Per type (5 questions each): the only differences are guard on knowledge-update (0.8 vs 1.0) and single-session-user (0.8 vs 1.0). Paired vs unguarded: guard has 0 questions only it got right, 2 only unguarded got right (McNemar p = 0.5); guard+repair has 0 discordant. 30 questions cannot detect effects of this size.
 
+## Judge validity check (two reviewers, same 36 claims, frozen rubric)
+
+Sample: 36 claims never labeled before (8 the judge flagged UNSUPPORTED, 28 it called SUPPORTED), seeded draw; rubric SHA-256 pinned in the manifest. Both reviewers labeled all 36 decisively (0 UNSURE) and labeled alone. Offline, $0.
+
+| | ifan | nabhan |
+|---|---|---|
+| Judge-flagged claims the reviewer also marked UNSUPPORTED (flag precision) | 1 of 8 (12.5%, Wilson 95% [2%, 47%]) | 0 of 8 (0%, [0%, 32%]) |
+| Judge-supported claims the reviewer marked UNSUPPORTED (miss rate) | 0 of 28 ([0%, 12%]) | 1 of 28 (3.6%, [0.6%, 18%]) |
+| Agreement with the judge | 29/36 (80.6%, [65%, 90%]) | 27/36 (75.0%, [59%, 86%]) |
+
+**Inter-rater agreement between the two reviewers:** 34 of 36 (94.4%, Wilson [82%, 98%]); **Cohen's kappa = -0.03**. The raw agreement is high only because nearly everything is SUPPORTED. Each reviewer marked exactly one claim UNSUPPORTED, and they were different claims, so the reviewers do not agree on the class that matters (kappa about zero).
+
+**Does the guard's effect flip between reviewers?** No flip in direction. Under both reviewers' labels the judge's flags are overwhelmingly not confirmed (1/8 and 0/8; the intervals overlap). The guard's holds are therefore mostly driven by claims that neither human reviewer calls unsupported. That matches the HaluMem result: holding costs recall and gains no precision, because the removed claims were mostly fine. It is claim-level evidence: with only 8 flagged claims the intervals are wide, and claim labels cannot give a session-level guard effect (that needs every claim in a proposal labeled).
+
+**What this does and does not establish.** The pre-registered condition (two reviewers complete, kappa reported) is met. But the labels cannot serve as ground truth for unsupported claims: the reviewers essentially find none in this sample, so we learn the judge's flags are mostly false alarms, not that it detects real hallucinations. Earlier audits (different claims and reviewers) gave 17% flag precision under one reviewer and 91.5% agreement under another; this check is consistent with the low flag precision.
+
 ## Cost and failures
 
 Estimated spend this session (peak list price, cache miss, **estimates not bills**; earlier runs billed about 1/5 of peak, user-reported and unverified):
@@ -77,7 +93,7 @@ Failures: 0 judge errors across 3,523 HaluMem judge calls, 0 extractor errors in
 
 ## Limitations (read before citing any number)
 
-- **Judge not validated, not GPT-4o.** Official metrics use the repository's prompts with deepseek-flash. The judge both supplies guard flags and scores the result, so results are circular. Earlier audits disagreed (judge flag precision 17% under one reviewer, 91.5% agreement under another) and used different claims, so no inter-rater agreement exists.
+- **Judge weakly checked, not GPT-4o.** Official metrics use the repository's prompts with deepseek-flash. The judge both supplies guard flags and scores the result, so results are circular. The two-reviewer check (36 claims, 8 flagged) found the judge's flags are mostly not confirmed and the reviewers disagree on which claims are unsupported (kappa -0.03); it supports the reading that flags are mostly false alarms, not a detection rate.
 - **Guard = judge-claim guard**, not a per-session re-run of the structural verifier. Re-verification of an unchanged prompt is served from cache.
 - **One extractor family, one dataset slice.** Mem0 2.2.1 on 20 HaluMem users; a custom DeepSeek ingestion pipeline on LongMemEval (the benchmark has no memory system of its own). Not a leaderboard number.
 - Lexical retrieval; LongMemEval judge reply requested as JSON.
@@ -86,7 +102,7 @@ Failures: 0 judge errors across 3,523 HaluMem judge calls, 0 extractor errors in
 
 ## Not done / not tested
 
-- Second-reviewer labels and inter-rater agreement (quiz built, unlabeled).
+- A session-level guard effect under reviewer labels (needs every claim in a proposal labeled by both reviewers) and a larger flagged-claim sample (only 8 fresh flagged claims existed).
 - HaluMem update metrics and QA accuracy.
 - LongMemEval S/M (distractor haystacks) and any run beyond 30 questions; GPT-4o judging.
 - Extension beyond the 97-session pilot (not done because the pilot showed no benefit to chase).
