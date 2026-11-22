@@ -43,6 +43,24 @@ For SUPPORTED claims, "turns" lists the numbers of the [user] turns that support
 Answer with JSON only: {"claims": [{"i": <claim number>, "verdict": "SUPPORTED" or "UNSUPPORTED", "turns": [..]}, ...]} with one entry per claim."""
 
 
+# Policy v2 (decided by the project owner 2026-11-22): a fact introduced by the assistant counts as
+# supported when the user accepts it or when it rests on something the user said earlier.
+SYSTEM_ACCEPTED = """You verify claims that a memory system wrote about a user. You get one chat session as numbered turns \
+labelled [user] or [assistant], earlier memory, and a numbered list of claims. For EACH claim decide whether it is supported.
+SUPPORTED if any of these holds:
+ (a) the user's words state it or clearly imply it, including paraphrase, different number/date formats \
+(1983-05-06 = May 6, 1983; 75000 = $75,000), or a combination of facts the user did state;
+ (b) the assistant introduced it and the user accepted, adopted or acted on it (agreed, thanked, said they would try it, \
+asked to continue with it, built on it) without rejecting it;
+ (c) the assistant's statement rests on what the user said earlier in the session or on the earlier memory.
+UNSUPPORTED: the claim adds a fact, number, name, event or detail that the user did not give, did not accept, and that does not rest on \
+what the user said or on the earlier memory (for example an assistant-invented name or figure the user never engaged with, or \
+something the user rejected).
+Ignore a run-date phrase such as "as of November 2026" or "around November 2026"; judge the rest of the claim.
+For SUPPORTED claims, "turns" lists the numbers of the [user] turns that state, accept or are the earlier basis for it.
+Answer with JSON only: {"claims": [{"i": <claim number>, "verdict": "SUPPORTED" or "UNSUPPORTED", "turns": [..]}, ...]} with one entry per claim."""
+
+
 def decide(cond, t, transcript):
     if cond == "unguarded":
         return "ACCEPT"
@@ -57,6 +75,9 @@ def main() -> int:
     ap.add_argument("--halumem-path", required=True)
     ap.add_argument("--dataset-revision", default="")
     ap.add_argument("--answers", required=True, help="human claim-audit answers JSON")
+    ap.add_argument("--policy", choices=("strict", "accepted"), default="strict",
+                    help="accepted: assistant-introduced facts count when the user accepts them or they rest on earlier user statements; "
+                         "only proposals the strict run flagged are re-judged (the rest reuse cached strict verdicts)")
     ap.add_argument("--allow-paid", action="store_true")
     ap.add_argument("--max-spend-usd", type=float, required=True)
     a = ap.parse_args()
@@ -74,7 +95,12 @@ def main() -> int:
     gold = {(i["case_id"], i["claim"]): gold_h[i["item_id"]]["decision"] for i in items
             if gold_h.get(i["item_id"], {}).get("decision") in ("SUPPORTED", "UNSUPPORTED")}
 
-    out = {"schema": "membud-halumem-phase2-llm-evidence-v1", "validated": False, "model": str(client.model),
+    flagged_cases = set()
+    if a.policy == "accepted":
+        flagged_cases = {v["case_id"] for v in map(json.loads, (run / "llm-claim-verdicts.jsonl").read_text().splitlines())
+                         if not v["judge_supported"]}
+    suffix = "-accepted" if a.policy == "accepted" else ""
+    out = {"schema": "membud-halumem-phase2-llm-evidence-v1", "policy": a.policy, "validated": False, "model": str(client.model),
            "cap_usd": a.max_spend_usd, "per_proposal": [], "aborted": ""}
     cases, verdicts_all = [], {}
     for f in sorted((run / "proposals").glob("*.json")):
@@ -100,7 +126,7 @@ def main() -> int:
                 k += 1
         memo: dict[str, JudgeVerdict] = {}
 
-        def judge(claim, sources, _added=added, _s=s, _t=t, _memo=memo, _d2u=d2u):
+        def judge(claim, sources, _added=added, _s=s, _t=t, _memo=memo, _d2u=d2u, _cid=cid):
             if not _memo:
                 if spend["est"] >= a.max_spend_usd:
                     raise RuntimeError(f"spend cap reached (estimated ${spend['est']:.4f})")
@@ -108,7 +134,7 @@ def main() -> int:
                 mem = "\n".join(c for r in _t.before for c in r.claims) or "(empty)"
                 cl = "\n".join(f"{i}. {c}" for i, c in enumerate(_added))
                 res = client.complete_json(
-                    [{"role": "system", "content": SYSTEM},
+                    [{"role": "system", "content": SYSTEM_ACCEPTED if _cid in flagged_cases else SYSTEM},
                      {"role": "user", "content": f"Session:\n{dlg}\n\nEarlier memory:\n{mem}\n\nClaims:\n{cl}"}],
                     validator=lambda j: None if isinstance(j.get("claims"), list) else (_ for _ in ()).throw(ValueError("no claims list")),
                 )
@@ -177,9 +203,9 @@ def main() -> int:
         "graph_holds_without_judge_unsupported_claim": held_other,
         "spend_estimated_peak_rate_usd": round(spend["est"], 6), "paid_requests": spend["calls"], "cached_requests": spend["cached"], "tokens": spend["tokens"],
     })
-    (run / "llm-claim-verdicts.jsonl").write_text("".join(
+    (run / f"llm-claim-verdicts{suffix}.jsonl").write_text("".join(
         json.dumps({"case_id": k[0], "claim": k[1], "judge_supported": v}, ensure_ascii=False) + "\n" for k, v in verdicts_all.items()))
-    (run / "llm-phase2-eval.json").write_text(json.dumps(out, indent=2, sort_keys=True) + "\n")
+    (run / f"llm-phase2-eval{suffix}.json").write_text(json.dumps(out, indent=2, sort_keys=True) + "\n")
     print(json.dumps({k: v for k, v in out.items() if k != "per_proposal"}, indent=2, sort_keys=True))
     return 1 if out["aborted"] else 0
 
