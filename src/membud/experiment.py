@@ -495,7 +495,7 @@ def main() -> None:
     parser.add_argument("--verifier", choices=("rules", "llm"), default="rules")
     parser.add_argument(
         "--provider",
-        choices=("claude", "gemini", "deepseek", "commandcode"),
+        choices=("claude", "gemini", "openrouter", "deepseek", "commandcode"),
         default="claude",
     )
     args = parser.parse_args()
