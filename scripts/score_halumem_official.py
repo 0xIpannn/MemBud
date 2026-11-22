@@ -169,29 +169,38 @@ def _records(it, cache, pre="", extracted=None):
     return integ, acc, missing
 
 
+def _session_conditions(it, cache):
+    """{condition: (integrity_records, accuracy_records, committed, missing)} for one session."""
+    integ, acc, m = _records(it, cache)
+    rep = None
+    if not it["guard_judge_commits"] and it.get("repair_claims"):
+        rep = _records(it, cache, pre="R", extracted=it["repair_claims"])
+    commits = {"unguarded": True, "guard_strict_recorded": False, "guard_judge_claims": it["guard_judge_commits"]}
+    out = {}
+    for c in CONDITIONS:
+        if c == "guard_repair":
+            if it["guard_judge_commits"]:
+                i2, a2, committed = integ, acc, True
+            elif rep is not None:
+                i2, a2, committed = rep[0], rep[1], True
+            else:
+                i2, a2 = apply_commit_decision(integ, acc, False)
+                committed = False
+        else:
+            i2, a2 = apply_commit_decision(integ, acc, commits[c])
+            committed = commits[c]
+        out[c] = (i2, a2, committed)
+    return out, m + (rep[2] if rep else 0)
+
+
 def score(items, cache) -> dict:
     out, per_session = {}, {c: [] for c in CONDITIONS}
     missing = 0
     for it in items:
-        integ, acc, m = _records(it, cache)
+        conds, m = _session_conditions(it, cache)
         missing += m
-        rep = None
-        if not it["guard_judge_commits"] and it.get("repair_claims"):
-            rep = _records(it, cache, pre="R", extracted=it["repair_claims"])
-            missing += rep[2]
-        commits = {"unguarded": True, "guard_strict_recorded": False, "guard_judge_claims": it["guard_judge_commits"]}
         for c in CONDITIONS:
-            if c == "guard_repair":
-                if it["guard_judge_commits"]:
-                    i2, a2, committed = integ, acc, True
-                elif rep is not None:
-                    i2, a2, committed = rep[0], rep[1], True
-                else:
-                    i2, a2 = apply_commit_decision(integ, acc, False)
-                    committed = False
-            else:
-                i2, a2 = apply_commit_decision(integ, acc, commits[c])
-                committed = commits[c]
+            i2, a2, committed = conds[c]
             per_session[c].append({"case_id": it["case_id"], "committed": committed, "integrity": i2, "accuracy": a2})
     for c in CONDITIONS:
         out[c] = aggregate_extraction([r for s in per_session[c] for r in s["integrity"]],
@@ -212,34 +221,42 @@ def fully_judged(items, cache):
     return out
 
 
-def paired_bootstrap(items, cache, base="unguarded", other="guard_judge_claims", resamples=4000, seed=20261122):
-    """Paired session-level bootstrap of (other - base) for each pooled official metric."""
+def paired_bootstrap(items, cache, base="unguarded", other="guard_judge_claims", resamples=2000, seed=20261122):
+    """Paired session-level bootstrap of (other - base) for each pooled official metric.
+
+    Per-session records are computed once; each resample re-aggregates the pooled metrics.
+    """
     import random
 
     rng = random.Random(seed)
-    per = {}
+    per = []
     for it in items:
-        r = score([it], cache)
-        per[it["case_id"]] = (r[base], r[other])
-    ids = list(per)
+        r, _ = _session_conditions(it, cache)
+        per.append((r[base][:2], r[other][:2]))
     keys = ("recall(all)", "weighted_recall(all)", "fmr(all)", "target_precision(all)", "f1")
+
+    def agg(sample, side):
+        integ = [x for p in sample for x in p[side][0]]
+        acc = [x for p in sample for x in p[side][1]]
+        return aggregate_extraction(integ, acc)
+
+    d0 = {k: None for k in keys}
+    a0, b0 = agg(per, 0), agg(per, 1)
+    diffs = {k: [] for k in keys}
+    for _ in range(resamples):
+        samp = [per[rng.randrange(len(per))] for _ in per]
+        a, b = agg(samp, 0), agg(samp, 1)
+        for k in keys:
+            if a[k] is not None and b[k] is not None:
+                diffs[k].append(b[k] - a[k])
     res = {}
     for k in keys:
-        # Pooled metrics cannot be averaged per session; resample sessions and re-score.
-        diffs = []
-        for _ in range(resamples):
-            samp = [items[rng.randrange(len(items))] for _ in ids]
-            r = score(samp, cache)
-            a, b = r[base][k], r[other][k]
-            if a is not None and b is not None:
-                diffs.append(b - a)
-        diffs.sort()
-        if not diffs:  # metric undefined in every resample (e.g. FMR without interference points)
+        d = sorted(diffs[k])
+        if not d:  # metric undefined in every resample (e.g. FMR without interference points)
             res[k] = {"diff": None, "ci95": None, "n_sessions": len(items)}
             continue
-        r0 = score(items, cache)
-        d0 = (r0[other][k] or 0) - (r0[base][k] or 0)  # held-everything -> undefined metric counts as 0 here
-        res[k] = {"diff": round(d0, 4), "ci95": [round(diffs[int(0.025 * len(diffs))], 4), round(diffs[int(0.975 * len(diffs)) - 1], 4)],
+        d0 = (b0[k] or 0) - (a0[k] or 0)  # held-everything -> undefined metric counts as 0 here
+        res[k] = {"diff": round(d0, 4), "ci95": [round(d[int(0.025 * len(d))], 4), round(d[int(0.975 * len(d)) - 1], 4)],
                   "n_sessions": len(items)}
     return res
 
@@ -335,6 +352,24 @@ def main() -> int:
         "guard_repair_minus_guard_judge_claims": paired_bootstrap(full, cache, base="guard_judge_claims", other="guard_repair") if full else None,
         "sessions_held_by_guard": sum(not i["guard_judge_commits"] for i in full),
     }
+    # Tuning/final split by user (deterministic hash). Nothing was tuned on either half:
+    # every rule (grounding rubric, guard, repair prompt, retry limit) was fixed before these results
+    # existed, so the split is descriptive and shows whether the effect is consistent across halves.
+    def half(it):
+        return "tuning" if int(hashlib.sha256(f"20261122|{it['uuid']}".encode()).hexdigest(), 16) % 2 == 0 else "final"
+
+    res["_split_by_user"] = {}
+    for name in ("tuning", "final"):
+        sub = [i for i in full if half(i) == name]
+        if not sub:
+            continue
+        res["_split_by_user"][name] = {
+            "n_sessions": len(sub), "n_users": len({i["uuid"] for i in sub}),
+            "sessions_held_by_guard": sum(not i["guard_judge_commits"] for i in sub),
+            "guard_minus_unguarded": paired_bootstrap(sub, cache),
+            "guard_repair_minus_unguarded": paired_bootstrap(sub, cache, other="guard_repair"),
+            "guard_repair_minus_guard": paired_bootstrap(sub, cache, base="guard_judge_claims", other="guard_repair"),
+        }
     (out_dir / "official-metrics.json").write_text(json.dumps(res, indent=2, sort_keys=True) + "\n")
     print(json.dumps(res, indent=2, sort_keys=True))
     return 0
