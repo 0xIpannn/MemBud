@@ -25,3 +25,7 @@ halumem-output/
 data/halumem/
 data/results/halumem*/
 data/halumem-runs/
+
+# HaluMem run data and outputs contain dataset text; never commit
+data/halumem-runs/
+halumem-output/
