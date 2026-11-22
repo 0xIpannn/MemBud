@@ -25,3 +25,4 @@ halumem-output/
 data/halumem/
 data/results/halumem*/
 data/halumem-runs/
+.neo4j/

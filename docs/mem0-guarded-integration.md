@@ -221,3 +221,11 @@ them only when the token budget overflows (not on `Memory.aput`), and rewrites t
 exceeded; an id-based black-box diff cannot track updates without an adapter-side id registry, which was not built.
 AutoGen's `Memory` (autogen-core 0.7.5) has `add`/`query`/`clear` only and no native write, so it is a plain store.
 autogen-ext's Chroma-backed memory was not checked. Net: still two real backend families through the black-box path.
+
+Graphiti 0.31.2 on Neo4j (third real backend; `graphiti_ops`, `tests/adapter_harness_graphiti.py`): 15/16 contract
+cases pass, 1 skipped (no history surface). Setup, all inside the worktree: Neo4j Community 5.26.0 tarball in the
+git-ignored `.neo4j/` with `dbms.security.auth_enabled=false`, bound to 127.0.0.1, run with the local JDK 21
+(`.neo4j/neo4j-community-5.26.0/bin/neo4j console`); `.venv-graphiti` from `requirements-graphiti.txt`;
+`GRAPHITI_TELEMETRY_ENABLED=false`. LLM and embedder are offline fakes; only the database is real. Tests skip when no
+Neo4j listens on 7687. The accepted write keeps the facts but drops the episode node and MENTIONS edges (see
+`data/adapter-contract.md`); a real-model Graphiti run was not done.

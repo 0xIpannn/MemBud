@@ -162,9 +162,10 @@ foreign-scope/history rewrites rejected. Every adapter must pass all of it.
 | stdlib SQLite fake | `BlackBoxStaged` | 16/16 | schema yes, hidden table no |
 | LangMem 0.0.30 over LangGraph `InMemoryStore` (pinned in `requirements-langmem.txt`) | `BlackBoxStaged` via `langgraph_store_ops` | 15/16, 1 skipped (no history surface to rewrite) | **no** schema/index/vector writes (accepted, unseen); foreign namespaces yes |
 | A-Mem (git `ceffb86`) | none | not stageable (finding) | n/a |
+| Graphiti 0.31.2 on Neo4j community 5.26.0 (`requirements-graphiti.txt`) | `BlackBoxStaged` via `graphiti_ops` | 15/16, 1 skipped (no history surface) | **no** nodes/episodes/summaries/embeddings/indexes (unseen); foreign partitions yes |
 | LlamaIndex `FactExtractionMemoryBlock` (llama-index-core 0.14.26) | none | not stageable as-is (finding): no ids, facts extracted only on overflow, wholesale condensation | n/a |
 | AutoGen `Memory` (autogen-core 0.7.5) | none | no native write and no update/delete by id (plain store) | n/a |
-| Graphiti 0.31.2 / Letta 0.16.4 / Zep | none | not runnable offline (finding) | n/a |
+| Graphiti on embedded Kuzu / Letta 0.16.4 / Zep | none | not runnable offline (finding) | n/a |
 
 Evidence: `data/results/adapter-contract-v1/<backend>/evidence.json` and `findings.json`
 (`scripts/run_adapter_contract_evidence.py`); real-model run: `data/results/mem0-blackbox-realmodel-v1/`.
@@ -178,11 +179,10 @@ directly; O(n) cost per write (about 27 ms vs 17 ms for `mem0_staged` at 2 memor
 cannot enumerate scopes (hence an explicit `scopes` list) and silently truncates, so a result that fills
 the limit is refused.
 
-**Universality is not claimed.** Two real backend families pass the black-box path (Mem0 2.2.1, LangMem 0.0.30 on
-an in-memory LangGraph store) plus one stdlib fake; a third real backend could not be staged safely or offline
-(A-Mem, Graphiti, Letta; see findings). LangMem was exercised only on `InMemoryStore` with a scripted chat model
+**Universality is not claimed.** Three real backend families pass the black-box path (Mem0 2.2.1, LangMem 0.0.30 on
+an in-memory LangGraph store, Graphiti 0.31.2 on Neo4j 5.26.0) plus one stdlib fake, each with the limits below; A-Mem, LlamaIndex, AutoGen, Graphiti-on-Kuzu and Letta did not qualify (see findings). LangMem was exercised only on `InMemoryStore` with a scripted chat model
 (real `langmem` and `trustcall` code, fake LLM); its SQLite/Postgres stores, vector index, background manager
-and real models are untested. Untested: Zep/Graphiti, Letta, any
+and real models are untested. Untested: Zep, Letta, Graphiti beyond one Neo4j community server and add/update/delete, any
 backend other than Mem0 and LangMem through the black-box path, `AsyncMemory`, `delete_all`/`reset`, multi-process
 contention, and every Mem0 write path except add/update/delete. The default verifier is unchanged
 (deterministic, offline); no runtime dependency was added.
@@ -190,3 +190,13 @@ contention, and every Mem0 write path except add/update/delete. The default veri
 Current source-inspection feasibility findings for Mem0/A-Mem are in `data/backend-feasibility.md`.
 Neither inspected host exposes a safe public pre-commit transition hook. Section 5 documents the black-box
 route and why A-Mem still fails it.
+
+### Graphiti on Neo4j: what the black-box path loses
+
+`tests/test_graphiti_fidelity.py` runs the same add unguarded and guarded. Native `add_episode` writes 3 entity
+nodes, 1 episode node, 2 `RELATES_TO` fact edges and 3 `MENTIONS` edges. The guarded ACCEPT persists the same facts
+and entity nodes (2 edges, 3 nodes) but **no episode node and no `MENTIONS` edges**: the raw replay can only
+reproduce what the adapter observes (fact edges), so provenance, node summaries, the `episodes` list and temporal
+fields are lost. A native write that expires an existing fact (contradiction handling) changes an observed field and is
+refused as an unmodeled change (not exercised). The twin is a `group_id` partition of the same Neo4j database
+(Community has one database), so isolation is only as good as Graphiti's partition handling.

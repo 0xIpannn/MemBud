@@ -12,7 +12,7 @@ from typing import Any
 
 from .blackbox import BlackBoxError, BlackBoxOps
 
-__all__ = ["mem0_ops", "langgraph_store_ops"]
+__all__ = ["mem0_ops", "langgraph_store_ops", "graphiti_ops"]
 
 _MEM0_LIST_LIMIT = 100_000
 _SCOPE_KEYS = ("user_id", "agent_id", "run_id")
@@ -155,3 +155,118 @@ def langgraph_store_ops(
         raise ValueError(op)
 
     return BlackBoxOps(add=add, list=list_, modify=modify, schema=None, history=None, name=name, handle=store)
+
+
+def graphiti_ops(
+    graphiti: Any,
+    run: Any,
+    native_add: Any,
+    *,
+    group_prefix: str,
+    group_suffix: str = "",
+    name: str = "graphiti",
+) -> BlackBoxOps:
+    """Black-box ops over ``graphiti_core.Graphiti`` (Neo4j), using only its public classes and driver.
+
+    The unit of memory is a fact edge (``EntityEdge``: id = uuid, text = ``fact``).  Scope
+    ``{"user_id": u}`` is the graph partition ``group_id = f"{group_prefix}{u}{group_suffix}"``; a
+    twin uses another ``group_suffix`` in the same database (Neo4j Community has one database, so
+    partitions are the only isolation the public API offers).  ``run(coro)`` drives Graphiti's async
+    API from sync code.  ``native_add(graphiti, group_id, messages)`` runs Graphiti's own
+    ``add_episode``.
+
+    What is observed: each fact edge's text, relation name, endpoint names and whether it has been
+    expired (``expired_at``), so a native write that invalidates an existing fact shows up as a
+    metadata change and is refused.  What is NOT observed (and therefore neither verified nor
+    replayed): episode nodes and their ``MENTIONS`` edges, entity summaries and embeddings, the
+    ``episodes`` provenance list, ``valid_at``/``invalid_at``/``reference_time``, and any index.
+    A raw replay creates the fact edge and (if absent) its two entity nodes only.
+    """
+    from graphiti_core.edges import EntityEdge
+    from graphiti_core.nodes import EntityNode
+
+    driver = graphiti.driver
+    base = f"{group_prefix}"
+
+    def gid(scope: Mapping[str, str]) -> str:
+        if set(scope) != {"user_id"}:
+            raise BlackBoxError(f"unsupported scope {dict(scope)!r}")
+        return f"{base}{scope['user_id']}{group_suffix}"
+
+    def scope_of(group: str) -> dict[str, str] | None:
+        if not group.startswith(base) or (group_suffix and not group.endswith(group_suffix)):
+            return None
+        core = group[len(base):]
+        if group_suffix:
+            core = core[: -len(group_suffix)]
+        if not group_suffix and "__twin" in core:
+            return None  # another instance's partition
+        return {"user_id": core}
+
+    def groups(scope: Mapping[str, str] | None) -> list[str]:
+        if scope is not None:
+            return [gid(scope)]
+        records, _, _ = run(driver.execute_query("MATCH (n) WHERE n.group_id IS NOT NULL RETURN DISTINCT n.group_id AS g"))
+        return sorted(r["g"] for r in records if scope_of(r["g"]) is not None)
+
+    def list_(scope: Mapping[str, str] | None) -> list[dict[str, Any]]:
+        out: list[dict[str, Any]] = []
+        for group in groups(scope):
+            names = {n.uuid: n.name for n in run(EntityNode.get_by_group_ids(driver, [group]))}
+            for e in run(EntityEdge.get_by_group_ids(driver, [group])):
+                out.append(
+                    {
+                        "id": e.uuid,
+                        "text": e.fact,
+                        "scope": scope_of(group),
+                        "extra": {
+                            "relation": e.name,
+                            "src": names.get(e.source_node_uuid),
+                            "dst": names.get(e.target_node_uuid),
+                            "expired": e.expired_at is not None,
+                        },
+                    }
+                )
+        return out
+
+    def node(group: str, node_name: str) -> Any:
+        for n in run(EntityNode.get_by_group_ids(driver, [group])):
+            if n.name == node_name:
+                return n
+        n = EntityNode(name=node_name, group_id=group, labels=["Entity"], summary="")
+        run(n.generate_name_embedding(graphiti.embedder))
+        run(n.save(driver))
+        return n
+
+    def add(scope: Mapping[str, str], content: Any, *, raw: bool = False, extra: Any = None) -> Any:
+        group = gid(scope)
+        if not raw:
+            return native_add(graphiti, group, content)
+        from datetime import datetime, timezone
+
+        extra = extra if isinstance(extra, Mapping) else {}
+        src = node(group, extra.get("src") or "User")
+        dst = node(group, extra.get("dst") or "Memory")
+        edge = EntityEdge(
+            source_node_uuid=src.uuid, target_node_uuid=dst.uuid, group_id=group,
+            name=extra.get("relation") or "HAS_FACT", fact=content, episodes=[],
+            created_at=datetime.now(timezone.utc),
+        )
+        run(edge.generate_embedding(graphiti.embedder))
+        run(edge.save(driver))
+        return edge.uuid
+
+    def modify(op: str, memory_id: str, text: str | None = None) -> Any:
+        edges = run(EntityEdge.get_by_uuids(driver, [memory_id]))
+        if len(edges) != 1:
+            raise BlackBoxError(f"edge {memory_id!r} not found")
+        edge = edges[0]
+        if op == "update":
+            edge.fact = text or ""
+            run(edge.generate_embedding(graphiti.embedder))
+            return run(edge.save(driver))
+        if op == "delete":
+            return run(edge.delete(driver))
+        raise ValueError(op)
+
+    return BlackBoxOps(add=add, list=list_, modify=modify, schema=None, history=None, name=name, handle=graphiti)

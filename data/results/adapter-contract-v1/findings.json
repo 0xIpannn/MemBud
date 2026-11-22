@@ -18,14 +18,14 @@
     ],
     "status": "NOT A MEMORY SYSTEM TO GUARD"
   },
-  "graphiti": {
+  "graphiti-kuzu": {
     "pinned": "graphiti-core 0.31.2 + kuzu 0.11.3",
     "reasons": [
       "add_episode(group_id=...) raises AttributeError on KuzuDriver (no _database)",
       "with group_id=None the full-text index edge_name_and_fact is missing and Kuzu's FTS extension needs a network download",
       "Neo4j/FalkorDB need a server"
     ],
-    "status": "NOT RUNNABLE OFFLINE"
+    "status": "NOT RUNNABLE OFFLINE (embedded Kuzu); see graphiti-blackbox for the Neo4j run"
   },
   "letta": {
     "pinned": "letta==0.16.4 (Python server line; current PyPI letta 0.34.x is the Node CLI)",

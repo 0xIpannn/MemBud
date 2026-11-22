@@ -473,3 +473,7 @@ HARNESSES = {"fake-blackbox": FakeBlackBox, "mem0-blackbox": Mem0BlackBox, "mem0
 from adapter_harness_langmem import LangMemBlackBox  # noqa: E402  (registered after the base classes exist)
 
 HARNESSES["langmem-blackbox"] = LangMemBlackBox
+
+from adapter_harness_graphiti import GraphitiBlackBox  # noqa: E402
+
+HARNESSES["graphiti-blackbox"] = GraphitiBlackBox

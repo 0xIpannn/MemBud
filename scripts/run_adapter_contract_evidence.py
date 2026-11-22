@@ -5,7 +5,7 @@ Offline and deterministic (no timings, ids or paths). Run in the pinned mem0 ven
     PYTHONPATH=src .venv-mem0/bin/python scripts/run_adapter_contract_evidence.py
 """
 from __future__ import annotations
-import importlib.metadata as md, json, subprocess, sys, xml.etree.ElementTree as ET, tempfile, re
+import importlib.metadata as md, json, os, subprocess, sys, xml.etree.ElementTree as ET, tempfile, re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,9 +17,10 @@ VERSIONS = {
     "mem0-blackbox": {"mem0ai": "2.2.1", "spacy": "3.8.18"},
     "mem0-staged": {"mem0ai": "2.2.1", "spacy": "3.8.18"},
     "langmem-blackbox": {"langmem": "0.0.30", "langgraph": "1.2.24", "trustcall": TRUSTCALL, "model": "scripted chat model (offline)"},
+    "graphiti-blackbox": {"graphiti-core": "0.31.2", "neo4j-driver": "6.4.1", "neo4j-server": "community 5.26.0 (auth disabled, single database)", "llm": "scripted (offline)", "embedder": "hash (offline)"},
     "fake-blackbox": {"stdlib": "sqlite3 fake (tests/blackbox_fakes.py)"},
 }
-PYTHONS = {"langmem-blackbox": ROOT / ".venv-langmem/bin/python"}  # other backends use the current interpreter
+PYTHONS = {"langmem-blackbox": ROOT / ".venv-langmem/bin/python", "graphiti-blackbox": ROOT / ".venv-graphiti/bin/python"}  # other backends use the current interpreter
 OUT = ROOT / "data/results/adapter-contract-v1"
 
 for name, cls in sorted(HARNESSES.items()):
@@ -27,7 +28,7 @@ for name, cls in sorted(HARNESSES.items()):
         xml = Path(td) / "r.xml"
         subprocess.run([str(PYTHONS.get(name, sys.executable)), "-m", "pytest", "-q", "tests/test_adapter_contract.py",
                         "-k", name, f"--junitxml={xml}", "-p", "no:cacheprovider"],
-                       cwd=ROOT, capture_output=True, text=True)
+                       cwd=ROOT, capture_output=True, text=True, env={**os.environ, "GRAPHITI_TELEMETRY_ENABLED": "false"})
         cases = []
         for tc in ET.parse(xml).getroot().iter("testcase"):
             status = "failed" if tc.find("failure") is not None or tc.find("error") is not None else (
@@ -56,7 +57,7 @@ findings = {
               "status": "NOT SAFELY STAGEABLE", "executable_proof": "tests/test_amem_findings.py",
               "reasons": ["constructing a second in-process AgenticMemorySystem resets the shared chroma client and destroys the first instance's vector store, so no in-process scratch twin exists",
                           "add_note always runs the evolution LLM and may rewrite neighbour notes, so replaying a verified add on live is not the staged set"]},
-    "graphiti": {"pinned": "graphiti-core 0.31.2 + kuzu 0.11.3", "status": "NOT RUNNABLE OFFLINE",
+    "graphiti-kuzu": {"pinned": "graphiti-core 0.31.2 + kuzu 0.11.3", "status": "NOT RUNNABLE OFFLINE (embedded Kuzu); see graphiti-blackbox for the Neo4j run",
                  "reasons": ["add_episode(group_id=...) raises AttributeError on KuzuDriver (no _database)",
                              "with group_id=None the full-text index edge_name_and_fact is missing and Kuzu's FTS extension needs a network download",
                              "Neo4j/FalkorDB need a server"]},
