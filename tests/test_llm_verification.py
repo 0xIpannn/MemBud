@@ -156,3 +156,107 @@ def test_llm_failure_metadata_preserves_attempt_count():
     assert result.decision == "HOLD"
     assert result.usage["api_attempts"] == 3
     assert result.usage["cache_hit"] == 0
+
+
+def test_experiment_cli_uses_claude_and_gemini_providers(monkeypatch, tmp_path):
+    import sys
+
+    from membud import experiment
+    from membud.llm.client import OpenAICompatibleChatClient
+
+    selected = []
+
+    class FakeProviderClient:
+        model = "claude-haiku-4-5-20251001"
+
+        def complete_json(self, messages, validator=None):
+            return JSONCompletion(
+                json={"checks": CHECKS},
+                content=json.dumps({"checks": CHECKS}),
+                model=self.model,
+                input_tokens=10,
+                output_tokens=5,
+                total_tokens=15,
+                request_id="req-exp",
+                latency_ms=1.0,
+                request_attempts=1,
+                json_retries=0,
+            )
+
+    def fake_from_provider_env(cls, provider="claude", **kwargs):
+        selected.append(provider)
+        client = FakeProviderClient()
+        if provider == "gemini":
+            client.model = "gemini-2.5-flash"
+        return client
+
+    monkeypatch.setattr(
+        OpenAICompatibleChatClient,
+        "from_provider_env",
+        classmethod(fake_from_provider_env),
+    )
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["membud.experiment", "--verifier", "llm", "--output", str(tmp_path / "out-default")],
+    )
+    experiment.main()
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "membud.experiment",
+            "--verifier",
+            "llm",
+            "--provider",
+            "gemini",
+            "--output",
+            str(tmp_path / "out-gemini"),
+        ],
+    )
+    experiment.main()
+
+    assert selected == ["claude", "gemini"]
+
+
+def test_llm_verifier_propagates_usage_from_json_repair_exhaustion():
+    from membud.llm.client import LLMJSONError
+    from membud.semantic import LLMSemanticComparator, SemanticRelation
+
+    class BadJSONClient:
+        model = "claude-haiku-4-5-20251001"
+
+        def complete_json(self, messages, validator=None):
+            raise LLMJSONError(
+                "model did not return a valid JSON object",
+                attempts=2,
+                json_retries=1,
+                input_tokens=40,
+                output_tokens=12,
+                total_tokens=52,
+            )
+
+    result = verify_with_llm(transition(), BadJSONClient(), representation="graph")
+    assert result.decision == "HOLD"
+    assert all(check.reason_code == "INVALID_VERIFIER_OUTPUT" for check in result.checks)
+    assert result.usage == {
+        "input_tokens": 40,
+        "output_tokens": 12,
+        "total_tokens": 52,
+        "api_attempts": 2,
+        "json_retries": 1,
+        "cache_hit": 0,
+    }
+
+    comparator = LLMSemanticComparator(BadJSONClient())
+    assert comparator.compare("a", "b") is SemanticRelation.UNCERTAIN
+    assert comparator.usage == {
+        "input_tokens": 40,
+        "output_tokens": 12,
+        "total_tokens": 52,
+        "api_attempts": 2,
+        "json_retries": 1,
+        "cache_hit": 0,
+    }

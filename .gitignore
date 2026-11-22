@@ -13,3 +13,15 @@ pilot-output/
 .cache/
 .tmp-*/
 *.lock
+.venv-mem0/
+
+# Thesis/paper drafts are kept local only
+paper/
+
+# HaluMem (CC BY-NC-ND 4.0) raw data, transformed transitions, Mem0 proposals, judge outputs, and quizzes
+halumem-output/
+*halumem*.jsonl
+*HaluMem*.jsonl
+data/halumem/
+data/results/halumem*/
+data/halumem-runs/

@@ -213,3 +213,14 @@ def test_failed_llm_condition_does_not_claim_zero_cost(tmp_path):
     # false zero-cost claim when no completed model response exists.
     text_cost = report["condition_metrics"]["text"]["estimated_cost"]
     assert text_cost["basis"] == "spend_unknown_no_completed_responses"
+
+
+def test_source_fingerprint_covers_scripts_and_extra_paths(tmp_path):
+    extra = tmp_path / "runner_probe.py"
+    extra.write_text("VALUE = 1\n", encoding="utf-8")
+    fp1 = source_fingerprint((extra,))
+    extra.write_text("VALUE = 2\n", encoding="utf-8")
+    fp2 = source_fingerprint((extra,))
+    assert fp1 != fp2
+    # Default fingerprint includes scripts/run_llm_heldout.py as well as src/membud.
+    assert source_fingerprint((ROOT / "scripts/run_llm_heldout.py",)) == source_fingerprint()

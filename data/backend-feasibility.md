@@ -1,5 +1,11 @@
 # Candidate backend feasibility notes
 
+> **Update 2026-11-19:** the "no safe hook" finding below still holds, but a real, tested integration now exists
+> for Mem0 `2.2.1` via a host-owned *shadow-clone staged write wrapper* (`src/membud/adapters/mem0_staged.py`): it
+> runs the unmodified library on a private copy of the host state, derives every write by state diff, and replays
+> it only on ACCEPT. See [`docs/mem0-guarded-integration.md`](../docs/mem0-guarded-integration.md). The "NOT
+> claimed" rows in the table below describe the original source-inspection state, not the current one.
+
 Status: **the reference backend is demonstrated; third-party backend compatibility is NOT claimed.**
 `src/membud/adapters/reference.py` implements a stdlib-only in-memory/SQLite host backend plus a
 `GuardedMemory` interception layer, and `tests/test_reference_backend.py` proves ACCEPT-only

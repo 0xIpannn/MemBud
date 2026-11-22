@@ -442,6 +442,33 @@ def test_answers_with_wrong_manifest_identity_are_rejected(quiz, tmp_path):
         quiz.build_agreement(path, "Alice", MANIFEST_PATH)
 
 
+def test_grade_cli_defaults_reviewer_from_answers_file(quiz, tmp_path, capsys):
+    labels = labels_by_id()
+    decisions = {case_id: row["expected_decision"] for case_id, row in labels.items()}
+    answers_path = write_answers(tmp_path, answers_payload(decisions, reviewer="Bob"))
+    output_path = tmp_path / "agreement.json"
+
+    code = quiz.main(
+        ["--grade", str(answers_path), "--manifest", str(MANIFEST_PATH),
+         "--output", str(output_path)]
+    )
+
+    assert code == 0
+    assert json.loads(output_path.read_text(encoding="utf-8"))["reviewer"] == "Bob"
+    assert "reviewer=Bob" in capsys.readouterr().out
+
+
+def test_grade_cli_requires_reviewer_when_answers_file_has_none(quiz, tmp_path):
+    payload = answers_payload({})
+    payload["reviewer"] = "  "
+    answers_path = write_answers(tmp_path, payload, "nameless.json")
+
+    with pytest.raises(SystemExit) as excinfo:
+        quiz.main(["--grade", str(answers_path), "--manifest", str(MANIFEST_PATH),
+                   "--output", str(tmp_path / "out.json")])
+    assert excinfo.value.code == 2
+
+
 def test_tampered_case_hash_is_rejected(quiz, tmp_path):
     package = tmp_path / "package"
     package.mkdir()

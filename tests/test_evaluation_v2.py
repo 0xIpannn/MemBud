@@ -371,7 +371,7 @@ def test_plain_text_detection_prose_matches_committed_metrics():
     assert text_faulty["false_accepts"] == 2
 
     for relative_path in (
-        "README.md",
+        "docs/research-status.md",
         "docs/technical-report-milestone-2.md",
         "data/pilot-report.md",
     ):

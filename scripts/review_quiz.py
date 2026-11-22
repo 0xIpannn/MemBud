@@ -18,6 +18,9 @@ Usage:
     PYTHONPATH=src .venv/bin/python scripts/review_quiz.py \
         --grade data/review/answers-alice.json --reviewer "Alice" \
         --output data/review/agreement-alice.json
+
+``--reviewer`` may be omitted with ``--grade``; the name recorded in the
+answers file is used instead.
 """
 from __future__ import annotations
 
@@ -1336,6 +1339,17 @@ def grade_review(
     return report
 
 
+def reviewer_from_answers(answers_path: str | Path) -> str:
+    """Return the non-empty ``reviewer`` name recorded in an answers file."""
+    payload = _read_json(Path(answers_path))
+    reviewer = payload.get("reviewer") if isinstance(payload, dict) else None
+    if not isinstance(reviewer, str) or not reviewer.strip():
+        raise QuizError(
+            "answers file has no 'reviewer' name; pass --reviewer explicitly"
+        )
+    return reviewer.strip()
+
+
 def default_agreement_path(reviewer: str, review_dir: Path = ROOT / "data/review") -> Path:
     slug = re.sub(r"[^a-z0-9]+", "-", reviewer.strip().lower()).strip("-") or "reviewer"
     return review_dir / f"agreement-{slug}.json"
@@ -1394,7 +1408,10 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--reviewer",
-        help="reviewer name (required with --grade)",
+        help=(
+            "reviewer name for --grade; defaults to the 'reviewer' field in the "
+            "answers file and must match it when both are present"
+        ),
     )
     parser.add_argument(
         "--output",
@@ -1433,10 +1450,9 @@ def main(argv: list[str] | None = None) -> int:
             print("no labels, decision hints, categories, or label notes are embedded")
             return 0
 
-        if not args.reviewer:
-            parser.error("--reviewer is required with --grade")
-        output = Path(args.output) if args.output else default_agreement_path(args.reviewer)
-        report = grade_review(args.grade, args.reviewer, args.manifest, output)
+        reviewer = args.reviewer or reviewer_from_answers(args.grade)
+        output = Path(args.output) if args.output else default_agreement_path(reviewer)
+        report = grade_review(args.grade, reviewer, args.manifest, output)
         print_summary(report, output)
         return 0
     except (QuizError, OSError) as exc:

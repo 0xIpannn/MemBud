@@ -1,0 +1,1 @@
+{"at": "2026-11-21T05:23:33.805Z", "directory": "smoke/project", "event": "server_hook_created", "memoryStatePath": "smoke/project/memory-state.json", "plugin": "membud-verify-guard", "toolNames": ["memory_write"], "verifyUrl": "http://127.0.0.1:1/verify"}

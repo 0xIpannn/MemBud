@@ -599,3 +599,82 @@ def test_versionless_input_keeps_v1_legacy_semantics():
     strict = dict(legacy_undeclared, schema_version=2)
     with pytest.raises(ValueError, match="undeclared"):
         Transition.from_dict(strict)
+
+
+def test_direct_construction_validation_rejects_empty_delete_auth_and_non_string_claims():
+    from membud.schemas import DeletionAuthorization, Evidence, Operation, Record
+
+    bad_auth = Transition(
+        case_id="direct-empty-auth",
+        before=(Record("r1", ("tinggal di Bandung",)),),
+        candidate=(),
+        evidence=(Evidence("e1", (), source="chat", text="delete r1"),),
+        operations=(
+            Operation(
+                "DELETE",
+                target_id="r1",
+                reason="cleanup",
+                authorization=DeletionAuthorization(
+                    source="",
+                    evidence_id="e1",
+                    target_id="r1",
+                    rationale="",
+                ),
+            ),
+        ),
+        schema_version=2,
+    )
+    with pytest.raises(ValueError, match="authorization source must be non-empty"):
+        bad_auth.validate()
+    with pytest.raises(ValueError, match="authorization source must be non-empty"):
+        verify(bad_auth, "graph")
+
+    bad_claim = Transition(
+        case_id="direct-non-string-claim",
+        before=(Record("r1", (1,)),),  # type: ignore[arg-type]
+        candidate=(Record("r1", (1,)),),  # type: ignore[arg-type]
+        evidence=(),
+        operations=(Operation("NOOP"),),
+        schema_version=2,
+    )
+    with pytest.raises(ValueError, match="must contain only strings"):
+        bad_claim.validate()
+
+    bad_required = Transition(
+        case_id="direct-non-string-required",
+        before=(),
+        candidate=(),
+        evidence=(),
+        required_claims=(42,),  # type: ignore[arg-type]
+        operations=(),
+        schema_version=2,
+    )
+    with pytest.raises(ValueError, match="required_claims"):
+        bad_required.validate()
+
+
+@pytest.mark.parametrize(
+    "mutator, match",
+    [
+        (lambda raw: raw.update({"required_claim": ["x"]}), "unexpected transition"),
+        (lambda raw: raw["before"][0].update({"extra": 1}), "unexpected record"),
+        (lambda raw: raw["candidate"][0].update({"extra": 1}), "unexpected record"),
+        (
+            lambda raw: raw["evidence"][0].update({"contradict": ["tinggal di Bandung"]}),
+            "unexpected evidence",
+        ),
+        (lambda raw: raw["operations"][0].update({"extra": True}), "unexpected operation"),
+    ],
+)
+def test_from_dict_rejects_top_level_and_nested_unknown_keys(mutator, match):
+    raw = case("valid")
+    mutator(raw)
+    with pytest.raises(ValueError, match=match):
+        Transition.from_dict(raw)
+
+
+def test_delete_authorization_from_dict_rejects_unknown_keys():
+    raw = case("remove-record")
+    raw["operations"][0]["authorization"]["extra"] = "nope"
+    with pytest.raises(ValueError, match="unexpected deletion authorization"):
+        Transition.from_dict(raw)

@@ -682,3 +682,69 @@ def test_staged_digest_matches_canonical_transition_payload(tmp_path):
     ).hexdigest()
     assert staged.digest == expected
     assert staged.to_dict()["digest"] == expected
+
+
+def test_apply_staged_tolerates_content_preserving_record_and_claim_reorder(tmp_path):
+    initial = [
+        {"id": "r1", "claims": ["tinggal di Bandung", "suka kopi"]},
+        {"id": "r2", "claims": ["punya kucing"]},
+    ]
+    backend = InMemoryBackend(initial, scope=SCOPE)
+    guard = GuardedMemory(
+        backend,
+        store_path=tmp_path / "store.json",
+        audit_log_path=tmp_path / "audit.jsonl",
+    )
+    prior = guard.capture_prior(SCOPE)
+    staged = BRIDGE.prepare_proposals(
+        scope=SCOPE,
+        prior=prior,
+        proposals=[{"event": "add", "id": "r3", "memory": "bekerja di Tokopedia"}],
+        evidence=[EVIDENCE],
+        case_id="reordered-prior",
+    )
+    # Content-preserving reorder of records and claims in the backend between
+    # prepare and apply must ACCEPT cleanly instead of raising Mem0BridgeError.
+    backend.replace_state(
+        SCOPE,
+        [
+            Record("r2", ("punya kucing",)),
+            Record("r1", ("suka kopi", "tinggal di Bandung")),
+        ],
+    )
+    decision = apply_staged(guard, staged)
+    assert decision.decision == "ACCEPT"
+    assert decision.applied is True
+    assert {r.id: frozenset(r.claims) for r in backend.snapshot(SCOPE)} == {
+        "r1": frozenset({"tinggal di Bandung", "suka kopi"}),
+        "r2": frozenset({"punya kucing"}),
+        "r3": frozenset({"bekerja di Tokopedia"}),
+    }
+    assert read_jsonl(guard.decision_log_path)[-1]["decision"] == "ACCEPT"
+
+
+def test_apply_staged_rejects_stale_prior_before_host_apply(tmp_path):
+    backend, guard = make_guard("sqlite", tmp_path)
+    staged = prepare(guard, [{"event": "none"}], case_id="noop-then-raced")
+    raced = [Record("r1", ("tinggal di Bandung",)), Record("r2", ("data baru",))]
+    backend.replace_state(SCOPE, raced)
+    digest_before = backend.bytes_digest()
+
+    decision = apply_staged(guard, staged)
+
+    assert decision.decision == "REJECTED"
+    assert decision.applied is False
+    assert decision.error_type == "StalePriorState"
+    assert backend.bytes_digest() == digest_before
+    assert list(backend.snapshot(SCOPE)) == raced
+    assert not guard.store_path.exists()
+    assert not guard.audit_log_path.exists()
+
+
+def test_mem0_bridge_doc_matches_invalid_case_count():
+    from pathlib import Path
+
+    doc_text = (Path(__file__).resolve().parents[1] / "data/mem0-bridge.md").read_text(
+        encoding="utf-8"
+    )
+    assert f"test_invalid_proposal_is_rejected_before_any_write` ({len(INVALID_CASES)} cases)" in doc_text

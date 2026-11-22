@@ -1,0 +1,331 @@
+{
+  "accepts": [
+    {
+      "applied": true,
+      "decision": "ACCEPT",
+      "live_state_equals_verified_staged_state": true,
+      "pending_side_effects": {
+        "qdrant:membud_test:insert": 1,
+        "qdrant:membud_test_entities:insert": 1,
+        "qdrant:membud_test_entities:update": 1,
+        "sqlite:history:insert": 1,
+        "sqlite:messages:insert": 1
+      },
+      "scenario": "accept_add",
+      "semantic_parity_with_unguarded_mem0": true
+    },
+    {
+      "applied": true,
+      "decision": "ACCEPT",
+      "live_state_equals_verified_staged_state": true,
+      "pending_side_effects": {
+        "qdrant:membud_test:update": 1,
+        "qdrant:membud_test_entities:delete": 1,
+        "qdrant:membud_test_entities:insert": 1,
+        "sqlite:history:insert": 1
+      },
+      "scenario": "accept_update",
+      "semantic_parity_with_unguarded_mem0": true
+    },
+    {
+      "applied": true,
+      "decision": "ACCEPT",
+      "live_state_equals_verified_staged_state": true,
+      "pending_side_effects": {
+        "qdrant:membud_test:delete": 1,
+        "qdrant:membud_test_entities:delete": 1,
+        "qdrant:membud_test_entities:update": 1,
+        "sqlite:history:insert": 1
+      },
+      "scenario": "accept_delete_with_host_authorization",
+      "semantic_parity_with_unguarded_mem0": true
+    },
+    {
+      "ok": true,
+      "scenario": "accepted_state_survives_reopen_from_disk"
+    }
+  ],
+  "claim": "Behind the host-owned staged write wrapper, unmodified mem0ai==2.2.1 (embedded Qdrant + SQLite history, real entity linking) leaves every host write surface byte-identical when the operation is HOLD/REJECTED/errors; ACCEPT persists exactly the verified staged state.",
+  "code_revision": {
+    "commit": "5023c410bfa3362a8f6c8cf856c01f5c996940de",
+    "dirty": true
+  },
+  "environment": {
+    "embedder": "HashEmbedder (offline fake, 16 dims)",
+    "en_core_web_sm": "3.8.0",
+    "history_store": "sqlite (mem0 SQLiteManager: history + messages)",
+    "llm": "ScriptedLLM (offline fake)",
+    "mem0_source_sha256": {
+      "mem0/memory/main.py": "f329ca4a17af1fbefb32ac10d4cc7ae7ddbdb7435a87eb74c30915cff98b8b7c",
+      "mem0/memory/storage.py": "5f5ecdadd2b260fd14f36a0f338336eb760275465dd1056a99a47e1ef07702bd",
+      "mem0/vector_stores/qdrant.py": "da570579d5cad69e6f123fdfe32b725235a25604e70047666bec763ba6e2bf43"
+    },
+    "mem0ai": "2.2.1",
+    "mem0ai_wheel_sha256": "fe91bb91ac8926231993a4aa58df00a60c6c74c709e6a338fe399500776eef4d",
+    "python": "3.12.16",
+    "qdrant_client": "1.20.0",
+    "spacy": "3.8.18",
+    "telemetry": "disabled (MEM0_TELEMETRY=False; wrapper refuses otherwise)",
+    "vector_store": "qdrant (embedded, on-disk)"
+  },
+  "injected_commit_failures": [
+    {
+      "applied": false,
+      "decision": "REJECTED",
+      "logical_state_restored": true,
+      "reported_loudly": true,
+      "scenario": "entity_write_fails_then_rollback_ok"
+    },
+    {
+      "applied": false,
+      "decision": "REJECTED",
+      "logical_state_restored": false,
+      "reported_loudly": true,
+      "scenario": "entity_write_fails_and_rollback_fails"
+    }
+  ],
+  "refusals": [
+    {
+      "applied": false,
+      "decision": "HOLD",
+      "error_type": "",
+      "failed_verifier_checks": [
+        "faithfulness:UNSUPPORTED_CLAIM"
+      ],
+      "host_file_count": 6,
+      "host_files_byte_identical": true,
+      "llm_calls": 1,
+      "logical_state_identical": true,
+      "pending_side_effects_enumerated_before_suppression": {
+        "qdrant:membud_test:insert": 2,
+        "qdrant:membud_test_entities:insert": 2,
+        "qdrant:membud_test_entities:update": 1,
+        "sqlite:history:insert": 2,
+        "sqlite:messages:insert": 1
+      },
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "scenario": "hold_add_unsupported_claims",
+      "surfaces_identical": {
+        "history": true,
+        "membud_test": true,
+        "membud_test_entities": true,
+        "messages": true
+      },
+      "unguarded_control_changed_surfaces": [
+        "history",
+        "membud_test",
+        "membud_test_entities",
+        "messages"
+      ]
+    },
+    {
+      "applied": false,
+      "decision": "HOLD",
+      "error_type": "",
+      "failed_verifier_checks": [
+        "faithfulness:UNSUPPORTED_CLAIM",
+        "preservation:PRIOR_RECORD_UNAUTHORIZED_CHANGE"
+      ],
+      "host_file_count": 6,
+      "host_files_byte_identical": true,
+      "llm_calls": 0,
+      "logical_state_identical": true,
+      "pending_side_effects_enumerated_before_suppression": {
+        "qdrant:membud_test:update": 1,
+        "qdrant:membud_test_entities:delete": 1,
+        "qdrant:membud_test_entities:insert": 1,
+        "sqlite:history:insert": 1
+      },
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "scenario": "hold_update_unsupported_text",
+      "surfaces_identical": {
+        "history": true,
+        "membud_test": true,
+        "membud_test_entities": true,
+        "messages": true
+      },
+      "unguarded_control_changed_surfaces": [
+        "history",
+        "membud_test",
+        "membud_test_entities"
+      ]
+    },
+    {
+      "applied": false,
+      "decision": "HOLD",
+      "error_type": "",
+      "failed_verifier_checks": [
+        "faithfulness:CONTRADICTED_CLAIM"
+      ],
+      "host_file_count": 6,
+      "host_files_byte_identical": true,
+      "llm_calls": 0,
+      "logical_state_identical": true,
+      "pending_side_effects_enumerated_before_suppression": {
+        "qdrant:membud_test:update": 1,
+        "qdrant:membud_test_entities:delete": 1,
+        "qdrant:membud_test_entities:insert": 1,
+        "sqlite:history:insert": 1
+      },
+      "reason": "verification did not accept the candidate; backend state unchanged",
+      "scenario": "hold_update_contradicted_by_host_evidence",
+      "surfaces_identical": {
+        "history": true,
+        "membud_test": true,
+        "membud_test_entities": true,
+        "messages": true
+      },
+      "unguarded_control_changed_surfaces": [
+        "history",
+        "membud_test",
+        "membud_test_entities"
+      ]
+    },
+    {
+      "applied": false,
+      "decision": "REJECTED",
+      "error_type": "Mem0BridgeError",
+      "failed_verifier_checks": [],
+      "host_file_count": 6,
+      "host_files_byte_identical": true,
+      "llm_calls": 0,
+      "logical_state_identical": true,
+      "pending_side_effects_enumerated_before_suppression": {
+        "qdrant:membud_test:delete": 1,
+        "qdrant:membud_test_entities:delete": 2,
+        "sqlite:history:insert": 1
+      },
+      "reason": "invalid staged proposal: proposal[0] DELETE of '<uuid>' requires structured authorization metadata supplied by the host",
+      "scenario": "rejected_delete_without_host_authorization",
+      "surfaces_identical": {
+        "history": true,
+        "membud_test": true,
+        "membud_test_entities": true,
+        "messages": true
+      },
+      "unguarded_control_changed_surfaces": [
+        "history",
+        "membud_test",
+        "membud_test_entities"
+      ]
+    },
+    {
+      "applied": false,
+      "decision": "REJECTED",
+      "error_type": "Mem0BridgeError",
+      "failed_verifier_checks": [],
+      "host_file_count": 6,
+      "host_files_byte_identical": true,
+      "llm_calls": 0,
+      "logical_state_identical": true,
+      "pending_side_effects_enumerated_before_suppression": {
+        "qdrant:membud_test:delete": 1,
+        "qdrant:membud_test_entities:delete": 2,
+        "sqlite:history:insert": 1
+      },
+      "reason": "invalid staged proposal: proposal mapping does not form a valid schema-v2 transition: DELETE authorization evidence_id must reference transition evidence",
+      "scenario": "refused_delete_citing_nonexistent_evidence",
+      "surfaces_identical": {
+        "history": true,
+        "membud_test": true,
+        "membud_test_entities": true,
+        "messages": true
+      },
+      "unguarded_control_changed_surfaces": [
+        "history",
+        "membud_test",
+        "membud_test_entities"
+      ]
+    },
+    {
+      "applied": false,
+      "decision": "ERROR_FROM_REAL_MEM0",
+      "error_type": "LLMError",
+      "host_file_count": 6,
+      "host_files_byte_identical": true,
+      "llm_calls": 1,
+      "logical_state_identical": true,
+      "scenario": "error_inside_real_mem0_extraction",
+      "surfaces_identical": {
+        "history": true,
+        "membud_test": true,
+        "membud_test_entities": true,
+        "messages": true
+      }
+    },
+    {
+      "applied": false,
+      "decision": "REJECTED",
+      "error_type": "UnmodeledSideEffect",
+      "failed_verifier_checks": [],
+      "host_file_count": 6,
+      "host_files_byte_identical": true,
+      "llm_calls": 1,
+      "logical_state_identical": true,
+      "pending_side_effects_enumerated_before_suppression": {
+        "qdrant:membud_test:insert": 2,
+        "qdrant:membud_test_entities:update": 3,
+        "sqlite:history:insert": 1,
+        "sqlite:messages:insert": 1
+      },
+      "reason": "unmodeled host side effect: memory point <uuid> changed outside the operation scope",
+      "scenario": "rejected_unmodeled_write_to_foreign_scope",
+      "surfaces_identical": {
+        "history": true,
+        "membud_test": true,
+        "membud_test_entities": true,
+        "messages": true
+      }
+    },
+    {
+      "applied": false,
+      "decision": "REJECTED",
+      "error_type": "UnmodeledSideEffect",
+      "failed_verifier_checks": [],
+      "host_file_count": 6,
+      "host_files_byte_identical": true,
+      "llm_calls": 1,
+      "logical_state_identical": true,
+      "pending_side_effects_enumerated_before_suppression": {
+        "qdrant:membud_test:insert": 1,
+        "qdrant:membud_test_entities:update": 3,
+        "sqlite:history:insert": 1,
+        "sqlite:messages:insert": 1
+      },
+      "reason": "unmodeled host side effect: sqlite schema (DDL) changed; sqlite table set changed: ['exfil']",
+      "scenario": "rejected_unmodeled_ddl",
+      "surfaces_identical": {
+        "history": true,
+        "membud_test": true,
+        "membud_test_entities": true,
+        "messages": true
+      }
+    },
+    {
+      "applied": false,
+      "decision": "REJECTED",
+      "error_type": "UnmodeledSideEffect",
+      "failed_verifier_checks": [],
+      "host_file_count": 6,
+      "host_files_byte_identical": true,
+      "llm_calls": 1,
+      "logical_state_identical": true,
+      "pending_side_effects_enumerated_before_suppression": {
+        "qdrant:membud_test:insert": 1,
+        "qdrant:membud_test_entities:update": 3,
+        "sqlite:history:insert": 1,
+        "sqlite:history:update": 2,
+        "sqlite:messages:insert": 1
+      },
+      "reason": "unmodeled host side effect: history row 1 was updated; history is append-only",
+      "scenario": "rejected_unmodeled_history_rewrite",
+      "surfaces_identical": {
+        "history": true,
+        "membud_test": true,
+        "membud_test_entities": true,
+        "messages": true
+      }
+    }
+  ],
+  "schema": "membud-mem0-guarded-evidence-v1"
+}

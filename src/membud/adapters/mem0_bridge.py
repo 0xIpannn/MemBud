@@ -45,7 +45,7 @@ from typing import Any
 
 from ..schemas import SCHEMA_VERSION, Evidence, Record, Transition
 from ..serialization import transition_dict
-from .base import AdapterContractError, PriorState, canonical_records
+from .base import AdapterContractError, PriorState, canonical_records, records_match
 from .reference import GuardedDecision, GuardedMemory
 
 __all__ = [
@@ -721,6 +721,36 @@ def _operation_payload(operation: Any) -> dict[str, Any]:
     return payload
 
 
+def _evidence_key(items: Iterable[Evidence]) -> set[tuple[str, str, str, frozenset[str], frozenset[str]]]:
+    return {
+        (
+            item.id,
+            item.source,
+            item.text,
+            frozenset(item.supports),
+            frozenset(item.contradicts),
+        )
+        for item in items
+    }
+
+
+def _transitions_semantically_equal(first: Transition | None, second: Transition) -> bool:
+    """Compare two canonical transitions order-insensitively on set-valued collections."""
+    if first is None:
+        return False
+    return (
+        first.schema_version == second.schema_version
+        and first.case_id == second.case_id
+        and records_match(first.before, second.before)
+        and records_match(first.candidate, second.candidate)
+        and frozenset(first.required_claims) == frozenset(second.required_claims)
+        and len(first.evidence) == len(second.evidence)
+        and _evidence_key(first.evidence) == _evidence_key(second.evidence)
+        and len(first.operations) == len(second.operations)
+        and frozenset(first.operations) == frozenset(second.operations)
+    )
+
+
 def apply_staged(
     guard: GuardedMemory,
     staged: StagedProposal,
@@ -732,15 +762,17 @@ def apply_staged(
     This helper is deliberately thin: it passes the staged canonical
     transition's candidate, operations, evidence, and required claims back
     through :meth:`GuardedMemory.propose_update`.  Verification, prior-state
-    re-checking, ACCEPT-only ``replace_state``, post-apply equality checking,
-    and the decision audit log all remain owned by the reference layer; this
-    module does not modify or duplicate them.
+    re-checking (including pre-apply ``expected_prior`` against
+    ``staged.prior_records``), ACCEPT-only ``replace_state``, post-apply
+    equality checking, and the decision audit log all remain owned by the
+    reference layer; this module does not modify or duplicate them.
 
-    On ``ACCEPT`` the persisted state must equal ``staged.candidate`` exactly;
-    if the guard's independently reconstructed transition ever diverged from
-    the staged one, a :class:`Mem0BridgeError` is raised (defensive: the
-    mapping is deterministic and the guard fails closed on a changed prior).
-    ``HOLD``/``REJECTED`` return the guard decision with no backend write.
+    On ``ACCEPT`` the persisted state must match ``staged.candidate``;
+    if the guard's independently reconstructed transition ever diverged
+    semantically from the staged one, a :class:`Mem0BridgeError` is raised
+    (defensive: the mapping is deterministic and the guard fails closed on a
+    changed prior).  ``HOLD``/``REJECTED`` return the guard decision with no
+    backend write.
     """
     if not isinstance(guard, GuardedMemory):
         raise TypeError("guard must be a membud.adapters.reference.GuardedMemory")
@@ -754,8 +786,11 @@ def apply_staged(
         evidence=list(staged.transition.evidence),
         required_claims=list(staged.transition.required_claims),
         run_id=run_id,
+        expected_prior=staged.prior_records,
     )
-    if decision.decision == "ACCEPT" and decision.transition != staged.transition:
+    if decision.decision == "ACCEPT" and not _transitions_semantically_equal(
+        decision.transition, staged.transition
+    ):
         raise Mem0BridgeError(
             "guarded transition diverged from the staged canonical transition; "
             "this indicates a non-deterministic mapping and must be investigated"

@@ -1,14 +1,32 @@
 [project]
-name = "membud-mvp"
+name = "membud"
 version = "0.1.0"
-description = "Minimal local memory-update safety prototype"
+description = "Verify proposed agent-memory updates before they are committed (experimental prototype)"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Ifan Prasetyo Aji" }]
 requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Operating System :: POSIX :: Linux",
+]
+
+[project.scripts]
+membud-verify = "membud.service:main"
+membud-demo = "membud.demo:main"
+membud-conversation = "membud.conversation:main"
+membud-experiment = "membud.experiment:main"
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
+# Pinned stack for the guarded real-Mem0 integration (Python 3.12; see requirements-mem0.txt
+# for the spaCy model wheel). Not needed by the stdlib-only core.
+mem0 = ["mem0ai==2.2.1", "spacy>=3.7,<3.9"]
 
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]

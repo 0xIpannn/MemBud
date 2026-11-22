@@ -263,6 +263,64 @@ class PriceTable:
         return cost
 
 
+_CLAUDE_HAIKU_4_5_RATES: dict[str, Any] = {
+    "input_per_mtok": 1.00,
+    "output_per_mtok": 5.00,
+    "cached_per_mtok": 0.10,
+    "source": "Anthropic published API pricing for Claude Haiku 4.5 (not a provider bill)",
+}
+_CLAUDE_SONNET_4_5_RATES: dict[str, Any] = {
+    "input_per_mtok": 3.00,
+    "output_per_mtok": 15.00,
+    "cached_per_mtok": 0.30,
+    "source": "Anthropic published API pricing for Claude Sonnet 4.5 (not a provider bill)",
+}
+
+# Published per-1M-token reference rates (still estimates; verified_billed=False).
+PROVIDER_MODEL_PRICING: dict[str, dict[str, Any]] = {
+    "claude-haiku-4-5-20251001": dict(_CLAUDE_HAIKU_4_5_RATES),
+    "claude-haiku-4-5": dict(_CLAUDE_HAIKU_4_5_RATES),
+    "claude-sonnet-4-5-20250929": dict(_CLAUDE_SONNET_4_5_RATES),
+    "claude-sonnet-4-5": dict(_CLAUDE_SONNET_4_5_RATES),
+    "gemini-2.5-flash": {
+        "input_per_mtok": 0.30,
+        "output_per_mtok": 2.50,
+        "cached_per_mtok": 0.03,
+        "source": "Google Gemini API published pricing for gemini-2.5-flash (not a provider bill)",
+    },
+    "gemini-2.5-pro": {
+        "input_per_mtok": 1.25,
+        "output_per_mtok": 10.00,
+        "cached_per_mtok": 0.125,
+        "source": "Google Gemini API published pricing for gemini-2.5-pro (not a provider bill)",
+    },
+}
+
+
+def price_tables_for_model(
+    model: str,
+    *,
+    date: str | None = None,
+    currency: str = DEFAULT_CURRENCY,
+) -> tuple[PriceTable, PriceTable]:
+    """Return ``(low, high)`` PriceTables for a known provider model or placeholder."""
+    key = model.strip().lower()
+    spec = PROVIDER_MODEL_PRICING.get(key)
+    if spec is None and "/" in key:
+        _, bare = key.split("/", 1)
+        spec = PROVIDER_MODEL_PRICING.get(bare)
+    if spec is None:
+        return build_price_tables(date=date, currency=currency)
+    return build_price_tables(
+        input_per_mtok=spec["input_per_mtok"],
+        output_per_mtok=spec["output_per_mtok"],
+        cached_per_mtok=spec["cached_per_mtok"],
+        source=spec["source"],
+        date=date,
+        currency=currency,
+    )
+
+
 def build_price_tables(
     *,
     input_per_mtok: float | None = None,
@@ -490,6 +548,7 @@ __all__ = [
     "PLACEHOLDER_LOW_USD_PER_MTOK",
     "PLACEHOLDER_SOURCE",
     "PRICING_NOTE",
+    "PROVIDER_MODEL_PRICING",
     "CostEstimate",
     "PriceTable",
     "TokenCounts",
@@ -497,6 +556,7 @@ __all__ = [
     "estimate_cost",
     "estimate_usage_cost",
     "extract_token_counts",
+    "price_tables_for_model",
     "pricing_dict",
     "sum_token_counts",
 ]

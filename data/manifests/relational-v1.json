@@ -1,0 +1,22 @@
+{
+  "manifest_id": "relational-v1",
+  "format": "membud-relational",
+  "format_version": 1,
+  "generator": "membud.relational_cases.generate_suite",
+  "seed": 20261119,
+  "per_cell": 8,
+  "case_count": 480,
+  "cases": {
+    "path": "data/cases/relational-v1.jsonl",
+    "sha256": "19d282d792b664b0ef45b85bd952e10b702e5d066c78fb4a05ef52b8636d4589"
+  },
+  "labels": {
+    "path": "data/labels/relational-v1.jsonl",
+    "sha256": "75d0e8cf4b3b317e902c5ff586b9c1ff1624cd0717034164314ea3cc3c4ef1d6"
+  },
+  "labelling": "by construction from the injected fault (minimal pairs); no verifier is consulted",
+  "review": {
+    "status": "generator-authored, not human-reviewed",
+    "note": "cases and verifiers were written by the same author; see docs/relational-hypothesis.md"
+  }
+}

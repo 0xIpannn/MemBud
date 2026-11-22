@@ -528,25 +528,21 @@ def run_ablation(
 # ---------------------------------------------------------------------------
 
 
-def build_client(*, max_attempts: int, cache_path: str | None, cache_only: bool) -> Any:
+def build_client(
+    *,
+    max_attempts: int,
+    cache_path: str | None,
+    cache_only: bool,
+    provider: str = "claude",
+) -> Any:
     """Build a client; cache-only mode never needs (or uses) an API key."""
-    if cache_only:
-        client = OpenAICompatibleChatClient(
-            api_key=os.environ.get("DEEPSEEK_API_KEY", "").strip() or "offline-cache-only",
-            model=os.environ.get("DEEPSEEK_MODEL", OpenAICompatibleChatClient.DEEPSEEK_MODEL),
-            base_url=os.environ.get(
-                "DEEPSEEK_BASE_URL", OpenAICompatibleChatClient.DEEPSEEK_BASE_URL
-            ),
-            cache_path=cache_path or os.environ.get(
-                "DEEPSEEK_CACHE_PATH", "~/.cache/membud/deepseek-cache.sqlite3"
-            ),
-            provider_name="deepseek-openai-compatible",
-            require_cache=True,
-        )
-    else:
-        client = OpenAICompatibleChatClient.from_deepseek_env(require_cache=False)
-        if cache_path:
-            client.cache_path = Path(cache_path).expanduser()
+    client = OpenAICompatibleChatClient.from_provider_env(
+        provider,
+        require_cache=cache_only,
+        cache_only_without_key=cache_only,
+    )
+    if cache_path:
+        client.cache_path = Path(cache_path).expanduser()
     client.max_attempts = max_attempts
     return client
 
@@ -558,6 +554,12 @@ def build_parser() -> argparse.ArgumentParser:
             "G1/G2 make paid provider calls and require --confirm-paid-call."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--provider",
+        choices=("claude", "gemini", "deepseek", "commandcode"),
+        default="claude",
+        help="LLM provider to use for completions",
     )
     parser.add_argument("--manifest", default=str(DEFAULT_MANIFEST))
     parser.add_argument(
@@ -640,6 +642,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | int:
             max_attempts=args.max_attempts,
             cache_path=args.cache_path,
             cache_only=bool(VARIANT_CONFIG[variant]["cache_only"]),
+            provider=args.provider,
         )
         for variant in variants
     }

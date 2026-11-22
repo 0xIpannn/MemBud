@@ -1,8 +1,9 @@
-"""OpenAI-compatible chat client for Command Code and compatible providers."""
+"""OpenAI-compatible chat client for Claude, Gemini, OpenRouter, DeepSeek, and Command Code."""
 from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import socket
 import sqlite3
@@ -17,9 +18,75 @@ from typing import Any, Callable, Mapping, Sequence
 class LLMRequestError(RuntimeError):
     """Provider request failed after a bounded number of attempts."""
 
-    def __init__(self, message: str, *, attempts: int) -> None:
+    def __init__(
+        self,
+        message: str,
+        *,
+        attempts: int,
+        json_retries: int = 0,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
+        total_tokens: int | None = None,
+    ) -> None:
         super().__init__(message)
         self.attempts = attempts
+        self.json_retries = json_retries
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+        self.total_tokens = total_tokens
+
+    @property
+    def usage(self) -> dict[str, Any]:
+        return {
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
+            "total_tokens": self.total_tokens,
+            "api_attempts": self.attempts,
+            "json_retries": self.json_retries,
+            "cache_hit": 0,
+        }
+
+
+class LLMJSONError(ValueError):
+    """Provider responses failed JSON/schema validation after repair attempts."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        attempts: int,
+        json_retries: int = 0,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
+        total_tokens: int | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.attempts = attempts
+        self.json_retries = json_retries
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+        self.total_tokens = total_tokens
+
+    @property
+    def usage(self) -> dict[str, Any]:
+        return {
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
+            "total_tokens": self.total_tokens,
+            "api_attempts": self.attempts,
+            "json_retries": self.json_retries,
+            "cache_hit": 0,
+        }
+
+
+def _is_valid_cached_payload(payload: Any) -> bool:
+    return (
+        isinstance(payload, dict)
+        and isinstance(payload.get("json"), dict)
+        and isinstance(payload.get("content"), str)
+        and isinstance(payload.get("model"), str)
+        and bool(payload["model"].strip())
+    )
 
 
 class CacheMissError(RuntimeError):
@@ -55,19 +122,337 @@ class JSONCompletion:
     cached: bool = False
 
 
-class OpenAICompatibleChatClient:
-    """Small standard-library client for OpenAI Chat Completions APIs.
+_PROVIDER_ALIASES: dict[str, str] = {
+    "anthropic": "claude",
+    "google": "gemini",
+}
 
-    Credentials are passed explicitly or read from ``CMD_API_KEY``. The client
-    never logs credentials or request content. Transient network/429/5xx
-    failures get bounded exponential-backoff retries; other HTTP errors fail
-    immediately. Malformed JSON gets a separate bounded repair request.
+
+def _first_env(*names: str, default: str = "") -> str:
+    """Return the first non-empty environment variable value among ``names``."""
+    for name in names:
+        value = os.environ.get(name, "")
+        if value.strip():
+            return value
+    return default
+
+
+class OpenRouterPricingError(ValueError):
+    """Raised when an OpenRouter model is missing from the catalog or is not free ($0)."""
+
+
+def load_dotenv_0600(
+    dotenv_path: str | Path = ".env",
+    *,
+    require_0600: bool = True,
+    populate_environ: bool = False,
+) -> dict[str, str]:
+    """Read key-value pairs from a private ``0600`` ``.env`` file without logging secrets.
+
+    Keys already set to non-empty values in ``os.environ`` take precedence when
+    ``populate_environ=True``. If ``require_0600=True`` and the file allows any
+    group or other permissions (mode ``& 0o077 != 0``), ``ValueError`` is raised.
     """
+    path = Path(dotenv_path)
+    if not path.is_file():
+        return {}
+    mode = path.stat().st_mode & 0o777
+    if require_0600 and (mode & 0o077) != 0:
+        raise ValueError(
+            f"refusing to read {path}: permissions are {oct(mode)}, expected 0o600"
+        )
+    parsed: dict[str, str] = {}
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export ") :].strip()
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
+        if key and value:
+            parsed[key] = value
+            if populate_environ and not os.environ.get(key, "").strip():
+                os.environ[key] = value
+    return parsed
+
+
+def _parse_non_negative_price(raw: Any, field_name: str, model_id: str) -> float:
+    if raw is None or isinstance(raw, bool):
+        raise OpenRouterPricingError(
+            f"OpenRouter model {model_id!r} has missing or invalid {field_name} price"
+        )
+    try:
+        price = float(raw)
+    except (TypeError, ValueError) as exc:
+        raise OpenRouterPricingError(
+            f"OpenRouter model {model_id!r} has non-numeric {field_name} price {raw!r}"
+        ) from exc
+    if not math.isfinite(price) or price < 0.0:
+        raise OpenRouterPricingError(
+            f"OpenRouter model {model_id!r} has negative or non-finite {field_name} price {raw!r}"
+        )
+    return price
+
+
+def fetch_openrouter_models(
+    base_url: str = "https://openrouter.ai/api/v1",
+    *,
+    timeout: float = 30.0,
+) -> list[dict[str, Any]]:
+    """Query OpenRouter's public model list (``GET /models``)."""
+    clean_base = base_url.rstrip("/")
+    if not clean_base.startswith("https://"):
+        raise ValueError("base_url must use https")
+    request = urllib.request.Request(
+        f"{clean_base}/models",
+        headers={"Accept": "application/json", "User-Agent": "MemBud/0.1"},
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception as exc:
+        raise LLMRequestError(
+            f"failed to fetch OpenRouter model list from {clean_base}/models: {exc}",
+            attempts=1,
+        ) from exc
+    data = payload.get("data") if isinstance(payload, Mapping) else None
+    if not isinstance(data, list):
+        raise OpenRouterPricingError("OpenRouter /models response is missing 'data' list")
+    return [dict(item) for item in data if isinstance(item, Mapping)]
+
+
+def resolve_openrouter_model_pricing(
+    model_id: str,
+    models: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Find ``model_id`` by exact slug in ``models`` and extract its pricing."""
+    target = model_id.strip()
+    if not target:
+        raise OpenRouterPricingError("model_id must be a non-empty string")
+    matched: Mapping[str, Any] | None = None
+    for entry in models:
+        if isinstance(entry, Mapping) and entry.get("id") == target:
+            matched = entry
+            break
+    if matched is None:
+        free_candidates = sorted(
+            str(entry.get("id"))
+            for entry in models
+            if isinstance(entry, Mapping)
+            and isinstance(entry.get("id"), str)
+            and isinstance(entry.get("pricing"), Mapping)
+            and str(entry["pricing"].get("prompt", "")).strip() in {"0", "0.0"}
+            and str(entry["pricing"].get("completion", "")).strip() in {"0", "0.0"}
+        )
+        hint = (
+            f"; available zero-priced models include: {', '.join(free_candidates[:10])}"
+            if free_candidates
+            else ""
+        )
+        raise OpenRouterPricingError(
+            f"OpenRouter model {target!r} was not found in the public model list{hint}"
+        )
+    pricing = matched.get("pricing")
+    if not isinstance(pricing, Mapping):
+        raise OpenRouterPricingError(
+            f"OpenRouter model {target!r} has no 'pricing' object in the catalog"
+        )
+    prompt_price = _parse_non_negative_price(pricing.get("prompt"), "prompt", target)
+    completion_price = _parse_non_negative_price(pricing.get("completion"), "completion", target)
+    raw_request = pricing.get("request", "0")
+    request_price = (
+        0.0
+        if raw_request in (None, "")
+        else _parse_non_negative_price(raw_request, "request", target)
+    )
+    is_free = prompt_price == 0.0 and completion_price == 0.0 and request_price == 0.0
+    return {
+        "id": target,
+        "name": str(matched.get("name") or target),
+        "prompt_price_per_token": prompt_price,
+        "completion_price_per_token": completion_price,
+        "request_price": request_price,
+        "prompt_per_mtok": round(prompt_price * 1_000_000, 6),
+        "completion_per_mtok": round(completion_price * 1_000_000, 6),
+        "is_free": is_free,
+    }
+
+
+def enforce_openrouter_zero_price(
+    model_id: str,
+    *,
+    models: Sequence[Mapping[str, Any]] | None = None,
+    base_url: str = "https://openrouter.ai/api/v1",
+    allow_paid: bool = False,
+    timeout: float = 30.0,
+) -> dict[str, Any]:
+    """Verify ``model_id`` has $0 prompt/completion/request pricing unless ``allow_paid=True``."""
+    catalog = list(models) if models is not None else fetch_openrouter_models(base_url, timeout=timeout)
+    resolved = resolve_openrouter_model_pricing(model_id, catalog)
+    if not resolved["is_free"] and not allow_paid:
+        raise OpenRouterPricingError(
+            f"OpenRouter model {model_id!r} has non-zero pricing "
+            f"(prompt={resolved['prompt_price_per_token']}/tok, "
+            f"completion={resolved['completion_price_per_token']}/tok, "
+            f"request={resolved['request_price']}); refusing to start without --allow-paid"
+        )
+    return resolved
+
+
+class DeepSeekPricingError(ValueError):
+    """Raised when a DeepSeek model is unknown or paid without explicit consent."""
+
+
+# USD per 1M tokens, from https://api-docs.deepseek.com/quick_start/pricing
+# (retrieved 2026-11-21). "peak" is 2x "offpeak"; the guard uses the peak rate so
+# spend estimates are conservative. These are published list prices, not a bill.
+DEEPSEEK_PRICE_SOURCE = (
+    "https://api-docs.deepseek.com/quick_start/pricing (retrieved 2026-11-21)"
+)
+_DEEPSEEK_FLASH_PRICES = {"input_miss_peak": 0.30, "input_miss_offpeak": 0.15,
+                          "output_peak": 1.20, "output_offpeak": 0.60}
+DEEPSEEK_PRICES_PER_MTOK: dict[str, dict[str, float]] = {
+    "deepseek-flash": _DEEPSEEK_FLASH_PRICES,
+    "deepseek-v4-flash": _DEEPSEEK_FLASH_PRICES,  # legacy alias, billed at Flash
+    "deepseek-v4-pro": {"input_miss_peak": 1.32, "input_miss_offpeak": 0.66,
+                        "output_peak": 3.96, "output_offpeak": 1.98},
+}
+
+
+def enforce_deepseek_price(
+    model_id: str, *, allow_paid: bool = False
+) -> dict[str, Any]:
+    """Resolve DeepSeek list pricing for ``model_id``; refuse without ``allow_paid``.
+
+    DeepSeek's API has no free tier and no public price catalog endpoint, so the
+    price comes from the pinned table above. Unknown models are refused.
+    """
+    prices = DEEPSEEK_PRICES_PER_MTOK.get(model_id.strip())
+    if prices is None:
+        raise DeepSeekPricingError(
+            f"unknown DeepSeek model {model_id!r}; known: "
+            f"{', '.join(sorted(DEEPSEEK_PRICES_PER_MTOK))}"
+        )
+    if not allow_paid:
+        raise DeepSeekPricingError(
+            f"DeepSeek model {model_id!r} is paid; refusing to start without --allow-paid"
+        )
+    return {
+        "id": model_id,
+        "name": model_id,
+        "prompt_price_per_token": prices["input_miss_peak"] / 1_000_000,
+        "completion_price_per_token": prices["output_peak"] / 1_000_000,
+        "request_price": 0.0,
+        "prompt_per_mtok": prices["input_miss_peak"],
+        "completion_per_mtok": prices["output_peak"],
+        "is_free": False,
+        "price_basis": "peak_rate_cache_miss_conservative",
+        "offpeak_prompt_per_mtok": prices["input_miss_offpeak"],
+        "offpeak_completion_per_mtok": prices["output_offpeak"],
+        "source": DEEPSEEK_PRICE_SOURCE,
+    }
+
+
+class OpenAICompatibleChatClient:
+    """Small standard-library client for Claude, Gemini, and OpenAI-compatible APIs.
+
+    Credentials are passed explicitly or read from provider environment
+    variables (``ANTHROPIC_API_KEY``, ``GEMINI_API_KEY``, or legacy
+    ``DEEPSEEK_API_KEY`` / ``CMD_API_KEY``). The client never logs credentials
+    or request content. Transient network/429/5xx failures get bounded
+    exponential-backoff retries; other HTTP errors fail immediately. Malformed
+    JSON gets a separate bounded repair request.
+    """
+
+    CLAUDE_BASE_URL = "https://api.anthropic.com/v1"
+    CLAUDE_MODEL = "claude-haiku-4-5-20251001"
+    CLAUDE_SONNET_MODEL = "claude-sonnet-4-5-20250929"
+    ANTHROPIC_VERSION = "2023-06-01"
+
+    GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
+    GEMINI_MODEL = "gemini-2.5-flash"
+    GEMINI_PRO_MODEL = "gemini-2.5-pro"
+
+    OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+    OPENROUTER_MODEL = "deepseek/deepseek-v4.1-flash"
 
     DEFAULT_BASE_URL = "https://api.commandcode.ai/provider/v1"
     DEFAULT_MODEL = "deepseek/deepseek-v4.1-flash"
     DEEPSEEK_BASE_URL = "https://api.deepseek.com"
     DEEPSEEK_MODEL = "deepseek-flash"
+
+    PRIMARY_PROVIDERS = ("claude", "gemini")
+    SUPPORTED_PROVIDERS = ("claude", "gemini", "openrouter", "deepseek", "commandcode")
+
+    _PROVIDER_ENV_SPECS: dict[str, dict[str, Any]] = {
+        "claude": {
+            "key_envs": ("ANTHROPIC_API_KEY", "CLAUDE_API_KEY"),
+            "model_envs": ("CLAUDE_MODEL", "ANTHROPIC_MODEL"),
+            "default_model": CLAUDE_MODEL,
+            "base_url_envs": ("CLAUDE_BASE_URL", "ANTHROPIC_BASE_URL"),
+            "default_base_url": CLAUDE_BASE_URL,
+            "cache_envs": ("CLAUDE_CACHE_PATH", "ANTHROPIC_CACHE_PATH"),
+            "default_cache": "~/.cache/membud/claude-cache.sqlite3",
+            "provider_name": "claude-openai-compatible",
+            "missing_key_message": "ANTHROPIC_API_KEY must be set in the process environment",
+            "zdr_env": None,
+        },
+        "gemini": {
+            "key_envs": ("GEMINI_API_KEY", "GOOGLE_API_KEY"),
+            "model_envs": ("GEMINI_MODEL",),
+            "default_model": GEMINI_MODEL,
+            "base_url_envs": ("GEMINI_BASE_URL",),
+            "default_base_url": GEMINI_BASE_URL,
+            "cache_envs": ("GEMINI_CACHE_PATH",),
+            "default_cache": "~/.cache/membud/gemini-cache.sqlite3",
+            "provider_name": "gemini-openai-compatible",
+            "missing_key_message": "GEMINI_API_KEY must be set in the process environment",
+            "zdr_env": None,
+        },
+        "openrouter": {
+            "key_envs": ("OPENROUTER_API_KEY",),
+            "model_envs": ("OPENROUTER_MODEL",),
+            "default_model": OPENROUTER_MODEL,
+            "base_url_envs": ("OPENROUTER_BASE_URL",),
+            "default_base_url": OPENROUTER_BASE_URL,
+            "cache_envs": ("OPENROUTER_CACHE_PATH",),
+            "default_cache": "~/.cache/membud/openrouter-cache.sqlite3",
+            "provider_name": "openrouter-openai-compatible",
+            "missing_key_message": "OPENROUTER_API_KEY must be set in the process environment",
+            "zdr_env": "OPENROUTER_ZDR",
+        },
+        "deepseek": {
+            "key_envs": ("DEEPSEEK_API_KEY",),
+            "model_envs": ("DEEPSEEK_MODEL",),
+            "default_model": DEEPSEEK_MODEL,
+            "base_url_envs": ("DEEPSEEK_BASE_URL",),
+            "default_base_url": DEEPSEEK_BASE_URL,
+            "cache_envs": ("DEEPSEEK_CACHE_PATH",),
+            "default_cache": "~/.cache/membud/deepseek-cache.sqlite3",
+            "provider_name": "deepseek-openai-compatible",
+            "missing_key_message": "DEEPSEEK_API_KEY must be set in the process environment",
+            "zdr_env": None,
+        },
+        "commandcode": {
+            "key_envs": ("CMD_API_KEY",),
+            "model_envs": ("CMD_MODEL",),
+            "default_model": DEFAULT_MODEL,
+            "base_url_envs": ("CMD_BASE_URL",),
+            "default_base_url": DEFAULT_BASE_URL,
+            "cache_envs": ("CMD_CACHE_PATH",),
+            "default_cache": "~/.cache/membud/commandcode-cache.sqlite3",
+            "provider_name": "commandcode-openai-compatible",
+            "missing_key_message": "CMD_API_KEY must be set",
+            "zdr_env": "CMD_ZDR",
+        },
+    }
 
     def __init__(
         self,
@@ -84,6 +469,7 @@ class OpenAICompatibleChatClient:
         cache_path: str | Path | None = None,
         provider_name: str = "openai-compatible",
         require_cache: bool = False,
+        extra_body: Mapping[str, Any] | None = None,
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         if not api_key.strip():
@@ -108,6 +494,8 @@ class OpenAICompatibleChatClient:
         self.cache_path = Path(cache_path).expanduser() if cache_path is not None else None
         self.provider_name = provider_name
         self.require_cache = require_cache
+        # Extra provider-specific JSON fields (e.g. DeepSeek ``thinking``).
+        self.extra_body: dict[str, Any] = dict(extra_body or {})
         # Telemetry: cache-only misses observed on this client instance.  A miss
         # always raises, but layers that fail closed on transport errors (e.g.
         # verify_with_llm) may swallow the exception; the counter lets the harness
@@ -121,6 +509,12 @@ class OpenAICompatibleChatClient:
         self.provider_calls = 0
         self._sleep = sleeper
 
+    def __repr__(self) -> str:
+        return (
+            f"{type(self).__name__}(provider_name={self.provider_name!r}, "
+            f"model={self.model!r}, base_url={self.base_url!r})"
+        )
+
     @property
     def configuration(self) -> dict[str, Any]:
         """Non-secret model/request settings suitable for an audit record."""
@@ -133,50 +527,138 @@ class OpenAICompatibleChatClient:
             "max_attempts": self.max_attempts,
             "max_json_retries": self.max_json_retries,
             "backoff_seconds": self.backoff_seconds,
-            "response_format": "json_object",
+            "response_format": "prompt_json" if self._is_anthropic() else "json_object",
             "zero_data_retention": self.zero_data_retention,
             "persistent_cache": self.cache_path is not None,
             "require_cache": self.require_cache,
+            "extra_body": dict(self.extra_body),
         }
+
+    @classmethod
+    def _from_spec(
+        cls,
+        provider: str,
+        *,
+        require_cache: bool = False,
+        cache_only_without_key: bool = False,
+    ) -> "OpenAICompatibleChatClient":
+        spec = cls._PROVIDER_ENV_SPECS[provider]
+        api_key = _first_env(*spec["key_envs"])
+        if not api_key.strip():
+            if cache_only_without_key and require_cache:
+                api_key = "offline-cache-only"
+            else:
+                raise ValueError(spec["missing_key_message"])
+        zdr = False
+        if spec["zdr_env"]:
+            zdr = os.environ.get(spec["zdr_env"], "0").lower() in {"1", "true", "yes"}
+        return cls(
+            api_key=api_key,
+            model=_first_env(*spec["model_envs"], default=spec["default_model"]),
+            base_url=_first_env(*spec["base_url_envs"], default=spec["default_base_url"]),
+            cache_path=_first_env(*spec["cache_envs"], default=spec["default_cache"]),
+            provider_name=spec["provider_name"],
+            zero_data_retention=zdr,
+            require_cache=require_cache,
+        )
+
+    @classmethod
+    def from_claude_env(
+        cls, *, require_cache: bool = False
+    ) -> "OpenAICompatibleChatClient":
+        """Build a client for Anthropic Claude's OpenAI-compatible API."""
+        return cls._from_spec("claude", require_cache=require_cache)
+
+    @classmethod
+    def from_gemini_env(
+        cls, *, require_cache: bool = False
+    ) -> "OpenAICompatibleChatClient":
+        """Build a client for Google Gemini's OpenAI-compatible API."""
+        return cls._from_spec("gemini", require_cache=require_cache)
 
     @classmethod
     def from_env(
         cls, *, require_cache: bool = False
     ) -> "OpenAICompatibleChatClient":
         """Build a client from Command Code environment variables."""
-        api_key = os.environ.get("CMD_API_KEY", "")
-        if not api_key:
-            raise ValueError("CMD_API_KEY must be set")
-        return cls(
-            api_key=api_key,
-            model=os.environ.get("CMD_MODEL", cls.DEFAULT_MODEL),
-            base_url=os.environ.get("CMD_BASE_URL", cls.DEFAULT_BASE_URL),
-            provider_name="commandcode-openai-compatible",
-            zero_data_retention=os.environ.get("CMD_ZDR", "0").lower() in {"1", "true", "yes"},
-            cache_path=os.environ.get(
-                "CMD_CACHE_PATH", "~/.cache/membud/commandcode-cache.sqlite3"
-            ),
-            require_cache=require_cache,
-        )
+        return cls._from_spec("commandcode", require_cache=require_cache)
+
+    @classmethod
+    def from_openrouter_env(
+        cls,
+        *,
+        require_cache: bool = False,
+        dotenv_path: str | Path | None = None,
+    ) -> "OpenAICompatibleChatClient":
+        """Build a client for OpenRouter's OpenAI-compatible API."""
+        if dotenv_path is not None and not _first_env("OPENROUTER_API_KEY"):
+            dotenv_vars = load_dotenv_0600(dotenv_path, require_0600=True, populate_environ=False)
+            api_key = dotenv_vars.get("OPENROUTER_API_KEY", "").strip()
+            if api_key:
+                spec = cls._PROVIDER_ENV_SPECS["openrouter"]
+                model = _first_env(*spec["model_envs"]) or dotenv_vars.get("OPENROUTER_MODEL", "").strip() or spec["default_model"]
+                base_url = _first_env(*spec["base_url_envs"]) or dotenv_vars.get("OPENROUTER_BASE_URL", "").strip() or spec["default_base_url"]
+                cache_path = _first_env(*spec["cache_envs"]) or dotenv_vars.get("OPENROUTER_CACHE_PATH", "").strip() or spec["default_cache"]
+                zdr_raw = os.environ.get("OPENROUTER_ZDR") or dotenv_vars.get("OPENROUTER_ZDR", "0")
+                zdr = str(zdr_raw).lower() in {"1", "true", "yes"}
+                return cls(
+                    api_key=api_key,
+                    model=model,
+                    base_url=base_url,
+                    cache_path=cache_path,
+                    provider_name=spec["provider_name"],
+                    zero_data_retention=zdr,
+                    require_cache=require_cache,
+                )
+        return cls._from_spec("openrouter", require_cache=require_cache)
 
     @classmethod
     def from_deepseek_env(
-        cls, *, require_cache: bool = False
+        cls, *, require_cache: bool = False, thinking: bool | None = None
     ) -> "OpenAICompatibleChatClient":
-        """Build a client for DeepSeek's official OpenAI-compatible API."""
-        api_key = os.environ.get("DEEPSEEK_API_KEY", "")
-        if not api_key:
-            raise ValueError("DEEPSEEK_API_KEY must be set in the process environment")
-        return cls(
-            api_key=api_key,
-            model=os.environ.get("DEEPSEEK_MODEL", cls.DEEPSEEK_MODEL),
-            base_url=os.environ.get("DEEPSEEK_BASE_URL", cls.DEEPSEEK_BASE_URL),
-            cache_path=os.environ.get(
-                "DEEPSEEK_CACHE_PATH", "~/.cache/membud/deepseek-cache.sqlite3"
-            ),
-            provider_name="deepseek-openai-compatible",
-            require_cache=require_cache,
-        )
+        """Build a client for DeepSeek's official OpenAI-compatible API.
+
+        ``thinking=None`` keeps the provider default (thinking enabled); ``False``
+        sends ``{"thinking": {"type": "disabled"}}`` to avoid reasoning tokens.
+        """
+        client = cls._from_spec("deepseek", require_cache=require_cache)
+        if thinking is not None:
+            client.extra_body["thinking"] = {
+                "type": "enabled" if thinking else "disabled"
+            }
+        return client
+
+    @classmethod
+    def normalize_provider(cls, provider: str) -> str:
+        """Normalize provider aliases and validate against ``SUPPORTED_PROVIDERS``."""
+        normalized = _PROVIDER_ALIASES.get(provider.strip().lower(), provider.strip().lower())
+        if normalized not in cls.SUPPORTED_PROVIDERS:
+            supported = ", ".join(cls.SUPPORTED_PROVIDERS)
+            raise ValueError(f"unsupported provider {provider!r}; expected one of: {supported}")
+        return normalized
+
+    @classmethod
+    def from_provider_env(
+        cls,
+        provider: str = "claude",
+        *,
+        require_cache: bool = False,
+        cache_only_without_key: bool = False,
+    ) -> "OpenAICompatibleChatClient":
+        """Build a client for a named provider (``claude``, ``gemini``, ``openrouter``, ``deepseek``, ``commandcode``)."""
+        normalized = cls.normalize_provider(provider)
+        if cache_only_without_key and require_cache:
+            return cls._from_spec(
+                normalized, require_cache=require_cache, cache_only_without_key=True
+            )
+        factories = {
+            "claude": cls.from_claude_env,
+            "gemini": cls.from_gemini_env,
+            "openrouter": cls.from_openrouter_env,
+            "deepseek": cls.from_deepseek_env,
+            "commandcode": cls.from_env,
+        }
+        return factories[normalized](require_cache=require_cache)
 
     def complete_json(
         self,
@@ -191,6 +673,8 @@ class OpenAICompatibleChatClient:
         cached = self._load_cache(cache_key)
         if cached is not None:
             try:
+                if not _is_valid_cached_payload(cached):
+                    raise ValueError("cached payload missing required completion fields")
                 if validator is not None:
                     validator(cached["json"])
                 return JSONCompletion(
@@ -206,7 +690,7 @@ class OpenAICompatibleChatClient:
                     json_retries=0,
                     cached=True,
                 )
-            except (ValueError, TypeError):
+            except (KeyError, ValueError, TypeError):
                 self._delete_cache(cache_key)
                 cached = None
         if cached is None and self.require_cache:
@@ -225,7 +709,25 @@ class OpenAICompatibleChatClient:
         seen_usage = {key: False for key in token_totals}
         for json_retry in range(self.max_json_retries + 1):
             self.provider_calls += 1
-            response, attempts = self._request_json_object(request_messages)
+            try:
+                response, attempts = self._request_json_object(request_messages)
+            except LLMRequestError as exc:
+                if total_attempts or any(seen_usage.values()):
+                    raise LLMRequestError(
+                        str(exc),
+                        attempts=total_attempts + exc.attempts,
+                        json_retries=json_retry,
+                        input_tokens=(
+                            token_totals["input_tokens"] if seen_usage["input_tokens"] else None
+                        ),
+                        output_tokens=(
+                            token_totals["output_tokens"] if seen_usage["output_tokens"] else None
+                        ),
+                        total_tokens=(
+                            token_totals["total_tokens"] if seen_usage["total_tokens"] else None
+                        ),
+                    ) from exc
+                raise
             total_attempts += attempts
             for key in token_totals:
                 value = response.get(key)
@@ -233,14 +735,32 @@ class OpenAICompatibleChatClient:
                     token_totals[key] += int(value)
                     seen_usage[key] = True
             try:
-                parsed = json.loads(response["content"])
+                content_text = (
+                    self._strip_markdown_fence(response["content"])
+                    if self._is_anthropic()
+                    else response["content"]
+                )
+                parsed = json.loads(content_text)
                 if not isinstance(parsed, dict):
                     raise ValueError("JSON response must be an object")
                 if validator is not None:
                     validator(parsed)
             except (json.JSONDecodeError, ValueError) as exc:
                 if json_retry >= self.max_json_retries:
-                    raise ValueError("model did not return a valid JSON object") from exc
+                    raise LLMJSONError(
+                        "model did not return a valid JSON object",
+                        attempts=total_attempts,
+                        json_retries=json_retry,
+                        input_tokens=(
+                            token_totals["input_tokens"] if seen_usage["input_tokens"] else None
+                        ),
+                        output_tokens=(
+                            token_totals["output_tokens"] if seen_usage["output_tokens"] else None
+                        ),
+                        total_tokens=(
+                            token_totals["total_tokens"] if seen_usage["total_tokens"] else None
+                        ),
+                    ) from exc
                 request_messages.extend([
                     {"role": "assistant", "content": response["content"]},
                     {
@@ -254,7 +774,7 @@ class OpenAICompatibleChatClient:
                 continue
             completion = JSONCompletion(
                 json=parsed,
-                content=response["content"],
+                content=content_text,
                 model=response.get("model") or self.model,
                 input_tokens=token_totals["input_tokens"] if seen_usage["input_tokens"] else None,
                 output_tokens=token_totals["output_tokens"] if seen_usage["output_tokens"] else None,
@@ -273,10 +793,12 @@ class OpenAICompatibleChatClient:
             "base_url": self.base_url,
             "model": self.model,
             "temperature": self.temperature,
-            "response_format": "json_object",
+            "response_format": "prompt_json" if self._is_anthropic() else "json_object",
             "zero_data_retention": self.zero_data_retention,
             "messages": list(messages),
         }
+        if self.extra_body:  # only when set, so existing cache keys are unchanged
+            material["extra_body"] = self.extra_body
         encoded = json.dumps(material, ensure_ascii=False, sort_keys=True).encode("utf-8")
         return hashlib.sha256(encoded).hexdigest()
 
@@ -317,11 +839,15 @@ class OpenAICompatibleChatClient:
         if not row:
             return None
         try:
-            return json.loads(row[0])
+            parsed = json.loads(row[0])
         except json.JSONDecodeError:
             # A corrupt cache row must degrade to a cache miss, not a HOLD loop.
             self._delete_cache(key)
             return None
+        if not _is_valid_cached_payload(parsed):
+            self._delete_cache(key)
+            return None
+        return parsed
 
     def _save_cache(self, key: str, completion: JSONCompletion) -> None:
         if self.cache_path is None:
@@ -362,6 +888,64 @@ class OpenAICompatibleChatClient:
         except sqlite3.Error:
             return
 
+    def _is_anthropic(self) -> bool:
+        return (
+            self.provider_name.startswith(("claude", "anthropic"))
+            or "api.anthropic.com" in self.base_url
+        )
+
+    @staticmethod
+    def _strip_markdown_fence(text: str) -> str:
+        """Unwrap a single outer markdown code fence when Anthropic adds one."""
+        stripped = text.strip()
+        if not (stripped.startswith("```") and stripped.endswith("```")):
+            return text
+        lines = stripped.splitlines()
+        if len(lines) < 3 or lines[-1].strip() != "```":
+            return text
+        return "\n".join(lines[1:-1]).strip()
+
+    @staticmethod
+    def _extract_response_fields(payload: Mapping[str, Any]) -> dict[str, Any]:
+        """Extract text content and normalized usage from OpenAI or Anthropic payloads."""
+        if "choices" not in payload and isinstance(payload.get("content"), list):
+            text_parts = [
+                block["text"]
+                for block in payload["content"]
+                if isinstance(block, Mapping)
+                and block.get("type") == "text"
+                and isinstance(block.get("text"), str)
+            ]
+            if not text_parts:
+                raise ValueError("anthropic response is missing text content")
+            content = "".join(text_parts)
+        else:
+            choice = payload["choices"][0]["message"]
+            content = choice.get("content")
+            if not isinstance(content, str):
+                raise ValueError("chat completion response is missing text content")
+
+        usage = payload.get("usage") or {}
+        input_tokens = usage.get("prompt_tokens", usage.get("input_tokens"))
+        output_tokens = usage.get("completion_tokens", usage.get("output_tokens"))
+        total_tokens = usage.get("total_tokens")
+        if (
+            total_tokens is None
+            and isinstance(input_tokens, int)
+            and not isinstance(input_tokens, bool)
+            and isinstance(output_tokens, int)
+            and not isinstance(output_tokens, bool)
+        ):
+            total_tokens = input_tokens + output_tokens
+        return {
+            "content": content,
+            "model": payload.get("model"),
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "total_tokens": total_tokens,
+            "request_id": payload.get("id"),
+        }
+
     def _request_json_object(
         self, messages: Sequence[Mapping[str, str]]
     ) -> tuple[dict[str, Any], int]:
@@ -369,16 +953,25 @@ class OpenAICompatibleChatClient:
             raise CacheMissError(
                 "cache-only mode is enabled; provider request refused"
             )
-        body = json.dumps({
+        payload_body: dict[str, Any] = {
             "model": self.model,
             "messages": list(messages),
             "temperature": self.temperature,
-            "response_format": {"type": "json_object"},
-        }).encode("utf-8")
+        }
+        if self._is_anthropic():
+            # Anthropic's OpenAI-compatible endpoint rejects response_format=json_object.
+            payload_body["max_tokens"] = 4096
+        else:
+            payload_body["response_format"] = {"type": "json_object"}
+        payload_body.update(self.extra_body)
+        body = json.dumps(payload_body).encode("utf-8")
         headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
         }
+        if self._is_anthropic():
+            headers["x-api-key"] = self._api_key
+            headers["anthropic-version"] = self.ANTHROPIC_VERSION
         if self.zero_data_retention:
             headers["x-cmd-zdr"] = "1"
 
@@ -389,25 +982,13 @@ class OpenAICompatibleChatClient:
             try:
                 with urllib.request.urlopen(request, timeout=self.timeout) as response:
                     payload = json.loads(response.read().decode("utf-8"))
-                choice = payload["choices"][0]["message"]
-                content = choice.get("content")
-                if not isinstance(content, str):
-                    raise ValueError("chat completion response is missing text content")
-                usage = payload.get("usage") or {}
-                return ({
-                    "content": content,
-                    "model": payload.get("model"),
-                    "input_tokens": usage.get("prompt_tokens", usage.get("input_tokens")),
-                    "output_tokens": usage.get("completion_tokens", usage.get("output_tokens")),
-                    "total_tokens": usage.get("total_tokens"),
-                    "request_id": payload.get("id"),
-                }, attempt)
+                return (self._extract_response_fields(payload), attempt)
             except urllib.error.HTTPError as exc:
                 status = exc.code
                 body_text = exc.read().decode("utf-8", "replace")
                 retryable = status in {429, 500, 502, 503, 504}
                 if not retryable or attempt == self.max_attempts:
-                    detail = self._error_message(body_text)
+                    detail = self._redact_key(self._error_message(body_text))
                     suffix = f" after {attempt} attempts" if retryable else ""
                     raise LLMRequestError(
                         f"{self.provider_name} API HTTP {status}{suffix}: {detail}",
@@ -428,12 +1009,17 @@ class OpenAICompatibleChatClient:
                 if attempt == self.max_attempts:
                     raise LLMRequestError(
                         f"{self.provider_name} API returned a malformed Chat Completions "
-                        f"response after {attempt} attempts: {exc}",
+                        f"response after {attempt} attempts: {self._redact_key(str(exc))}",
                         attempts=attempt,
                     ) from exc
                 delay = self._retry_delay(attempt, None)
             self._sleep(delay)
         raise AssertionError("unreachable")
+
+    def _redact_key(self, text: str) -> str:
+        if self._api_key and self._api_key in text:
+            return text.replace(self._api_key, "[REDACTED_API_KEY]")
+        return text
 
     def _retry_delay(self, attempt: int, retry_after: str | None) -> float:
         if retry_after is not None:

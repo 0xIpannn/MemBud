@@ -90,7 +90,14 @@ from .conversation import (
     parse_conversation,
     verify_with_transcript,
 )
-from .schemas import SCHEMA_VERSION, Transition
+from .schemas import (
+    _AUTHORIZATION_KEYS,
+    _EVIDENCE_KEYS,
+    _OPERATION_KEYS,
+    _RECORD_KEYS,
+    SCHEMA_VERSION,
+    Transition,
+)
 from .verification import verify
 
 SERVICE_NAME = "membud-verify"
@@ -395,6 +402,33 @@ def validate_transition_shape(payload: dict[str, Any]) -> None:
             "INPUT_TOO_LARGE",
             f"request declares {total_claims} claims; the per-request limit is {MAX_CLAIMS}",
         )
+
+    for section, allowed_keys in (
+        ("before", _RECORD_KEYS),
+        ("candidate", _RECORD_KEYS),
+        ("evidence", _EVIDENCE_KEYS),
+        ("operations", _OPERATION_KEYS),
+    ):
+        for index, item in enumerate(normalised[section]):
+            if not isinstance(item, dict):
+                continue
+            unexpected = sorted(key for key in item if key not in allowed_keys)
+            if unexpected:
+                raise RequestError(
+                    400,
+                    "INVALID_REQUEST",
+                    f"unexpected {section}[{index}] fields: {', '.join(unexpected)}",
+                )
+            if section == "operations" and isinstance(item.get("authorization"), dict):
+                auth_unexpected = sorted(
+                    key for key in item["authorization"] if key not in _AUTHORIZATION_KEYS
+                )
+                if auth_unexpected:
+                    raise RequestError(
+                        400,
+                        "INVALID_REQUEST",
+                        f"unexpected operations[{index}].authorization fields: {', '.join(auth_unexpected)}",
+                    )
 
 
 def build_transition(payload: dict[str, Any], representation: str) -> Transition:

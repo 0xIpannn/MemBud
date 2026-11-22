@@ -1,0 +1,14 @@
+{
+  "schema_version": 2,
+  "case_id": "quickstart-hold",
+  "before": [{"id": "r1", "claims": ["lives in Bandung"]}],
+  "candidate": [
+    {"id": "r1", "claims": ["lives in Bandung"]},
+    {"id": "r2", "claims": ["owns a private jet"]}
+  ],
+  "evidence": [
+    {"id": "e1", "source": "chat:42", "text": "I played tennis this weekend.", "supports": ["plays tennis"]}
+  ],
+  "required_claims": ["lives in Bandung"],
+  "operations": [{"type": "WRITE", "record_id": "r2"}]
+}

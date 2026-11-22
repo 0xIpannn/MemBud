@@ -544,3 +544,261 @@ def test_from_deepseek_env_can_enable_require_cache(monkeypatch, tmp_path):
     client = OpenAICompatibleChatClient.from_deepseek_env(require_cache=True)
     assert client.require_cache is True
     assert client.cache_path == tmp_path / "cache.sqlite3"
+
+
+# ---------------------------------------------------------------------------
+# Claude (Anthropic) and Gemini (Google) providers
+# ---------------------------------------------------------------------------
+
+
+def test_claude_environment_factory_requires_key_and_selects_default_model(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("CLAUDE_API_KEY", raising=False)
+    monkeypatch.delenv("CLAUDE_MODEL", raising=False)
+    monkeypatch.delenv("ANTHROPIC_MODEL", raising=False)
+    monkeypatch.delenv("CLAUDE_BASE_URL", raising=False)
+    monkeypatch.delenv("ANTHROPIC_BASE_URL", raising=False)
+
+    with pytest.raises(ValueError, match="ANTHROPIC_API_KEY"):
+        OpenAICompatibleChatClient.from_claude_env()
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-secret-value")
+    client = OpenAICompatibleChatClient.from_claude_env()
+    assert client.base_url == "https://api.anthropic.com/v1"
+    assert client.model == "claude-haiku-4-5-20251001"
+    assert client.configuration["provider"] == "claude-openai-compatible"
+    assert client.configuration["response_format"] == "prompt_json"
+    assert "sk-ant-test-secret-value" not in repr(client)
+    assert "sk-ant-test-secret-value" not in json.dumps(client.configuration)
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setenv("CLAUDE_API_KEY", "sk-ant-alias-secret")
+    monkeypatch.setenv("CLAUDE_MODEL", OpenAICompatibleChatClient.CLAUDE_SONNET_MODEL)
+    sonnet = OpenAICompatibleChatClient.from_claude_env()
+    assert sonnet.model == "claude-sonnet-4-5-20250929"
+
+
+def test_claude_client_sends_anthropic_headers_and_unwraps_markdown_fence(monkeypatch, tmp_path):
+    observed = {}
+
+    def fake_urlopen(request, timeout):
+        observed["url"] = request.full_url
+        observed["headers"] = {k.lower(): v for k, v in request.header_items()}
+        observed["body"] = json.loads(request.data)
+        return FakeResponse(
+            api_response(
+                '```json\n{"decision":"HOLD"}\n```',
+                model="claude-haiku-4-5-20251001",
+            )
+        )
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-secret")
+    monkeypatch.setenv("CLAUDE_CACHE_PATH", str(tmp_path / "claude.sqlite3"))
+
+    client = OpenAICompatibleChatClient.from_claude_env()
+    result = client.complete_json([{"role": "user", "content": "Assess transition"}])
+
+    assert observed["url"] == "https://api.anthropic.com/v1/chat/completions"
+    assert observed["headers"]["authorization"] == "Bearer sk-ant-secret"
+    assert observed["headers"]["x-api-key"] == "sk-ant-secret"
+    assert observed["headers"]["anthropic-version"] == "2023-06-01"
+    assert "response_format" not in observed["body"]
+    assert observed["body"]["max_tokens"] == 4096
+    assert observed["body"]["model"] == "claude-haiku-4-5-20251001"
+    assert result.json == {"decision": "HOLD"}
+    assert result.content == '{"decision":"HOLD"}'
+    assert result.model == "claude-haiku-4-5-20251001"
+
+
+def test_claude_client_supports_native_anthropic_messages_payload(monkeypatch):
+    def fake_urlopen(request, timeout):
+        return FakeResponse(
+            {
+                "id": "msg_123",
+                "model": "claude-sonnet-4-5-20250929",
+                "content": [{"type": "text", "text": '{"decision":"ACCEPT"}'}],
+                "usage": {"input_tokens": 25, "output_tokens": 9},
+            }
+        )
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    client = OpenAICompatibleChatClient(
+        api_key="sk-ant-secret",
+        model="claude-sonnet-4-5-20250929",
+        base_url="https://api.anthropic.com/v1",
+        provider_name="claude-openai-compatible",
+    )
+    result = client.complete_json([{"role": "user", "content": "Assess transition"}])
+    assert result.json == {"decision": "ACCEPT"}
+    assert result.model == "claude-sonnet-4-5-20250929"
+    assert result.input_tokens == 25
+    assert result.output_tokens == 9
+    assert result.total_tokens == 34
+    assert result.request_id == "msg_123"
+
+
+def test_gemini_environment_factory_requires_key_and_selects_default_model(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_MODEL", raising=False)
+    monkeypatch.delenv("GEMINI_BASE_URL", raising=False)
+
+    with pytest.raises(ValueError, match="GEMINI_API_KEY"):
+        OpenAICompatibleChatClient.from_gemini_env()
+
+    monkeypatch.setenv("GEMINI_API_KEY", "AIza-test-secret-value")
+    client = OpenAICompatibleChatClient.from_gemini_env()
+    assert client.base_url == "https://generativelanguage.googleapis.com/v1beta/openai"
+    assert client.model == "gemini-2.5-flash"
+    assert client.configuration["provider"] == "gemini-openai-compatible"
+    assert client.configuration["response_format"] == "json_object"
+    assert "AIza-test-secret-value" not in repr(client)
+    assert "AIza-test-secret-value" not in json.dumps(client.configuration)
+
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.setenv("GOOGLE_API_KEY", "AIza-google-alias")
+    monkeypatch.setenv("GEMINI_MODEL", OpenAICompatibleChatClient.GEMINI_PRO_MODEL)
+    pro = OpenAICompatibleChatClient.from_gemini_env()
+    assert pro.model == "gemini-2.5-pro"
+
+
+def test_gemini_client_uses_openai_compatible_json_mode(monkeypatch, tmp_path):
+    observed = {}
+
+    def fake_urlopen(request, timeout):
+        observed["url"] = request.full_url
+        observed["headers"] = {k.lower(): v for k, v in request.header_items()}
+        observed["body"] = json.loads(request.data)
+        return FakeResponse(api_response('{"decision":"ACCEPT"}', model="gemini-2.5-flash"))
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    monkeypatch.setenv("GEMINI_API_KEY", "AIza-secret")
+    monkeypatch.setenv("GEMINI_CACHE_PATH", str(tmp_path / "gemini.sqlite3"))
+
+    client = OpenAICompatibleChatClient.from_gemini_env()
+    result = client.complete_json([{"role": "user", "content": "Assess transition"}])
+
+    assert (
+        observed["url"]
+        == "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+    )
+    assert observed["headers"]["authorization"] == "Bearer AIza-secret"
+    assert "x-api-key" not in observed["headers"]
+    assert observed["body"]["model"] == "gemini-2.5-flash"
+    assert observed["body"]["response_format"] == {"type": "json_object"}
+    assert result.json == {"decision": "ACCEPT"}
+    assert result.model == "gemini-2.5-flash"
+
+
+def test_from_provider_env_supports_aliases_and_cache_only_without_key(monkeypatch, tmp_path):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-1")
+    monkeypatch.setenv("GEMINI_API_KEY", "AIza-1")
+    assert OpenAICompatibleChatClient.from_provider_env("anthropic").model == "claude-haiku-4-5-20251001"
+    assert OpenAICompatibleChatClient.from_provider_env("google").model == "gemini-2.5-flash"
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("CLAUDE_API_KEY", raising=False)
+    monkeypatch.setenv("CLAUDE_CACHE_PATH", str(tmp_path / "claude-offline.sqlite3"))
+    offline = OpenAICompatibleChatClient.from_provider_env(
+        "claude", require_cache=True, cache_only_without_key=True
+    )
+    assert offline.require_cache is True
+    assert offline.model == "claude-haiku-4-5-20251001"
+    assert offline.cache_path == tmp_path / "claude-offline.sqlite3"
+
+    with pytest.raises(ValueError, match="unsupported provider"):
+        OpenAICompatibleChatClient.from_provider_env("unknown-provider")
+
+
+@pytest.mark.parametrize(
+    "bad_payload",
+    [
+        {"json": {"checks": []}},
+        {"json": ["not-a-dict"], "content": "[]", "model": "m"},
+        {"json": {"ok": True}, "content": 123, "model": "m"},
+        {"json": {"ok": True}, "content": "{}", "model": ""},
+        ["not", "an", "object"],
+    ],
+)
+def test_shape_invalid_cache_entry_is_treated_as_miss_and_deleted(
+    monkeypatch, tmp_path, bad_payload
+):
+    import sqlite3
+    from membud.llm.client import CacheMissError
+
+    cache_path = tmp_path / "cache.sqlite3"
+    messages = [{"role": "user", "content": "Assess transition"}]
+    probe = OpenAICompatibleChatClient(
+        api_key="secret", model="deepseek/deepseek-v4.1-flash", cache_path=cache_path
+    )
+    key = probe._cache_key(messages)
+    with sqlite3.connect(cache_path) as conn:
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS completions (cache_key TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+        )
+        conn.execute(
+            "INSERT INTO completions(cache_key, payload) VALUES (?, ?)",
+            (key, json.dumps(bad_payload)),
+        )
+
+    cache_only = OpenAICompatibleChatClient(
+        api_key="secret",
+        model="deepseek/deepseek-v4.1-flash",
+        cache_path=cache_path,
+        require_cache=True,
+    )
+    with pytest.raises(CacheMissError):
+        cache_only.complete_json(messages)
+    assert cache_only.cache_misses == 1
+    with sqlite3.connect(cache_path) as conn:
+        row = conn.execute("SELECT payload FROM completions WHERE cache_key = ?", (key,)).fetchone()
+    assert row is None
+
+    # With require_cache=False and a fresh invalid row, it deletes the row and dials out.
+    with sqlite3.connect(cache_path) as conn:
+        conn.execute(
+            "INSERT INTO completions(cache_key, payload) VALUES (?, ?)",
+            (key, json.dumps(bad_payload)),
+        )
+    monkeypatch.setattr(
+        "urllib.request.urlopen",
+        lambda request, timeout: FakeResponse(api_response('{"decision":"HOLD"}')),
+    )
+    live = OpenAICompatibleChatClient(
+        api_key="secret", model="deepseek/deepseek-v4.1-flash", cache_path=cache_path
+    )
+    completion = live.complete_json(messages)
+    assert completion.cached is False
+    assert completion.json == {"decision": "HOLD"}
+
+
+def test_json_repair_exhaustion_preserves_accumulated_usage_and_attempts(monkeypatch):
+    from membud.llm.client import LLMJSONError
+
+    first = api_response("not json")
+    first["usage"] = {"prompt_tokens": 11, "completion_tokens": 7, "total_tokens": 18}
+    second = api_response("still not json")
+    second["usage"] = {"prompt_tokens": 13, "completion_tokens": 9, "total_tokens": 22}
+    replies = [FakeResponse(first), FakeResponse(second)]
+    monkeypatch.setattr("urllib.request.urlopen", lambda request, timeout: replies.pop(0))
+    client = OpenAICompatibleChatClient(
+        api_key="secret", model="deepseek/deepseek-v4.1-flash", max_json_retries=1
+    )
+    with pytest.raises(LLMJSONError, match="model did not return a valid JSON object") as info:
+        client.complete_json([{"role": "user", "content": "Assess transition"}])
+    err = info.value
+    assert isinstance(err, ValueError)
+    assert err.attempts == 2
+    assert err.json_retries == 1
+    assert err.input_tokens == 24
+    assert err.output_tokens == 16
+    assert err.total_tokens == 40
+    assert err.usage == {
+        "input_tokens": 24,
+        "output_tokens": 16,
+        "total_tokens": 40,
+        "api_attempts": 2,
+        "json_retries": 1,
+        "cache_hit": 0,
+    }
