@@ -24,6 +24,8 @@ test = ["pytest>=8"]
 # Pinned stack for the guarded real-Mem0 integration (Python 3.12; see requirements-mem0.txt
 # for the spaCy model wheel). Not needed by the stdlib-only core.
 mem0 = ["mem0ai==2.2.1", "spacy>=3.7,<3.9"]
+# A-Mem has no usable PyPI release (PyPI "agentic-memory" is an unrelated project); it is pinned by git
+# commit in requirements-amem.txt and only used to reproduce the staging findings. Not a guarded backend.
 
 [build-system]
 requires = ["setuptools>=77"]

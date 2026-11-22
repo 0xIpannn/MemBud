@@ -140,6 +140,47 @@ the store is reconciled against the whole scoped prior state.
   failure) can be labelled guarded. The reference backends satisfy this; third-party backends are
   unproven.
 
+## 5. Black-box adapter (backend-agnostic path)
+
+`membud.adapters.BlackBoxStaged` guards any backend through three public callables (`BlackBoxOps`: `add`,
+`list`, `modify`; optional `schema`, `history`) plus a `scratch_factory()` returning a second, isolated
+instance. Without that fourth input a black box cannot run a write without committing it. Per write it
+observes live state, seeds a twin by raw adds, runs the native write on the twin, diffs twin-after vs
+twin-before, rejects unmodeled changes (foreign scope, schema, scope identifiers, metadata, history),
+verifies the diff, and on ACCEPT only replays the verified set on live, refusing stale state and
+compensating on failure. `GuardedMemory` is the only live writer.
+
+The shared contract suite is `tests/test_adapter_contract.py`: control non-vacuity, HOLD byte-identical,
+unauthorized delete REJECTED, ACCEPT exactness, other scopes untouched, stale refused, injected commit
+failure compensated, unrecoverable failure loud, backend error fails closed, direct writes refused,
+foreign-scope/history rewrites rejected. Every adapter must pass all of it.
+
+| Backend | Adapter | Contract suite | Sees DDL / hidden-table writes |
+|---|---|---|---|
+| Mem0 2.2.1 (pinned) | `StagedMem0` (shadow clone; needs storage layout) | 16/16 | yes (rejected) |
+| Mem0 2.2.1 (pinned) | `BlackBoxStaged` | 16/16 | **no** (accepted, unseen) |
+| stdlib SQLite fake | `BlackBoxStaged` | 16/16 | schema yes, hidden table no |
+| A-Mem (git `ceffb86`) | none | not stageable (finding) | n/a |
+| Graphiti 0.31.2 / Letta 0.16.4 / Zep | none | not runnable offline (finding) | n/a |
+
+Evidence: `data/results/adapter-contract-v1/<backend>/evidence.json` and `findings.json`
+(`scripts/run_adapter_contract_evidence.py`); real-model run: `data/results/mem0-blackbox-realmodel-v1/`.
+
+**What the black-box adapter cannot protect against** when a side effect is invisible through the public
+API: writes to hidden tables or indexes, DDL, entity stores or caches that `list`/`schema`/`history` do not
+expose; twin divergence (the twin must behave like live, otherwise the replayed set is not the staged
+set); compensation that is itself limited to public calls (failed restore raises `PartialCommit`);
+concurrent non-guarded writers between the stale check and the replay; bypass by calling the backend
+directly; O(n) cost per write (about 27 ms vs 17 ms for `mem0_staged` at 2 memories). Mem0's `get_all`
+cannot enumerate scopes (hence an explicit `scopes` list) and silently truncates, so a result that fills
+the limit is refused.
+
+**Universality is not claimed.** Two real configurations (both Mem0) and one fake pass; the third real
+backend could not be staged safely or offline (see findings). Untested: Zep/Graphiti, Letta, any
+backend other than Mem0 through the black-box path, `AsyncMemory`, `delete_all`/`reset`, multi-process
+contention, and every Mem0 write path except add/update/delete. The default verifier is unchanged
+(deterministic, offline); no runtime dependency was added.
+
 Current source-inspection feasibility findings for Mem0/A-Mem are in `data/backend-feasibility.md`.
-Neither inspected host exposes a safe public pre-commit transition hook, so no third-party adapter is
-implemented or claimed.
+Neither inspected host exposes a safe public pre-commit transition hook. Section 5 documents the black-box
+route and why A-Mem still fails it.

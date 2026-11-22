@@ -1,0 +1,34 @@
+{
+  "a-mem": {
+    "executable_proof": "tests/test_amem_findings.py",
+    "pinned": "git ceffb860f0712bbae97b184d440df62bc910ca8d (agiresearch/A-mem; PyPI 'agentic-memory' is unrelated)",
+    "reasons": [
+      "constructing a second in-process AgenticMemorySystem resets the shared chroma client and destroys the first instance's vector store, so no in-process scratch twin exists",
+      "add_note always runs the evolution LLM and may rewrite neighbour notes, so replaying a verified add on live is not the staged set"
+    ],
+    "status": "NOT SAFELY STAGEABLE"
+  },
+  "graphiti": {
+    "pinned": "graphiti-core 0.31.2 + kuzu 0.11.3",
+    "reasons": [
+      "add_episode(group_id=...) raises AttributeError on KuzuDriver (no _database)",
+      "with group_id=None the full-text index edge_name_and_fact is missing and Kuzu's FTS extension needs a network download",
+      "Neo4j/FalkorDB need a server"
+    ],
+    "status": "NOT RUNNABLE OFFLINE"
+  },
+  "letta": {
+    "pinned": "letta==0.16.4 (Python server line; current PyPI letta 0.34.x is the Node CLI)",
+    "reasons": [
+      "782 MB / 244 packages, asyncpg and pgvector needed manually",
+      "startup requires Postgres on localhost:5432; no SQLite path"
+    ],
+    "status": "NOT RUNNABLE OFFLINE"
+  },
+  "zep": {
+    "reasons": [
+      "Zep Cloud is SaaS, not offline"
+    ],
+    "status": "NOT TRIED"
+  }
+}

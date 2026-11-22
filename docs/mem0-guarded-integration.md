@@ -166,3 +166,20 @@ remains open: `TODO.md`).
 Not implemented. `data/backend-feasibility.md` records why it needs a different mechanism (neighbour notes are
 mutated in shared in-memory objects *before* the retriever write, so a state-diff shadow would need a deep clone of
 the note graph plus ChromaDB). The shadow-and-diff approach here is the template for it.
+
+## 8. Backend-agnostic path (black-box adapter)
+
+`StagedMem0` above depends on Mem0's storage layout. `membud.adapters.BlackBoxStaged` guards a backend through
+public callables only (see `data/adapter-contract.md` section 5). On real Mem0 2.2.1 both adapters pass the same
+16-case contract suite (`tests/test_adapter_contract.py`); they differ in what they can see: when a native write
+also issues DDL or writes an entity-store row not exposed by the API, `StagedMem0` REJECTS it and the black-box
+adapter ACCEPTS it unseen. Foreign-scope writes and history rewrites are rejected by both.
+
+Real-model check (`scripts/run_blackbox_realmodel.py`, free `nvidia/nemotron-3.5-lightning:free`, local hash
+embedder, 5 synthetic sessions, $0): extraction was sensible but all five proposals were HELD by the lexical
+grounding policy (paraphrase false holds); live state stayed unchanged. This shows fail-closed behaviour only,
+not an ACCEPT with a real model. A first attempt on `google/gemma-4-31b-it:free` hit upstream 429s.
+
+Findings for other backends (`data/results/adapter-contract-v1/findings.json`): A-Mem (commit `ceffb86`) cannot be
+staged through its public API (a second in-process instance destroys the first's chroma store; `add_note` always
+rewrites neighbours); Graphiti 0.31.2/Kuzu and Letta 0.16.4 do not run offline; Zep is SaaS.
