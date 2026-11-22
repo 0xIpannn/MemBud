@@ -65,7 +65,7 @@ class FakeStore:
         )
         ids = []
         existing = {r[0] for r in self.db.execute("SELECT text FROM memories WHERE scope=?", (json.dumps(scope, sort_keys=True),))}
-        for sentence in (s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()):
+        for sentence in (s.strip().rstrip(".!?") for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()):
             if sentence not in existing:
                 ids.append(self._insert(scope, sentence, None))
         return ids

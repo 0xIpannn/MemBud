@@ -42,7 +42,7 @@ def test_accept_persists_exactly_the_staged_state(tmp_path):
     live, guard, _ = build(tmp_path)
     out = guard.add(MSG, scope=SCOPE)
     assert out.decision == "ACCEPT" and out.applied
-    assert [r["text"] for r in live.list(SCOPE)] == ["I live in Bandung.", "I work at Tokopedia."]
+    assert [r["text"] for r in live.list(SCOPE)] == ["I live in Bandung", "I work at Tokopedia"]
     assert set(out.id_map) == {c.live_id and f"staged:{c.live_id}" for c in out.changes}
     # the live backend ran its own hidden bookkeeping during the replay
     assert len(live.dump_all()["hidden_index"]) == 2
@@ -72,7 +72,7 @@ def test_stale_state_is_refused(tmp_path):
     out = guard.add("I like tea.", scope=SCOPE)
     assert not out.applied and out.decision == "REJECTED"
     assert [r["text"] for r in live.list(SCOPE)][-1] == "Intruder wrote this."
-    assert "I like tea." not in [r["text"] for r in live.list(SCOPE)]
+    assert "I like tea" not in [r["text"] for r in live.list(SCOPE)]
 
 
 def test_foreign_scope_write_is_rejected(tmp_path):
@@ -165,10 +165,10 @@ def test_update_and_delete_roundtrip(tmp_path):
     live, guard, _ = build(tmp_path)
     guard.add(MSG, scope=SCOPE)
     mid = live.list(SCOPE)[0]["id"]
-    upd = guard.update(mid, "I live in Jakarta.", source_text="I live in Jakarta.")
-    assert upd.decision == "ACCEPT" and live.list(SCOPE)[0]["text"] == "I live in Jakarta."
-    held = guard.update(mid, "I live on Mars.", source_text="I like tea.")
-    assert held.decision == "HOLD" and live.list(SCOPE)[0]["text"] == "I live in Jakarta."
+    upd = guard.update(mid, "I live in Jakarta", source_text="I live in Jakarta.")
+    assert upd.decision == "ACCEPT" and live.list(SCOPE)[0]["text"] == "I live in Jakarta"
+    held = guard.update(mid, "I live on Mars", source_text="I like tea.")
+    assert held.decision == "HOLD" and live.list(SCOPE)[0]["text"] == "I live in Jakarta"
     no_auth = guard.delete(mid, authorization=None, evidence=[])
     assert no_auth.decision == "REJECTED" and len(live.list(SCOPE)) == 2
     ok = guard.delete(

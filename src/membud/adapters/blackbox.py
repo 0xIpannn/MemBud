@@ -131,6 +131,7 @@ class BlackBoxOps:
     schema: Callable[[], Any] | None = None
     history: Callable[[str], Sequence[Any]] | None = None
     name: str = "blackbox"
+    handle: Any = None  # the backend object behind these callables (for ``scratch_closer`` etc.)
 
 
 # ---------------------------------------------------------------------------
