@@ -1,0 +1,88 @@
+{
+  "adapter": "BlackBoxStaged (public API only)",
+  "backend": "mem0-blackbox",
+  "cases": [
+    {
+      "status": "passed",
+      "test": "test_accept_add_persists_exactly_the_verified_state"
+    },
+    {
+      "status": "passed",
+      "test": "test_accept_update_and_delete_persist_exactly"
+    },
+    {
+      "status": "passed",
+      "test": "test_backend_error_while_staging_writes_nothing"
+    },
+    {
+      "status": "passed",
+      "test": "test_blind_spots_are_exactly_the_documented_ones[mem0-blackbox-hidden_surface]"
+    },
+    {
+      "status": "passed",
+      "test": "test_blind_spots_are_exactly_the_documented_ones[mem0-blackbox-schema_change]"
+    },
+    {
+      "status": "passed",
+      "test": "test_commit_failure_is_compensated_to_the_prior_public_state"
+    },
+    {
+      "status": "passed",
+      "test": "test_control_unguarded_write_changes_every_surface"
+    },
+    {
+      "status": "passed",
+      "test": "test_direct_writes_through_the_guard_are_refused"
+    },
+    {
+      "status": "passed",
+      "test": "test_hold_unsupported_add_is_byte_identical"
+    },
+    {
+      "status": "passed",
+      "test": "test_hold_unsupported_update_is_byte_identical"
+    },
+    {
+      "status": "passed",
+      "test": "test_other_scopes_are_untouched_by_an_accept"
+    },
+    {
+      "status": "passed",
+      "test": "test_stale_state_is_refused_and_the_intruder_survives"
+    },
+    {
+      "status": "passed",
+      "test": "test_unauthorized_delete_is_rejected_and_byte_identical"
+    },
+    {
+      "status": "passed",
+      "test": "test_unmodeled_side_effect_is_rejected_and_byte_identical[mem0-blackbox-foreign_scope]"
+    },
+    {
+      "status": "passed",
+      "test": "test_unmodeled_side_effect_is_rejected_and_byte_identical[mem0-blackbox-history_rewrite]"
+    },
+    {
+      "status": "passed",
+      "test": "test_unrecoverable_failure_is_loud_not_silent"
+    }
+  ],
+  "contract_suite": "tests/test_adapter_contract.py",
+  "detects_unmodeled_side_effects": {
+    "foreign_scope": true,
+    "hidden_surface": false,
+    "history_rewrite": true,
+    "schema_change": false
+  },
+  "failed": 0,
+  "not_protected_against": [
+    "schema_change",
+    "hidden_surface"
+  ],
+  "passed": 16,
+  "pinned": {
+    "mem0ai": "2.2.1",
+    "spacy": "3.8.18"
+  },
+  "skipped": 0
+}

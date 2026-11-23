@@ -140,6 +140,63 @@ the store is reconciled against the whole scoped prior state.
   failure) can be labelled guarded. The reference backends satisfy this; third-party backends are
   unproven.
 
+## 5. Black-box adapter (backend-agnostic path)
+
+`membud.adapters.BlackBoxStaged` guards any backend through three public callables (`BlackBoxOps`: `add`,
+`list`, `modify`; optional `schema`, `history`) plus a `scratch_factory()` returning a second, isolated
+instance. Without that fourth input a black box cannot run a write without committing it. Per write it
+observes live state, seeds a twin by raw adds, runs the native write on the twin, diffs twin-after vs
+twin-before, rejects unmodeled changes (foreign scope, schema, scope identifiers, metadata, history),
+verifies the diff, and on ACCEPT only replays the verified set on live, refusing stale state and
+compensating on failure. `GuardedMemory` is the only live writer.
+
+The shared contract suite is `tests/test_adapter_contract.py`: control non-vacuity, HOLD byte-identical,
+unauthorized delete REJECTED, ACCEPT exactness, other scopes untouched, stale refused, injected commit
+failure compensated, unrecoverable failure loud, backend error fails closed, direct writes refused,
+foreign-scope/history rewrites rejected. Every adapter must pass all of it.
+
+| Backend | Adapter | Contract suite | Sees DDL / hidden-table writes |
+|---|---|---|---|
+| Mem0 2.2.1 (pinned) | `StagedMem0` (shadow clone; needs storage layout) | 16/16 | yes (rejected) |
+| Mem0 2.2.1 (pinned) | `BlackBoxStaged` | 16/16 | **no** (accepted, unseen) |
+| stdlib SQLite fake | `BlackBoxStaged` | 16/16 | schema yes, hidden table no |
+| LangMem 0.0.30 over LangGraph `InMemoryStore` (pinned in `requirements-langmem.txt`) | `BlackBoxStaged` via `langgraph_store_ops` | 15/16, 1 skipped (no history surface to rewrite) | **no** schema/index/vector writes (accepted, unseen); foreign namespaces yes |
+| A-Mem (git `ceffb86`) | none | not stageable (finding) | n/a |
+| Graphiti 0.31.2 on Neo4j community 5.26.0 (`requirements-graphiti.txt`) | `BlackBoxStaged` via `graphiti_ops` | 15/16, 1 skipped (no history surface) | **no** nodes/episodes/summaries/embeddings/indexes (unseen); foreign partitions yes |
+| LlamaIndex `FactExtractionMemoryBlock` (llama-index-core 0.14.26) | none | not stageable as-is (finding): no ids, facts extracted only on overflow, wholesale condensation | n/a |
+| AutoGen `Memory` (autogen-core 0.7.5) | none | no native write and no update/delete by id (plain store) | n/a |
+| Graphiti on embedded Kuzu / Letta 0.16.4 / Zep | none | not runnable offline (finding) | n/a |
+
+Evidence: `data/results/adapter-contract-v1/<backend>/evidence.json` and `findings.json`
+(`scripts/run_adapter_contract_evidence.py`); real-model run: `data/results/mem0-blackbox-realmodel-v1/`.
+
+**What the black-box adapter cannot protect against** when a side effect is invisible through the public
+API: writes to hidden tables or indexes, DDL, entity stores or caches that `list`/`schema`/`history` do not
+expose; twin divergence (the twin must behave like live, otherwise the replayed set is not the staged
+set); compensation that is itself limited to public calls (failed restore raises `PartialCommit`);
+concurrent non-guarded writers between the stale check and the replay; bypass by calling the backend
+directly; O(n) cost per write (about 27 ms vs 17 ms for `mem0_staged` at 2 memories). Mem0's `get_all`
+cannot enumerate scopes (hence an explicit `scopes` list) and silently truncates, so a result that fills
+the limit is refused.
+
+**Universality is not claimed.** Three real backend families pass the black-box path (Mem0 2.2.1, LangMem 0.0.30 on
+an in-memory LangGraph store, Graphiti 0.31.2 on Neo4j 5.26.0) plus one stdlib fake, each with the limits below; A-Mem, LlamaIndex, AutoGen, Graphiti-on-Kuzu and Letta did not qualify (see findings). LangMem was exercised only on `InMemoryStore` with a scripted chat model
+(real `langmem` and `trustcall` code, fake LLM); its SQLite/Postgres stores, vector index, background manager
+and real models are untested. Untested: Zep, Letta, Graphiti beyond one Neo4j community server and add/update/delete, any
+backend other than Mem0 and LangMem through the black-box path, `AsyncMemory`, `delete_all`/`reset`, multi-process
+contention, and every Mem0 write path except add/update/delete. The default verifier is unchanged
+(deterministic, offline); no runtime dependency was added.
+
 Current source-inspection feasibility findings for Mem0/A-Mem are in `data/backend-feasibility.md`.
-Neither inspected host exposes a safe public pre-commit transition hook, so no third-party adapter is
-implemented or claimed.
+Neither inspected host exposes a safe public pre-commit transition hook. Section 5 documents the black-box
+route and why A-Mem still fails it.
+
+### Graphiti on Neo4j: what the black-box path loses
+
+`tests/test_graphiti_fidelity.py` runs the same add unguarded and guarded. Native `add_episode` writes 3 entity
+nodes, 1 episode node, 2 `RELATES_TO` fact edges and 3 `MENTIONS` edges. The guarded ACCEPT persists the same facts
+and entity nodes (2 edges, 3 nodes) but **no episode node and no `MENTIONS` edges**: the raw replay can only
+reproduce what the adapter observes (fact edges), so provenance, node summaries, the `episodes` list and temporal
+fields are lost. A native write that expires an existing fact (contradiction handling) changes an observed field and is
+refused as an unmodeled change (not exercised). The twin is a `group_id` partition of the same Neo4j database
+(Community has one database), so isolation is only as good as Graphiti's partition handling.

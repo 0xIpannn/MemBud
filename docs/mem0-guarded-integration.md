@@ -166,3 +166,71 @@ remains open: `TODO.md`).
 Not implemented. `data/backend-feasibility.md` records why it needs a different mechanism (neighbour notes are
 mutated in shared in-memory objects *before* the retriever write, so a state-diff shadow would need a deep clone of
 the note graph plus ChromaDB). The shadow-and-diff approach here is the template for it.
+
+## 8. Backend-agnostic path (black-box adapter)
+
+`StagedMem0` above depends on Mem0's storage layout. `membud.adapters.BlackBoxStaged` guards a backend through
+public callables only (see `data/adapter-contract.md` section 5). On real Mem0 2.2.1 both adapters pass the same
+16-case contract suite (`tests/test_adapter_contract.py`); they differ in what they can see: when a native write
+also issues DDL or writes an entity-store row not exposed by the API, `StagedMem0` REJECTS it and the black-box
+adapter ACCEPTS it unseen. Foreign-scope writes and history rewrites are rejected by both.
+
+Real-model check (`scripts/run_blackbox_realmodel.py`, free `nvidia/nemotron-3.5-lightning:free`, local hash
+embedder, 5 synthetic sessions, $0): extraction was sensible but all five proposals were HELD by the lexical
+grounding policy (paraphrase false holds); live state stayed unchanged. This shows fail-closed behaviour only,
+not an ACCEPT with a real model. A first attempt on `google/gemma-4-31b-it:free` hit upstream 429s.
+
+Findings for other backends (`data/results/adapter-contract-v1/findings.json`): A-Mem (commit `ceffb86`) cannot be
+staged through its public API (a second in-process instance destroys the first's chroma store; `add_note` always
+rewrites neighbours); Graphiti 0.31.2/Kuzu and Letta 0.16.4 do not run offline; Zep is SaaS.
+
+LangMem (0.0.30, `langgraph 1.2.24`, `trustcall 0.0.39`) was added as the second real backend through the same
+adapter (`langgraph_store_ops` over a LangGraph `BaseStore`): 15/16 contract cases pass; the skipped case is a
+history rewrite, which this store cannot express because it keeps no history. Its native write is one scripted LLM
+call plus plain puts (no cascades), which is why it stages cleanly where A-Mem does not. Blind spots: index/vector
+writes and any other store internals. Tested only with `InMemoryStore` and a scripted chat model.
+
+Real-model LangMem run (`scripts/run_langmem_realmodel.py`, free `nvidia/nemotron-3.5-lightning:free`, $0, 5 requests,
+5,300 tokens, synthetic sessions): the real manager extracted facts, but all five proposals were HELD by the default
+`LexicalGrounding` and live state stayed empty. Even "User adopted a dog named Biscuit." is not grounded by
+"I adopted a dog named Biscuit." (checked offline), i.e. third-person rewriting of first-person speech defeats the
+lexical policy. Some extractions also carried model-added commentary ("p ~ 0.99"), which a grounded check should
+hold. This shows fail-closed behaviour and the paraphrase false-hold problem, not an ACCEPT with a real model.
+
+Second LangMem run with `SpeakerNormalizedGrounding` (a `LexicalGrounding` subclass that drops the claim subject
+"User"/"User's"; deterministic, offline; `tests/test_speaker_grounding.py`): 3 of 5 sessions were ACCEPTed and
+persisted exactly the verified memory (engineer at Acme Corp; allergic to peanuts; adopted a dog named Biscuit), 2
+were HELD ("resides in Berlin" is a synonym of "live"; "favorite" vs the user's "favourite" is a spelling mismatch).
+Both holds are the intended conservative behaviour, and both are false holds (the facts are true), so this policy
+trades recall for safety. 5 requests, 11,762 tokens, $0, free `nvidia/nemotron-3.5-lightning:free`. First real-model
+ACCEPTs on any backend; one model, 5 synthetic sessions, add only (no real-model update/delete), Mem0 not re-run
+with this policy. Evidence: `data/results/langmem-blackbox-realmodel-v1/evidence.json` (overwritten by this run; the
+all-HOLD run is in the commit history).
+
+Mem0 re-run with `SpeakerNormalizedGrounding` (`scripts/run_blackbox_realmodel.py`, same free model, 5 synthetic
+sessions, first execution 13,986 tokens, $0; the committed evidence file is the byte-identical-input re-run served
+from the client cache, so its token counter reads 0): 1 ACCEPT ("User adopted a dog named Biscuit"), 4 HOLD. The
+holds are mostly correct: the model added "Germany", "October 2026" and "November 22, 2026", none of which the user
+said; one write was held as a whole because its second claim ("favorite" vs "favourite") was unsupported, which also
+blocked the supported claim (all-or-nothing per write). Real-model ACCEPT evidence now exists on two backends
+(Mem0 2.2.1: 1 accept; LangMem 0.0.30: 3 accepts), each with one free model, add only.
+
+Third-backend probes (executable findings, `tests/test_llamaindex_findings.py`, `tests/test_autogen_findings.py`):
+LlamaIndex `FactExtractionMemoryBlock` (llama-index-core 0.14.26) keeps facts as bare strings without ids, extracts
+them only when the token budget overflows (not on `Memory.aput`), and rewrites the whole list when `max_facts` is
+exceeded; an id-based black-box diff cannot track updates without an adapter-side id registry, which was not built.
+AutoGen's `Memory` (autogen-core 0.7.5) has `add`/`query`/`clear` only and no native write, so it is a plain store.
+autogen-ext's Chroma-backed memory was not checked. Net: still two real backend families through the black-box path.
+
+Graphiti 0.31.2 on Neo4j (third real backend; `graphiti_ops`, `tests/adapter_harness_graphiti.py`): 15/16 contract
+cases pass, 1 skipped (no history surface). Setup, all inside the worktree: Neo4j Community 5.26.0 tarball in the
+git-ignored `.neo4j/` with `dbms.security.auth_enabled=false`, bound to 127.0.0.1, run with the local JDK 21
+(`.neo4j/neo4j-community-5.26.0/bin/neo4j console`); `.venv-graphiti` from `requirements-graphiti.txt`;
+`GRAPHITI_TELEMETRY_ENABLED=false`. LLM and embedder are offline fakes; only the database is real. Tests skip when no
+Neo4j listens on 7687. The accepted write keeps the facts but drops the episode node and MENTIONS edges (see
+`data/adapter-contract.md`); a real-model Graphiti run was not done.
+
+Real-model Graphiti run (`scripts/run_graphiti_realmodel.py`, free `nvidia/nemotron-3.5-lightning:free`, `json_schema`
+mode, 12 requests, 74,258 tokens, $0): 4 sessions, 4 ACCEPT, but 3 of the 4 were empty (the model extracted no facts),
+so they verify nothing; "moved from Berlin to Lisbon" was persisted. The Berlin to Lisbon contradiction was not
+exercised. An earlier `json_object` attempt made the model echo the JSON schema. See `docs/rq2-modularity-results.md`.

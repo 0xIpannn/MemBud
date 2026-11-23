@@ -1,0 +1,5 @@
+# Pinned environment for the A-Mem findings (tests/test_amem_findings.py).
+# A-Mem is not on PyPI under this name (PyPI "agentic-memory" is an unrelated project), so it is pinned by commit.
+#   uv venv --python 3.12 .venv-amem && VIRTUAL_ENV=$PWD/.venv-amem uv pip install -r requirements-amem.txt -e .
+git+https://github.com/agiresearch/A-mem@ceffb860f0712bbae97b184d440df62bc910ca8d
+pytest>=8

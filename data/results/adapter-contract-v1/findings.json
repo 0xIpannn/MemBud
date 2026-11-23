@@ -1,0 +1,54 @@
+{
+  "a-mem": {
+    "executable_proof": "tests/test_amem_findings.py",
+    "pinned": "git ceffb860f0712bbae97b184d440df62bc910ca8d (agiresearch/A-mem; PyPI 'agentic-memory' is unrelated)",
+    "reasons": [
+      "constructing a second in-process AgenticMemorySystem resets the shared chroma client and destroys the first instance's vector store, so no in-process scratch twin exists",
+      "add_note always runs the evolution LLM and may rewrite neighbour notes, so replaying a verified add on live is not the staged set"
+    ],
+    "status": "NOT SAFELY STAGEABLE"
+  },
+  "autogen": {
+    "executable_proof": "tests/test_autogen_findings.py",
+    "pinned": "autogen-core==0.7.5 (Memory / ListMemory)",
+    "reasons": [
+      "interface is add/query/clear/update_context: no update or delete by id, no ids",
+      "add stores exactly what it is given; there is no native write (extraction) to stage, so it is a plain store like the stdlib fake and adds nothing for RQ2",
+      "autogen-ext Chroma-backed memory was not checked"
+    ],
+    "status": "NOT A MEMORY SYSTEM TO GUARD"
+  },
+  "graphiti-kuzu": {
+    "pinned": "graphiti-core 0.31.2 + kuzu 0.11.3",
+    "reasons": [
+      "add_episode(group_id=...) raises AttributeError on KuzuDriver (no _database)",
+      "with group_id=None the full-text index edge_name_and_fact is missing and Kuzu's FTS extension needs a network download",
+      "Neo4j/FalkorDB need a server"
+    ],
+    "status": "NOT RUNNABLE OFFLINE (embedded Kuzu); see graphiti-blackbox for the Neo4j run"
+  },
+  "letta": {
+    "pinned": "letta==0.16.4 (Python server line; current PyPI letta 0.34.x is the Node CLI)",
+    "reasons": [
+      "782 MB / 244 packages, asyncpg and pgvector needed manually",
+      "startup requires Postgres on localhost:5432; no SQLite path"
+    ],
+    "status": "NOT RUNNABLE OFFLINE"
+  },
+  "llamaindex": {
+    "executable_proof": "tests/test_llamaindex_findings.py",
+    "pinned": "llama-index-core==0.14.26 (FactExtractionMemoryBlock)",
+    "reasons": [
+      "facts are bare strings in a list with no ids, so an id-based diff cannot tell an update from delete+add; only an adapter-side id registry (a workaround, not done) could supply identity",
+      "Memory.aput stores chat history and extracts facts only when the token budget overflows, so the only synchronous native write is block.aput, below the front door",
+      "exceeding max_facts replaces the entire list with a model condensation (wholesale rewrite cascade)"
+    ],
+    "status": "NOT STAGEABLE AS-IS"
+  },
+  "zep": {
+    "reasons": [
+      "Zep Cloud is SaaS, not offline"
+    ],
+    "status": "NOT TRIED"
+  }
+}

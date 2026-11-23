@@ -1,0 +1,12 @@
+# Pinned stack for the Graphiti black-box contract run (Python 3.12). Needs a Neo4j 5.26 server
+# (community tarball neo4j-community-5.26.0, auth disabled, bolt://127.0.0.1:7687; see docs/mem0-guarded-integration.md).
+# httpx is not pulled in by graphiti-core and must be installed explicitly. Set GRAPHITI_TELEMETRY_ENABLED=false.
+graphiti-core==0.31.2
+neo4j==6.4.1
+httpx==0.28.1
+openai==3.57.0
+pydantic==2.14.4
+numpy==2.5.5
+tenacity==9.2.1
+posthog==8.1.0
+pytest>=8

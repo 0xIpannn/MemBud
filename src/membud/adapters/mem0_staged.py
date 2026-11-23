@@ -492,6 +492,9 @@ class LexicalGrounding:
     is deliberately simple; swap in any callable with the same signature.
     """
 
+    def _claim_tokens(self, claim: str) -> frozenset[str]:
+        return _content_tokens(claim)
+
     def __call__(
         self, claims: Sequence[str], sources: Sequence[tuple[str, str]]
     ) -> list[dict[str, Any]]:
@@ -501,7 +504,7 @@ class LexicalGrounding:
             supported = [
                 claim
                 for claim in claims
-                if _content_tokens(claim) and _content_tokens(claim) <= tokens
+                if self._claim_tokens(claim) and self._claim_tokens(claim) <= tokens
             ]
             if supported:
                 evidence.append(
@@ -513,6 +516,21 @@ class LexicalGrounding:
                     }
                 )
         return evidence
+
+
+@dataclass(frozen=True)
+class SpeakerNormalizedGrounding(LexicalGrounding):
+    """:class:`LexicalGrounding` that treats the claim subject "User" as the first-person speaker.
+
+    Extractors routinely rewrite "I adopted a dog" as "User adopted a dog".  The token ``user``
+    (and ``user's``) in a *claim* is dropped before the subset test, because the trusted sources are
+    the user's own messages and "I"/"my" are already stop-words.  Nothing else changes: every other
+    content word of the claim must still occur in the source, so synonyms ("employed" for "work")
+    and invented details (a probability, a country) are still HELD.  Deterministic and offline.
+    """
+
+    def _claim_tokens(self, claim: str) -> frozenset[str]:
+        return frozenset(_content_tokens(claim) - {_stem("user"), "s"})  # "s": possessive of "User's"
 
 
 GroundingPolicy = Callable[[Sequence[str], Sequence[tuple[str, str]]], list[dict[str, Any]]]
@@ -1188,6 +1206,7 @@ __all__ = [
     "MEM0_SOURCE_SHA256",
     "Mem0HostAdapter",
     "PartialCommitError",
+    "SpeakerNormalizedGrounding",
     "StagedMem0",
     "StagedOutcome",
     "StagedWriteError",
