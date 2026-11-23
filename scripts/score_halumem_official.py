@@ -157,9 +157,21 @@ def drop_jobs(items, prompts):
 
 
 def load_cache(path: Path) -> dict:
+    """Latest record per key. Transport failures ("error" set) are dropped so --run retries them
+    and --score reports them under _missing_judge_results instead of scoring them as 0."""
     if not path.exists():
         return {}
-    return {r["key"]: r for r in map(json.loads, path.read_text().splitlines()) if r.get("key")}
+    out = {}
+    for r in map(json.loads, path.read_text().splitlines()):
+        if not r.get("key"):
+            continue
+        if r.get("error"):
+            if r["key"] in out and out[r["key"]].get("error") is None:
+                continue  # keep an earlier good judgment
+            out.pop(r["key"], None)
+            continue
+        out[r["key"]] = r
+    return out
 
 
 def _int_or_none(x):
@@ -364,8 +376,15 @@ def main() -> int:
                     spent += (res.input_tokens or 0) * p_in + (res.output_tokens or 0) * p_out
                     rec = {"key": key, "kind": kind, "score": res.json.get(key_field),
                            "included": res.json.get("is_included_in_golden_memories")}
-                except Exception as exc:  # judge failure -> score None, counted in the (all) denominators
-                    rec = {"key": key, "kind": kind, "score": None, "included": None, "error": type(exc).__name__}
+                except Exception as exc:  # transport failure: logged, not cached as a judgment (retried next run)
+                    if "HTTP 402" in str(exc) or "Insufficient Balance" in str(exc):
+                        print("STOP: provider reports insufficient balance (HTTP 402); top up and resume with --run",
+                              file=sys.stderr)
+                        break
+                    fh.write(json.dumps({"key": key, "kind": kind, "score": None, "included": None,
+                                         "error": type(exc).__name__}) + "\n")
+                    fh.flush()
+                    continue
                 cache[key] = rec
                 fh.write(json.dumps(rec) + "\n")
                 fh.flush()
