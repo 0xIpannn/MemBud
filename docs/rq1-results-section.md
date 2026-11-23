@@ -39,11 +39,13 @@ Interpretation: with Mem0 as the extractor there is little natural error of the 
 - Graph verification gives no advantage over a fair text verifier on any tested case.
 - The verifier detects injected faults (mechanism sensitivity).
 - On natural Mem0 output there is **no measurable benefit** of the guard on official extraction metrics; unrepaired holds cost about 2 points of recall; guard+repair is indistinguishable from unguarded.
+- On a naturally weaker extractor (Mem0 with Llama-3.1-8B, all 100 sessions, unselected), dropping judge-flagged claims raises the DeepSeek-judged weighted accuracy by +2.3 points (95% CI 1.3 to 3.3) with no significant recall or F1 cost; +0.7 points (0.1 to 1.5) on the final-split users alone. Not validated: reviewers confirmed 39 to 48% of the flagged claims as unsupported (kappa 1.0 on 30 decisive items), and the accuracy judge is the same model family as the claim judge.
+- A pre-registered rubric-aligned claim-judge prompt did not reduce false flags: it kept 67 of 68 flags and added 26. No further prompt change was made.
 
 ## Experiments that would make RQ1(a) answerable
 
 - A system that updates and deletes (or HaluMem update metrics with recorded retrieval), where omission and corruption actually arise.
-- A reviewer-validated label set with enough true unsupported claims (stratified, session-level), so a detection rate can be estimated.
+- A reviewer-validated label set with enough true unsupported claims (stratified, session-level), so a detection rate can be estimated. A fresh quiz on the rubric-aligned judge's 26 extra flags was designed (`halumem_dual_review.py build-compare`) but not run, by decision.
 - A GPT-4o (benchmark-standard) judge replication of the extraction metrics.
 - LongMemEval S with distractor sessions at a larger n.
 
