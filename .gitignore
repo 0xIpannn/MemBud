@@ -31,4 +31,5 @@ data/halumem-runs/
 halumem-output/
 data/longmemeval-runs/
 data/memagentbench-runs/
+data/halumem-live/
 .neo4j/
