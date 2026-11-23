@@ -281,3 +281,21 @@ For every extracted claim the official accuracy judge (DeepSeek, official prompt
 | Mem0 + DeepSeek (97 sessions) | 4/20 = 20% (8%, 42%) | 68/1,266 = 5.4% (4.3%, 6.8%) |
 
 On the weaker extractor the claim judge's flags line up well with a differently prompted, gold-anchored judgment; on the strong extractor they mostly do not (consistent with the reviewers confirming 1/8 and 0/8). This is **not** an independent validation: both judges are DeepSeek, and "below 2" includes partially accurate claims. It supports, but does not replace, reviewer labels. GPT-4o is no longer available through the OpenAI API, so the official-judge substitution cannot be replaced by the original model; it remains a stated deviation.
+
+## Reviewer check of the weak-extractor flags (36 claims, two reviewers)
+
+Quiz `halumem-claim-audit-weak-v1` (28 judge-flagged, 8 unflagged, blind, frozen rubric v1). Both reviewers labelled alone. Six items had an "unsure" or blank label from at least one reviewer; the 30 others were decisive for both.
+
+| | ifan | nabhan |
+|---|---|---|
+| Judge flag precision (flagged claims the reviewer called unsupported) | 13/27 = 48% (31%, 66%) | 9/23 = 39% (22%, 59%) |
+| Judge miss rate (unflagged claims the reviewer called unsupported) | 1/8 (2%, 47%) | 1/8 (2%, 47%) |
+| Agreement with the judge | 20/35 = 57% | 16/31 = 52% |
+
+Inter-rater agreement on the 30 items decisive for both: 30/30, Cohen's kappa 1.0 (Wilson lower bound 0.89). The two reviewers' precision differs mainly because they marked different items "unsure", not because they disagree on any item they both decided.
+
+Reading:
+* The reviewers confirm fewer than half of the judge's flags as unsupported (39 to 48%). The official judge's 72% on the same flags was higher than human confirmation. So the claim judge over-flags, and the guard acts on claims that are often acceptable by the rubric.
+* This lowers confidence in the +0.0495 weighted-accuracy gain on the 31 flagged sessions: part of the repaired or dropped claims were not errors. The gain may still be real (the official judge also scored many flagged claims below 2), but it is not confirmed by human labels.
+* Intervals are wide (28 flagged claims, 8 unflagged). The 6 unsure items are excluded from the agreement figure.
+* `validated` stays false: precision is below what we would need, and the sample is small.
