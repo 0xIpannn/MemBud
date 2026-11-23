@@ -214,6 +214,27 @@ class Mem0System:
         return list(res.get("results", []) if isinstance(res, dict) else res)
 
 
+class RetryingLLM:
+    """Wraps a Mem0 LLM adapter: retries transient failures (free endpoints rate-limit upstream) with backoff."""
+
+    def __init__(self, inner: Any, attempts: int = 6, wait_s: float = 20.0, sleep: Callable[[float], None] = time.sleep) -> None:
+        self.inner, self.attempts, self.wait_s, self.sleep = inner, attempts, wait_s, sleep
+        self.retries = 0
+
+    def __getattr__(self, name: str) -> Any:  # call_records, failures, reset_step_telemetry, ...
+        return getattr(self.inner, name)
+
+    def generate_response(self, messages, response_format=None, **kwargs):
+        for attempt in range(1, self.attempts + 1):
+            try:
+                return self.inner.generate_response(messages, response_format=response_format, **kwargs)
+            except Exception:
+                if attempt == self.attempts:
+                    raise
+                self.retries += 1
+                self.sleep(min(self.wait_s * attempt, 120.0))
+
+
 def load_users(path: Path, n_users: int) -> list[dict]:
     users = []
     for line in Path(path).read_text(encoding="utf-8").splitlines():
@@ -293,7 +314,7 @@ def main() -> int:
     spec = importlib.util.spec_from_file_location("run_halumem_mem0", ROOT / "scripts" / "run_halumem_mem0.py")
     rhm = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(rhm)
-    llm = rhm.ClientBackedMem0LLM(ext_client)
+    llm = RetryingLLM(rhm.ClientBackedMem0LLM(ext_client)) if a.extractor == "openrouter" else rhm.ClientBackedMem0LLM(ext_client)
 
     def judge(messages):
         meter.check()
@@ -326,7 +347,7 @@ def main() -> int:
         llm.reset_step_telemetry()
         return c
 
-    stopped = ""
+    stopped, failed = "", []
     for user in users:
         if (tmp / f"{user['uuid']}.json").exists():
             continue
@@ -340,6 +361,11 @@ def main() -> int:
             meter.extra_usd += mem0_cost()
             stopped = str(exc)
             break
+        except Exception as exc:  # e.g. persistent upstream errors: skip this user; it is redone on resume
+            meter.extra_usd += mem0_cost()
+            failed.append({"uuid": user["uuid"], "error": f"{type(exc).__name__}: {str(exc)[:200]}"})
+            print(f"user {user['uuid'][:8]} FAILED ({type(exc).__name__}); will be redone on resume", file=sys.stderr)
+            continue
         (tmp / f"{user['uuid']}.json").write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
         with (base / "guard-log.jsonl").open("a", encoding="utf-8") as fh:
             for e in system.log:
@@ -350,7 +376,7 @@ def main() -> int:
     with (base / "memzero_eval_results.jsonl").open("w", encoding="utf-8") as fh:
         for f in done:
             fh.write(f.read_text(encoding="utf-8") + "\n")
-    print(json.dumps({"version": version, "users_done": len(done), "of": len(users), "stopped": stopped, **meter.as_dict()}))
+    print(json.dumps({"version": version, "users_done": len(done), "of": len(users), "stopped": stopped, "failed_users": failed, **meter.as_dict()}))
     return 0
 
 

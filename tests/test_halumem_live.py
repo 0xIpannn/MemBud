@@ -110,3 +110,25 @@ def test_official_evaluation_accepts_the_output(tmp_path, monkeypatch):
     assert stat["memory_update"]["correct_update_memory_ratio(all)"] == 1.0
     assert stat["question_answering"]["correct_qa_ratio(all)"] == 1.0
     assert meter.calls == 0  # fakes only: no request reached the client
+
+
+def test_retrying_llm_retries_then_succeeds_and_gives_up():
+    waits = []
+
+    class Flaky:
+        call_records = ["kept"]
+
+        def __init__(self, fails):
+            self.fails = fails
+
+        def generate_response(self, messages, response_format=None, **kw):
+            if self.fails:
+                self.fails -= 1
+                raise RuntimeError("HTTP 429")
+            return "ok"
+
+    r = live.RetryingLLM(Flaky(2), attempts=4, wait_s=1, sleep=waits.append)
+    assert r.generate_response([]) == "ok" and r.retries == 2 and waits == [1, 2]
+    assert r.call_records == ["kept"]  # attributes pass through to the wrapped adapter
+    with pytest.raises(RuntimeError):
+        live.RetryingLLM(Flaky(9), attempts=3, wait_s=0, sleep=lambda s: None).generate_response([])
