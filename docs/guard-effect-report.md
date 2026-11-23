@@ -333,3 +333,19 @@ Reading:
 ## What the reviewer labels say about the judge's false flags (descriptive, nothing tuned)
 
 Of the first 12 quiz claims examined, both reviewers agreed with the judge's UNSUPPORTED on invented or contradicted facts ("User's father is deceased", an income figure not in the dialogue, "prefers sports simulation games over actual sports"). Both reviewers accepted claims the judge flagged that are mild elaborations of what the user said ("emotional support from their family has been a source of strength", "experiences ... have enriched their perspectives", "$7,340 in savings after her salary increase"). The judge also missed one claim both reviewers called unsupported. This suggests the judge over-flags consequence or motive wording that the rubric tolerates. I did not change the prompt: any change needs a fresh, blind quiz, which was not run. (The listing stopped at 12 because a later item had no answer from one reviewer, so this is a partial read.)
+
+## Rubric-aligned claim judge (pre-registered prompt, commit 6adcf12)
+
+The claim judge's prompt (SYSTEM_ACCEPTED) is looser than the frozen rubric on adoption (it counts thanks as acceptance) and does not say that framing without a new fact is supported. A rubric-aligned prompt (SYSTEM_RUBRIC in `scripts/run_halumem_claim_judge.py`) was written and committed before any of its outputs were seen, then run on the same 100 weak-extractor sessions (1,259 claims; estimated spend $0.12, cap $0.25).
+
+| | Old judge | Rubric-aligned judge |
+|---|---|---|
+| Claims flagged | 68 | 93 |
+| Flagged by both | 67 | 67 |
+| Flagged only by this judge | 1 | 26 |
+| Sessions with a flag | 31 | 38 |
+
+* The expected effect (fewer false flags) **did not happen**. The new judge keeps 67 of the 68 old flags and adds 26.
+* On the 36 claims of the earlier reviewer quiz the new judge flags exactly the same items as the old judge, so its precision there is the same (13/27 for ifan, 9/23 for nabhan). These claims informed the decision to write the prompt, so this check is not an independent evaluation, but it shows the prompt did not remove the framing-type false flags.
+* The 26 new flags are mostly speculative or assistant-originated statements ("could serve as a metaphor for embracing new perspectives", "could take his work in new and exciting directions"). They look like real rubric violations, but no reviewer has labelled them.
+* No further prompt change was made: iterating on prompts after seeing their outputs on this data would be tuning, and the data include final-split users.
