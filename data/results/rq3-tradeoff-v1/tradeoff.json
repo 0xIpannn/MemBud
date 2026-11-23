@@ -1,0 +1,868 @@
+{
+ "caveats": [
+  "Injected labels are circular: the injector creates the fault and the label.",
+  "Official metric judge is DeepSeek (benchmark uses GPT-4o) and unvalidated; the claim judge is also DeepSeek.",
+  "Valid-claim counts treat every non-injected claim as valid; reviewers confirmed 1/8 and 0/8 of natural flags on this extractor.",
+  "The 14.5% dose was not scored; any statement above 7.1% is an extrapolation."
+ ],
+ "linear_fit_vs_fault_rate": {
+  "claim_drop": {
+   "f1": {
+    "breakeven_ci95": [
+     NaN,
+     NaN
+    ],
+    "breakeven_inside_measured_range": false,
+    "breakeven_rate": null,
+    "intercept": -0.00106,
+    "intercept_ci95": [
+     -0.00321,
+     0.00078
+    ],
+    "share_of_bootstrap_with_positive_slope": 0.0,
+    "slope_ci95": [
+     -0.30414,
+     -0.11184
+    ],
+    "slope_per_unit_rate": -0.199
+   },
+   "net": {
+    "breakeven_ci95": [
+     -0.03014,
+     0.02565
+    ],
+    "breakeven_inside_measured_range": true,
+    "breakeven_rate": 0.00266,
+    "intercept": -0.00064,
+    "intercept_ci95": [
+     -0.0048,
+     0.00394
+    ],
+    "share_of_bootstrap_with_positive_slope": 0.996,
+    "slope_ci95": [
+     0.05377,
+     0.39401
+    ],
+    "slope_per_unit_rate": 0.2405
+   },
+   "recall(all)": {
+    "breakeven_ci95": [
+     NaN,
+     NaN
+    ],
+    "breakeven_inside_measured_range": false,
+    "breakeven_rate": null,
+    "intercept": -0.00185,
+    "intercept_ci95": [
+     -0.00586,
+     0.00166
+    ],
+    "share_of_bootstrap_with_positive_slope": 0.0,
+    "slope_ci95": [
+     -0.57359,
+     -0.21238
+    ],
+    "slope_per_unit_rate": -0.3781
+   },
+   "weighted_accuracy(all)": {
+    "breakeven_ci95": [
+     -0.00928,
+     0.00321
+    ],
+    "breakeven_inside_measured_range": false,
+    "breakeven_rate": -0.00196,
+    "intercept": 0.00121,
+    "intercept_ci95": [
+     -0.00204,
+     0.00537
+    ],
+    "share_of_bootstrap_with_positive_slope": 1.0,
+    "slope_ci95": [
+     0.47379,
+     0.76821
+    ],
+    "slope_per_unit_rate": 0.6186
+   }
+  },
+  "guard_repair": {
+   "f1": {
+    "breakeven_ci95": [
+     0.0002,
+     1.96892
+    ],
+    "breakeven_inside_measured_range": false,
+    "breakeven_rate": null,
+    "intercept": -0.00087,
+    "intercept_ci95": [
+     -0.00255,
+     0.00066
+    ],
+    "share_of_bootstrap_with_positive_slope": 0.0175,
+    "slope_ci95": [
+     -0.12657,
+     -0.00309
+    ],
+    "slope_per_unit_rate": -0.0538
+   },
+   "net": {
+    "breakeven_ci95": [
+     -0.00975,
+     0.00915
+    ],
+    "breakeven_inside_measured_range": true,
+    "breakeven_rate": 0.00081,
+    "intercept": -0.00044,
+    "intercept_ci95": [
+     -0.00491,
+     0.00475
+    ],
+    "share_of_bootstrap_with_positive_slope": 1.0,
+    "slope_ci95": [
+     0.36879,
+     0.71593
+    ],
+    "slope_per_unit_rate": 0.5454
+   },
+   "recall(all)": {
+    "breakeven_ci95": [
+     0.00077,
+     1.83395
+    ],
+    "breakeven_inside_measured_range": false,
+    "breakeven_rate": null,
+    "intercept": -0.00158,
+    "intercept_ci95": [
+     -0.00468,
+     0.00132
+    ],
+    "share_of_bootstrap_with_positive_slope": 0.019,
+    "slope_ci95": [
+     -0.23898,
+     -0.00441
+    ],
+    "slope_per_unit_rate": -0.102
+   },
+   "weighted_accuracy(all)": {
+    "breakeven_ci95": [
+     -0.00883,
+     0.00324
+    ],
+    "breakeven_inside_measured_range": false,
+    "breakeven_rate": -0.00175,
+    "intercept": 0.00114,
+    "intercept_ci95": [
+     -0.00224,
+     0.00525
+    ],
+    "share_of_bootstrap_with_positive_slope": 1.0,
+    "slope_ci95": [
+     0.49801,
+     0.80678
+    ],
+    "slope_per_unit_rate": 0.6474
+   }
+  },
+  "session_hold": {
+   "f1": {
+    "breakeven_ci95": [
+     NaN,
+     NaN
+    ],
+    "breakeven_inside_measured_range": false,
+    "breakeven_rate": null,
+    "intercept": -0.0075,
+    "intercept_ci95": [
+     -0.0383,
+     0.01726
+    ],
+    "share_of_bootstrap_with_positive_slope": 0.0,
+    "slope_ci95": [
+     -5.999,
+     -2.52623
+    ],
+    "slope_per_unit_rate": -4.0846
+   },
+   "net": {
+    "breakeven_ci95": [
+     NaN,
+     NaN
+    ],
+    "breakeven_inside_measured_range": false,
+    "breakeven_rate": null,
+    "intercept": -0.02443,
+    "intercept_ci95": [
+     -0.07441,
+     0.01318
+    ],
+    "share_of_bootstrap_with_positive_slope": 0.0,
+    "slope_ci95": [
+     -7.20421,
+     -3.3258
+    ],
+    "slope_per_unit_rate": -5.2509
+   },
+   "recall(all)": {
+    "breakeven_ci95": [
+     NaN,
+     NaN
+    ],
+    "breakeven_inside_measured_range": false,
+    "breakeven_rate": null,
+    "intercept": -0.02575,
+    "intercept_ci95": [
+     -0.07582,
+     0.01184
+    ],
+    "share_of_bootstrap_with_positive_slope": 0.0,
+    "slope_ci95": [
+     -7.94934,
+     -4.00657
+    ],
+    "slope_per_unit_rate": -5.9868
+   },
+   "weighted_accuracy(all)": {
+    "breakeven_ci95": [
+     -0.01273,
+     0.00687
+    ],
+    "breakeven_inside_measured_range": false,
+    "breakeven_rate": -0.00178,
+    "intercept": 0.00131,
+    "intercept_ci95": [
+     -0.00511,
+     0.00893
+    ],
+    "share_of_bootstrap_with_positive_slope": 1.0,
+    "slope_ci95": [
+     0.51586,
+     0.96711
+    ],
+    "slope_per_unit_rate": 0.7359
+   }
+  }
+ },
+ "natural_runs": {
+  "mem0_deepseek_medium": {
+   "by_reviewer": {
+    "ifan": {
+     "est_true_errors_prevented": [
+      2.5,
+      0.45,
+      9.42
+     ],
+     "est_valid_claims_removed": [
+      17.5,
+      10.58,
+      19.55
+     ],
+     "flag_precision": [
+      0.125,
+      0.0224,
+      0.4709
+     ],
+     "usd_per_prevented_error_guard": [
+      0.047804879999999994,
+      0.012690082677033598,
+      0.26656015816825596
+     ],
+     "usd_per_prevented_error_guard_repair": [
+      0.0687594,
+      0.018252581552829418,
+      0.38340262624975485
+     ]
+    },
+    "nabhan": {
+     "est_true_errors_prevented": [
+      0.0,
+      0.0,
+      6.49
+     ],
+     "est_valid_claims_removed": [
+      20.0,
+      13.51,
+      20.0
+     ],
+     "flag_precision": [
+      0.0,
+      0.0,
+      0.3244
+     ],
+     "usd_per_prevented_error_guard": [
+      null,
+      0.018420069638175787,
+      null
+     ],
+     "usd_per_prevented_error_guard_repair": [
+      null,
+      0.026494218504035244,
+      null
+     ]
+    }
+   },
+   "deployed_usd_guard_peak": 0.11951219999999999,
+   "deployed_usd_repair_peak": 0.0523863,
+   "flagged_claims": 20,
+   "note": "usd_per_prevented_error lists [point, best case (upper precision), worst case (lower precision)]; None = no confirmed error, i.e. unbounded",
+   "sessions": 97
+  },
+  "mem0_llama8b_medium": {
+   "by_reviewer": {
+    "ifan": {
+     "est_true_errors_prevented": [
+      32.74,
+      20.91,
+      44.89
+     ],
+     "est_valid_claims_removed": [
+      35.26,
+      23.11,
+      47.09
+     ],
+     "flag_precision": [
+      0.4815,
+      0.3074,
+      0.6601
+     ],
+     "usd_per_prevented_error_guard": [
+      0.0036405834841628957,
+      0.00265529027671646,
+      0.0057016575960968
+     ],
+     "usd_per_prevented_error_guard_repair": [
+      0.00673740407239819,
+      0.004913982498017707,
+      0.010551707239916663
+     ]
+    },
+    "nabhan": {
+     "est_true_errors_prevented": [
+      26.61,
+      15.07,
+      40.27
+     ],
+     "est_valid_claims_removed": [
+      41.39,
+      27.73,
+      52.93
+     ],
+     "flag_precision": [
+      0.3913,
+      0.2216,
+      0.5921
+     ],
+     "usd_per_prevented_error_guard": [
+      0.004479565686274509,
+      0.002960211076489923,
+      0.00791092778382443
+     ],
+     "usd_per_prevented_error_guard_repair": [
+      0.008290056862745098,
+      0.005478280679089366,
+      0.014640267775494271
+     ]
+    }
+   },
+   "deployed_usd_guard_peak": 0.11919539999999999,
+   "deployed_usd_repair_peak": 0.10139219999999999,
+   "flagged_claims": 68,
+   "note": "usd_per_prevented_error lists [point, best case (upper precision), worst case (lower precision)]; None = no confirmed error, i.e. unbounded",
+   "sessions": 100
+  }
+ },
+ "per_dose": {
+  "0.0": {
+   "claims": 1286,
+   "deployed_usd_guard_peak": 0.11951220000000014,
+   "deployed_usd_guard_repair_peak": 0.17189850000000012,
+   "dose_sessions_fraction": 0.0,
+   "effects": {
+    "claim_drop": {
+     "f1": {
+      "ci95": [
+       -0.00231,
+       0.00088
+      ],
+      "diff": -0.00066
+     },
+     "net": {
+      "ci95": [
+       -0.00335,
+       0.0063
+      ],
+      "diff": 0.00084
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.00415,
+       0.00185
+      ],
+      "diff": -0.00107
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       -0.00031,
+       0.00571
+      ],
+      "diff": 0.00192
+     }
+    },
+    "guard_repair": {
+     "f1": {
+      "ci95": [
+       -0.0023,
+       0.00088
+      ],
+      "diff": -0.00065
+     },
+     "net": {
+      "ci95": [
+       -0.00335,
+       0.00626
+      ],
+      "diff": 0.00084
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.00415,
+       0.00185
+      ],
+      "diff": -0.00107
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       -0.00029,
+       0.00575
+      ],
+      "diff": 0.00192
+     }
+    },
+    "session_hold": {
+     "f1": {
+      "ci95": [
+       -0.02154,
+       -0.00522
+      ],
+      "diff": -0.01182
+     },
+     "net": {
+      "ci95": [
+       -0.03664,
+       -0.00807
+      ],
+      "diff": -0.02024
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.03936,
+       -0.0099
+      ],
+      "diff": -0.02202
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       -0.00317,
+       0.00779
+      ],
+      "diff": 0.00178
+     }
+    }
+   },
+   "false_hold_rate_valid_claims_claim_drop": [
+    0.015552099533437015,
+    0.01008988652902544,
+    0.02389991786082611
+   ],
+   "false_hold_rate_valid_claims_session_hold": [
+    0.17884914463452567,
+    0.1588698586834437,
+    0.20074135995701972
+   ],
+   "fault_rate": 0.0,
+   "faults": 0,
+   "injected_faults_removed": 0,
+   "injected_faults_total": 0,
+   "sessions_held_session_hold": 14,
+   "sessions_injected": 0,
+   "usd_per_prevented_error_guard": null,
+   "usd_per_prevented_error_guard_repair": null,
+   "valid_claims_removed_claim_drop": 20,
+   "valid_claims_total": 1286
+  },
+  "0.07": {
+   "claims": 1293,
+   "deployed_usd_guard_peak": 0.11996421037508238,
+   "deployed_usd_guard_repair_peak": 0.1892667206925427,
+   "dose_sessions_fraction": 0.07,
+   "effects": {
+    "claim_drop": {
+     "f1": {
+      "ci95": [
+       -0.00628,
+       -0.00079
+      ],
+      "diff": -0.00319
+     },
+     "net": {
+      "ci95": [
+       -0.00331,
+       0.00526
+      ],
+      "diff": 0.00116
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.01171,
+       -0.00137
+      ],
+      "diff": -0.00591
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       0.00255,
+       0.01273
+      ],
+      "diff": 0.00707
+     }
+    },
+    "guard_repair": {
+     "f1": {
+      "ci95": [
+       -0.00288,
+       0.00026
+      ],
+      "diff": -0.00118
+     },
+     "net": {
+      "ci95": [
+       -0.00014,
+       0.01145
+      ],
+      "diff": 0.00501
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.00524,
+       0.0006
+      ],
+      "diff": -0.00215
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       0.0026,
+       0.01294
+      ],
+      "diff": 0.00716
+     }
+    },
+    "session_hold": {
+     "f1": {
+      "ci95": [
+       -0.11145,
+       -0.01844
+      ],
+      "diff": -0.053
+     },
+     "net": {
+      "ci95": [
+       -0.18342,
+       -0.02877
+      ],
+      "diff": -0.08749
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.19048,
+       -0.03493
+      ],
+      "diff": -0.09613
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       0.0009,
+       0.01837
+      ],
+      "diff": 0.00865
+     }
+    }
+   },
+   "false_hold_rate_valid_claims_claim_drop": [
+    0.014073494917904612,
+    0.008920481980516686,
+    0.022136714218957413
+   ],
+   "false_hold_rate_valid_claims_session_hold": [
+    0.23455824863174354,
+    0.21215257349784714,
+    0.2585536503311496
+   ],
+   "fault_rate": 0.0108,
+   "faults": 14,
+   "injected_faults_removed": 11,
+   "injected_faults_total": 14,
+   "sessions_held_session_hold": 20,
+   "sessions_injected": 7,
+   "usd_per_prevented_error_guard": 0.01090583730682567,
+   "usd_per_prevented_error_guard_repair": 0.01720606551750388,
+   "valid_claims_removed_claim_drop": 18,
+   "valid_claims_total": 1279
+  },
+  "0.21": {
+   "claims": 1313,
+   "deployed_usd_guard_peak": 0.12125566858960313,
+   "deployed_usd_guard_repair_peak": 0.24209753287531746,
+   "dose_sessions_fraction": 0.21,
+   "effects": {
+    "claim_drop": {
+     "f1": {
+      "ci95": [
+       -0.01695,
+       -0.0055
+      ],
+      "diff": -0.01024
+     },
+     "net": {
+      "ci95": [
+       -0.00254,
+       0.01584
+      ],
+      "diff": 0.00734
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.03174,
+       -0.01034
+      ],
+      "diff": -0.01933
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       0.01824,
+       0.03582
+      ],
+      "diff": 0.02667
+     }
+    },
+    "guard_repair": {
+     "f1": {
+      "ci95": [
+       -0.00866,
+       -0.00098
+      ],
+      "diff": -0.00416
+     },
+     "net": {
+      "ci95": [
+       0.01001,
+       0.03033
+      ],
+      "diff": 0.01983
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.01666,
+       -0.00195
+      ],
+      "diff": -0.00806
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       0.01901,
+       0.03744
+      ],
+      "diff": 0.02789
+     }
+    },
+    "session_hold": {
+     "f1": {
+      "ci95": [
+       -0.26612,
+       -0.09044
+      ],
+      "diff": -0.16255
+     },
+     "net": {
+      "ci95": [
+       -0.367,
+       -0.13445
+      ],
+      "diff": -0.23786
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.40236,
+       -0.16059
+      ],
+      "diff": -0.2696
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       0.01907,
+       0.04638
+      ],
+      "diff": 0.03174
+     }
+    }
+   },
+   "false_hold_rate_valid_claims_claim_drop": [
+    0.013502779984114376,
+    0.008447392519512261,
+    0.021517935760744178
+   ],
+   "false_hold_rate_valid_claims_session_hold": [
+    0.3947577442414615,
+    0.3681169910020079,
+    0.4220387738912721
+   ],
+   "fault_rate": 0.0411,
+   "faults": 54,
+   "injected_faults_removed": 45,
+   "injected_faults_total": 54,
+   "sessions_held_session_hold": 38,
+   "sessions_injected": 27,
+   "usd_per_prevented_error_guard": 0.002694570413102292,
+   "usd_per_prevented_error_guard_repair": 0.0053799451750070545,
+   "valid_claims_removed_claim_drop": 17,
+   "valid_claims_total": 1259
+  },
+  "0.5": {
+   "claims": 1333,
+   "deployed_usd_guard_peak": 0.12254712680412388,
+   "deployed_usd_guard_repair_peak": 0.2874445879152351,
+   "dose_sessions_fraction": 0.5,
+   "effects": {
+    "claim_drop": {
+     "f1": {
+      "ci95": [
+       -0.022,
+       -0.00862
+      ],
+      "diff": -0.01452
+     },
+     "net": {
+      "ci95": [
+       0.0055,
+       0.02798
+      ],
+      "diff": 0.01757
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.04124,
+       -0.01624
+      ],
+      "diff": -0.02739
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       0.03524,
+       0.05477
+      ],
+      "diff": 0.04495
+     }
+    },
+    "guard_repair": {
+     "f1": {
+      "ci95": [
+       -0.00889,
+       -0.00057
+      ],
+      "diff": -0.00408
+     },
+     "net": {
+      "ci95": [
+       0.0268,
+       0.05114
+      ],
+      "diff": 0.03935
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.01668,
+       -0.00091
+      ],
+      "diff": -0.00752
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       0.03675,
+       0.05717
+      ],
+      "diff": 0.04687
+     }
+    },
+    "session_hold": {
+     "f1": {
+      "ci95": [
+       -0.43953,
+       -0.19109
+      ],
+      "diff": -0.30289
+     },
+     "net": {
+      "ci95": [
+       -0.53364,
+       -0.25731
+      ],
+      "diff": -0.39523
+     },
+     "recall(all)": {
+      "ci95": [
+       -0.58578,
+       -0.31173
+      ],
+      "diff": -0.44844
+     },
+     "weighted_accuracy(all)": {
+      "ci95": [
+       0.03737,
+       0.06978
+      ],
+      "diff": 0.05321
+     }
+    }
+   },
+   "false_hold_rate_valid_claims_claim_drop": [
+    0.012106537530266344,
+    0.0073503045914966245,
+    0.019878799039916916
+   ],
+   "false_hold_rate_valid_claims_session_hold": [
+    0.5770782889426957,
+    0.5493735120336786,
+    0.6043065882197541
+   ],
+   "fault_rate": 0.0705,
+   "faults": 94,
+   "injected_faults_removed": 78,
+   "injected_faults_total": 94,
+   "sessions_held_session_hold": 54,
+   "sessions_injected": 47,
+   "usd_per_prevented_error_guard": 0.0015711170103092805,
+   "usd_per_prevented_error_guard_repair": 0.003685187024554296,
+   "valid_claims_removed_claim_drop": 15,
+   "valid_claims_total": 1239
+  }
+ },
+ "per_session_deployed_usd_peak": {
+  "judge_injected": 0.0012966574468085107,
+  "judge_natural": 0.001232084536082474,
+  "repair_per_held_session_injected": 0.002951155555555556,
+  "repair_per_held_session_natural": 0.0037418785714285713
+ },
+ "settings": {
+  "doses_sessions_fraction": [
+   0.0,
+   0.07,
+   0.21,
+   0.5
+  ],
+  "measured_fault_rate_range": [
+   0.0,
+   0.0705
+  ],
+  "net_definition": "dWA + dRecall (official HaluMem metrics, equal weight, fraction units)",
+  "price": "DeepSeek deepseek-flash peak list price, cache miss (estimate, not a bill)",
+  "resamples": 2000,
+  "seed": 20261124
+ }
+}
