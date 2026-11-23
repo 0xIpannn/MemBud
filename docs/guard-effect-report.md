@@ -300,15 +300,35 @@ Reading:
 * Intervals are wide (28 flagged claims, 8 unflagged). The 6 unsure items are excluded from the agreement figure.
 * `validated` stays false: precision is below what we would need, and the sample is small.
 
-## Weak-extractor run on all 100 sessions: incomplete (retracted pooled result)
+## Weak-extractor run on all 100 sessions (unselected; completed)
 
-An earlier version of this section reported a pooled "no gain" result over 100 sessions (weighted accuracy -0.0042). **That result is retracted.** The DeepSeek account ran out of balance during the run (HTTP 402, Insufficient Balance). The scorer cached every failed call as a null score, and the "(all)" metrics count nulls as 0, so 1,918 of 4,819 judge items (688 accuracy, 1,231 integrity, in 62 sessions) were scored as failures, not judgments. The scorer now drops failed calls from the cache so they are retried, and it stops on HTTP 402 (`tests/test_score_cache_errors.py`).
+An earlier version of this section reported a pooled "no gain" result. **That result was retracted:** the DeepSeek balance ran out mid-run (HTTP 402) and the scorer had cached 1,918 failed calls as null scores, which the "(all)" metrics count as 0. The scorer now drops failed calls so they are retried and stops on HTTP 402 (`tests/test_score_cache_errors.py`). After a top-up, all 1,918 calls were rerun: 0 missing judgments, estimated spend $1.26 at peak list price (cap $1.75).
 
-What is actually judged now: 38 sessions (the 31 flagged plus 7 unflagged). On those 38, repair minus unguarded: weighted accuracy +0.0431 (0.0219, 0.0719), recall -0.0153 (-0.0308, -0.0037), F1 -0.0099 (-0.0222, -0.0018). This is still mostly the flag-selected set, so it is **not** the unselected estimate. Finishing the remaining 62 sessions needs about 1,918 calls (estimate $1.53 at peak list price; earlier runs billed about a fifth of the peak) and a top-up of the DeepSeek balance.
+All 100 sessions, paired session bootstrap (2,000 resamples), DeepSeek official judge:
 
-Expected direction when completed: in unflagged sessions the guard changes nothing, so the pooled gain should be the 31-session gain diluted by the extra memories (roughly +1.5 to +2 points in weighted accuracy if the unflagged sessions resemble the rest). That expectation is arithmetic, not a measurement.
+| 100 sessions | Unguarded | Claim drop | Guard + repair | Session hold |
+|---|---|---|---|---|
+| Weighted accuracy (all) | 0.868 | 0.891 | 0.888 | 0.913 |
+| Recall (all) | 0.693 | 0.691 | 0.688 | 0.531 |
+| F1 | 0.813 | 0.812 | 0.810 | 0.690 |
+| Target precision (all) | 0.983 | 0.985 | 0.985 | 0.984 |
+| Sessions committed | 100 | 100 | 100 | 69 |
 
-Spend: failed calls were not billed. The successful calls in this round consumed the remaining DeepSeek balance; the exact amount must be read from the DeepSeek dashboard.
+| Paired difference vs unguarded (95% CI) | Claim drop | Guard + repair |
+|---|---|---|
+| Weighted accuracy (all) | **+0.0226 (0.0133, 0.0332)** | **+0.0204 (0.0096, 0.0339)** |
+| Recall (all) | -0.0026 (-0.0125, 0.0084) | -0.0057 (-0.0106, -0.0011) |
+| Weighted recall (all) | -0.0057 (-0.0141, 0.0029) | -0.0080 (-0.0130, -0.0038) |
+| F1 | -0.0011 (-0.0080, 0.0064) | -0.0034 (-0.0069, -0.0004) |
+| Target precision (all) | +0.0020 (-0.0003, 0.0052) | +0.0014 (-0.0012, 0.0047) |
+
+User split (descriptive; nothing was tuned on either part): repair weighted accuracy +0.026 (0.011, 0.045) on the 70-session tuning users, +0.007 (0.001, 0.015) on the 30-session final users, where recall and F1 are unchanged.
+
+Reading:
+* On an unselected set of sessions from a naturally weaker extractor, the claim-level guard raises the official weighted accuracy by about 2 points, and the interval excludes 0. Claim drop does this with no significant recall or F1 cost; repair costs about 0.6 points of recall.
+* The effect is smaller on the final users (+0.7 points) than on the tuning users (+2.6 points). Both are positive, but the size depends on which users are in the set.
+* The session hold has the largest accuracy gain (+4.5 points) only because it discards whole sessions: recall falls 16 points. It is not a useful operating point.
+* **Not validated.** The reviewers confirmed only 39 to 48% of the claim judge's flags as unsupported, and the official accuracy judge is also DeepSeek, so the accuracy gain is measured by a judge of the same family as the one that chose what to remove. A GPT-4o or other independent official judge was not used.
 
 ## What the reviewer labels say about the judge's false flags (descriptive, nothing tuned)
 
