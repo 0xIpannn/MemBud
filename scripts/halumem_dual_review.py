@@ -63,7 +63,12 @@ def build(a) -> None:
     if a.max_flagged is not None and len(flagged) > a.max_flagged:
         flagged = rng.sample(flagged, a.max_flagged)  # seeded subsample; keeps the labelling load small
     supported = rng.sample([v for v in fresh if v["judge_supported"]], a.supported)
-    chosen = flagged + supported
+    _emit(a, run, rng, flagged + supported, {"judge_flagged": len(flagged), "judge_supported": len(supported),
+                                        "excluded_already_labelled": len(seen)})
+
+
+def _emit(a, run: Path, rng: random.Random, chosen: list[dict], man_extra: dict) -> None:
+    """Write blind items, judge key (with optional "group"), manifest and quiz HTML; rng continues the caller's stream."""
     users = {}
     for line in Path(a.halumem_path).read_text(encoding="utf-8").splitlines():
         u = json.loads(line)
@@ -76,15 +81,17 @@ def build(a) -> None:
         iid = hashlib.sha256(f"{a.manifest_id}|{v['case_id']}|{v['claim']}".encode()).hexdigest()[:12]
         items.append({"item_id": iid, "case_id": v["case_id"], "claim": v["claim"], "prior_memory": before,
                       "dialogue": [{"role": t["role"], "content": t["content"]} for t in s["dialogue"]]})
-        keys.append({"item_id": iid, "case_id": v["case_id"], "judge": "SUPPORTED" if v["judge_supported"] else "UNSUPPORTED"})
+        k = {"item_id": iid, "case_id": v["case_id"], "judge": "SUPPORTED" if v["judge_supported"] else "UNSUPPORTED"}
+        if "group" in v:
+            k["group"] = v["group"]
+        keys.append(k)
     rng.shuffle(items)
     out = run / a.out_name
     out.mkdir(parents=True, exist_ok=True)
     (out / "claim-items.jsonl").write_text("".join(json.dumps(i, ensure_ascii=False) + "\n" for i in items), encoding="utf-8")
     (out / "claim-judge-key.jsonl").write_text("".join(json.dumps(k) + "\n" for k in sorted(keys, key=lambda k: k["item_id"])), encoding="utf-8")
     man = {"manifest_id": a.manifest_id, "seed": a.seed, "items": len(items), "items_sha256": sha(out / "claim-items.jsonl"),
-           "rubric_sha256": sha(RUBRIC), "judge_flagged": len(flagged), "judge_supported": len(supported),
-           "excluded_already_labelled": len(seen)}
+           "rubric_sha256": sha(RUBRIC), **man_extra}
     (out / "claim-manifest.json").write_text(json.dumps(man, indent=2) + "\n")
     html = ca._html(items, {"manifest_id": a.manifest_id, "items_sha256": man["items_sha256"]})
     new_rules = (
@@ -98,7 +105,34 @@ def build(a) -> None:
         "<li><b>UNSURE</b>: you cannot decide. Rubric: docs/halumem-grounding-rubric.md (hash in manifest). Please label alone, without discussing.</li></ul>")
     html = re.sub(r"<ul><li><b>SUPPORTED</b>.*?</ul>", lambda _m: new_rules, html, count=1, flags=re.S)
     (out / "claim-quiz.html").write_text(html, encoding="utf-8")
-    print(f"built {len(items)} claims ({len(flagged)} judge-flagged, {len(supported)} judge-supported) -> {out / 'claim-quiz.html'}")
+    print(f"built {len(items)} claims {man_extra} -> {out / 'claim-quiz.html'}")
+
+
+def build_compare(a) -> None:
+    """Fresh quiz for a new judge: groups new_flagged / old_flagged_new_kept / neither_flagged, excluding labelled claims."""
+    run = Path(a.run_dir)
+    seen = set()
+    for p in a.exclude_items:
+        for line in Path(p).read_text().splitlines():
+            i = json.loads(line)
+            seen.add((i["case_id"], i["claim"]))
+    load = lambda p: {(v["case_id"], v["claim"]): v["judge_supported"]  # noqa: E731
+                      for v in map(json.loads, Path(p).read_text().splitlines()) if not v.get("empty")}
+    new, old = load(run / a.new_verdicts), load(run / a.old_verdicts)
+    common = [k for k in new if k in old and k not in seen]
+    groups = {"new_flagged": [k for k in common if not new[k]],
+              "old_flagged_new_kept": [k for k in common if new[k] and not old[k]],
+              "neither_flagged": [k for k in common if new[k] and old[k]]}
+    want = {"new_flagged": a.n_new_flagged, "old_flagged_new_kept": a.n_kept, "neither_flagged": a.n_neither}
+    rng = random.Random(a.seed)
+    chosen, avail = [], {}
+    for g, ks in groups.items():
+        avail[g] = len(ks)
+        pick = ks if len(ks) <= want[g] else rng.sample(sorted(ks), want[g])
+        chosen += [{"case_id": c, "claim": cl, "judge_supported": new[(c, cl)], "group": g} for c, cl in sorted(pick)]
+    _emit(a, run, rng, chosen, {"judge": a.new_verdicts, "old_judge": a.old_verdicts, "available": avail,
+                           "drawn": {g: sum(v["group"] == g for v in chosen) for g in groups},
+                           "excluded_already_labelled": len(seen)})
 
 
 def grade(a) -> None:
@@ -132,6 +166,14 @@ def grade(a) -> None:
          for v in res["per_reviewer"].values()]
     res["flip_note"] = ("compare per_reviewer flag precision: if one reviewer's interval excludes the other's point estimate, "
                         "report that the judge's value flips between reviewers; do not headline one number")
+    groups = {}
+    for k in map(json.loads, (out / "claim-judge-key.jsonl").read_text().splitlines()):
+        if "group" in k:
+            groups.setdefault(k["group"], []).append(k["item_id"])
+    if groups:  # share each reviewer marked UNSUPPORTED, per sampling group
+        res["reviewer_unsupported_by_group"] = {
+            n_: {g: wilson(sum(r.get(i) == "UNSUPPORTED" for i in ids), sum(r.get(i) in dec for i in ids)) for g, ids in groups.items()}
+            for n_, r in rev.items()}
     res["validated"] = False
     (out / "dual-agreement.json").write_text(json.dumps(res, indent=2) + "\n")
     print(json.dumps(res, indent=2))
@@ -148,13 +190,25 @@ def main() -> int:
     b.add_argument("--max-flagged", type=int, default=None, help="seeded subsample of judge-flagged claims (default: all fresh)")
     b.add_argument("--manifest-id", default=MANIFEST_ID)
     b.add_argument("--out-name", default=OUT)
+    c = sub.add_parser("build-compare", help="fresh quiz comparing a new judge's verdicts with the old judge's")
+    c.add_argument("--run-dir", required=True)
+    c.add_argument("--halumem-path", required=True)
+    c.add_argument("--new-verdicts", required=True, help="file name in --run-dir")
+    c.add_argument("--old-verdicts", default="llm-claim-verdicts-accepted-replyctx.jsonl")
+    c.add_argument("--exclude-items", nargs="*", default=[], help="claim-items.jsonl files already labelled")
+    c.add_argument("--n-new-flagged", type=int, default=24)
+    c.add_argument("--n-kept", type=int, default=8)
+    c.add_argument("--n-neither", type=int, default=8)
+    c.add_argument("--seed", type=int, default=20261124)
+    c.add_argument("--manifest-id", required=True)
+    c.add_argument("--out-name", required=True)
     g = sub.add_parser("grade")
     g.add_argument("--run-dir", required=True)
     g.add_argument("--reviewer1", required=True)
     g.add_argument("--reviewer2", required=True)
     g.add_argument("--out-name", default=OUT)
     a = ap.parse_args()
-    build(a) if a.cmd == "build" else grade(a)
+    {"build": build, "build-compare": build_compare, "grade": grade}[a.cmd](a)
     return 0
 
 
