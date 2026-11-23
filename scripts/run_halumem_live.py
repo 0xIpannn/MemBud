@@ -135,6 +135,11 @@ class Mem0System:
         self.memory = self.stager = None
         self.log: list[dict[str, Any]] = []
 
+    @staticmethod
+    def store_id(user_id: str) -> str:
+        """OSS Mem0 rejects whitespace in user_id (the hosted platform accepts names); the prompt keeps the name."""
+        return re.sub(r"\s+", "_", user_id.strip())
+
     def _close(self) -> None:
         if self.memory is not None:
             for closer in (self.memory.vector_store.client.close, self.memory.db.close):
@@ -170,18 +175,19 @@ class Mem0System:
             self.stager = StagedMem0(self.memory, workdir=d / "staged", grounding=self.grounding)
 
     def _live(self, user_id: str) -> list[str]:
-        res = self.memory.get_all(filters={"user_id": user_id})
+        res = self.memory.get_all(filters={"user_id": self.store_id(user_id)})
         return [r["memory"] for r in (res.get("results", []) if isinstance(res, dict) else res)]
 
     def add(self, messages, user_id, timestamp, case_id):
         # OSS Mem0 2.2.1 rejects ``timestamp`` (hosted-only); it keeps a ``created_at`` given in metadata, which
         # is what the official context shows next to each memory, so the session time is passed that way.
         meta = {"created_at": datetime.fromtimestamp(timestamp, timezone.utc).isoformat()}
+        uid = self.store_id(user_id)
         if self.arm == "pure":
-            res = self.memory.add(messages, user_id=user_id, metadata=meta)
+            res = self.memory.add(messages, user_id=uid, metadata=meta)
             return [r["memory"] for r in res.get("results", []) if r.get("memory")]
         self.grounding.set_context(messages, self._live(user_id))
-        out = self.stager.add(messages, user_id=user_id, metadata=meta, case_id=case_id)
+        out = self.stager.add(messages, user_id=uid, metadata=meta, case_id=case_id)
         entry = {"case_id": case_id, "decision": out.decision, "applied": out.applied, "reason": out.reason,
                  "verdicts": dict(self.grounding.last_verdicts)}
         written: list[str] = []
@@ -194,7 +200,7 @@ class Mem0System:
             entry["skipped_non_add"] = sum(p.get("event") not in ("ADD", "NONE", None) for p in out.proposals)
             if kept:
                 ev = [{"id": f"kept-{i}", "supports": [c], "source": f"claim-judge:{case_id}", "text": c} for i, c in enumerate(kept)]
-                out2 = self.stager.add([{"role": "user", "content": c} for c in kept], user_id=user_id, infer=False,
+                out2 = self.stager.add([{"role": "user", "content": c} for c in kept], user_id=uid, infer=False,
                                        evidence=ev, metadata=meta, case_id=f"{case_id}#claim-drop")
                 entry.update(drop_decision=out2.decision, drop_applied=out2.applied, drop_reason=out2.reason)
                 if out2.applied:
@@ -204,7 +210,7 @@ class Mem0System:
         return written
 
     def search(self, query, user_id, top_k):
-        res = self.memory.search(query, top_k=top_k, filters={"user_id": user_id})
+        res = self.memory.search(query, top_k=top_k, filters={"user_id": self.store_id(user_id)})
         return list(res.get("results", []) if isinstance(res, dict) else res)
 
 

@@ -349,3 +349,21 @@ The claim judge's prompt (SYSTEM_ACCEPTED) is looser than the frozen rubric on a
 * On the 36 claims of the earlier reviewer quiz the new judge flags exactly the same items as the old judge, so its precision there is the same (13/27 for ifan, 9/23 for nabhan). These claims informed the decision to write the prompt, so this check is not an independent evaluation, but it shows the prompt did not remove the framing-type false flags.
 * The 26 new flags are mostly speculative or assistant-originated statements ("could serve as a metaphor for embracing new perspectives", "could take his work in new and exciting directions"). They look like real rubric violations, but no reviewer has labelled them.
 * No further prompt change was made: iterating on prompts after seeing their outputs on this data would be tuning, and the data include final-split users.
+
+## Live HaluMem pilot: OSS Mem0 vs Mem0 + MemBud (2 users x 5 sessions, DeepSeek extractor)
+
+Runner `scripts/run_halumem_live.py` (official eval_memzero procedure on OSS Mem0 2.2.1, official `custom_instructions`, session time as `created_at`, fastembed `bge-small-en-v1.5`), scored by the unchanged official `evaluation.py` via `scripts/run_halumem_official_eval.py` (DeepSeek judge, thinking disabled). Purpose: check the pipeline and calibrate cost, not to estimate an effect.
+
+* **Guard behaviour:** the claim-judge grounding policy judged all 145 claims in the 10 sessions SUPPORTED, so both MemBud arms accepted every session. Their stored memories equal the pure arm's as sets (only the order differs), so only the pure arm was scored.
+* **Official metrics, pure arm (10 sessions; not a result, n too small):**
+  * Extraction: recall(all) 0.965, weighted accuracy(all) 0.941, target accuracy(all) 0.986, F1 0.975.
+  * Update: correct 9/15, hallucination 1/15, omission 5/15.
+  * QA: correct 20/21, omission 1/21.
+  * One of 206 integrity items has no score: the judge's reply failed the official JSON parser after retries, with no transport error. The official code counts such an item in the "(all)" denominators.
+* **Cost (estimated from token counts, peak list price):**
+  * Live runs: pure $0.047; hold and drop $0.021 each. Mem0's extraction calls were served from the client cache because the prompts were identical.
+  * Official scoring of the pure arm: $0.30 (410 calls, 0 errors).
+  * Total: $0.39 of the $1.00 cap.
+* **Pipeline issues found and fixed:**
+  * OSS Mem0 rejects whitespace in `user_id`. The store id maps whitespace to `_`, while the context keeps the name.
+  * OSS Mem0 rejects the hosted-only `timestamp` argument. The session time is passed as `metadata.created_at` instead.

@@ -48,18 +48,18 @@ def make(tmp_path, arm, judge=None):
     llm = ScriptedLLM()
     g = ClaimJudgeGrounding(judge=judge, system_prompt="SYS") if judge else None
     s = live.Mem0System(tmp_path / arm, arm, llm, "Use the person's name.", g, embedder=EMB, embedding_model=HashEmbedder())
-    s.reset("Alex")
+    s.reset("Alex Doe")
     return s, llm
 
 
 def stored(system):
-    return sorted(system._live("Alex"))
+    return sorted(system._live("Alex Doe"))
 
 
 def test_pure_writes_everything(tmp_path):
     s, llm = make(tmp_path, "pure")
     llm.push("Alex likes green tea", "Alex's sister lives on Mars")
-    assert sorted(s.add(MSGS, "Alex", 1735812000, "c1")) == ["Alex likes green tea", "Alex's sister lives on Mars"]
+    assert sorted(s.add(MSGS, "Alex Doe", 1735812000, "c1")) == ["Alex likes green tea", "Alex's sister lives on Mars"]
     assert stored(s) == ["Alex likes green tea", "Alex's sister lives on Mars"]
 
 
@@ -67,11 +67,11 @@ def test_hold_writes_nothing_when_any_claim_is_unsupported(tmp_path):
     judge, calls = judge_flagging("Mars")
     s, llm = make(tmp_path, "membud-hold", judge)
     llm.push("Alex likes green tea", "Alex's sister lives on Mars")
-    assert s.add(MSGS, "Alex", 1735812000, "c1") == []
+    assert s.add(MSGS, "Alex Doe", 1735812000, "c1") == []
     assert stored(s) == []
     assert s.log[-1]["decision"] == "HOLD" and s.log[-1]["verdicts"]["Alex's sister lives on Mars"] is False
     llm.push("Alex likes green tea")
-    assert s.add(MSGS, "Alex", 1735812000, "c2") == ["Alex likes green tea"]  # all supported -> committed
+    assert s.add(MSGS, "Alex Doe", 1735812000, "c2") == ["Alex likes green tea"]  # all supported -> committed
     assert stored(s) == ["Alex likes green tea"]
 
 
@@ -79,7 +79,7 @@ def test_claim_drop_commits_only_supported_claims(tmp_path):
     judge, calls = judge_flagging("Mars")
     s, llm = make(tmp_path, "membud-drop", judge)
     llm.push("Alex likes green tea", "Alex's sister lives on Mars")
-    assert s.add(MSGS, "Alex", 1735812000, "c1") == ["Alex likes green tea"]
+    assert s.add(MSGS, "Alex Doe", 1735812000, "c1") == ["Alex likes green tea"]
     assert stored(s) == ["Alex likes green tea"]
     e = s.log[-1]
     assert e["decision"] == "HOLD" and e["drop_applied"] is True and e["dropped"] == ["Alex's sister lives on Mars"]
@@ -88,10 +88,10 @@ def test_claim_drop_commits_only_supported_claims(tmp_path):
 
 
 def test_claim_drop_with_nothing_supported_writes_nothing(tmp_path):
-    judge, _ = judge_flagging("Alex")
+    judge, _ = judge_flagging("green tea")
     s, llm = make(tmp_path, "membud-drop", judge)
     llm.push("Alex likes green tea")
-    assert s.add(MSGS, "Alex", 1735812000, "c1") == []
+    assert s.add(MSGS, "Alex Doe", 1735812000, "c1") == []
     assert stored(s) == [] and "drop_applied" not in s.log[-1]
 
 
@@ -100,14 +100,14 @@ def test_session_time_becomes_created_at_in_search_results(tmp_path):
         judge, _ = judge_flagging("Mars")
         s, llm = make(tmp_path, arm, judge if arm != "pure" else None)
         llm.push("Alex likes green tea", "Alex's sister lives on Mars")
-        s.add(MSGS, "Alex", 1735812000, "c1")
-        hits = s.search("green tea", "Alex", 20)
+        s.add(MSGS, "Alex Doe", 1735812000, "c1")
+        hits = s.search("green tea", "Alex Doe", 20)
         assert hits and all(h["created_at"] == "2025-01-02T10:00:00+00:00" for h in hits), arm
 
 
 def test_reset_gives_a_fresh_store(tmp_path):
     s, llm = make(tmp_path, "pure")
     llm.push("Alex likes green tea")
-    s.add(MSGS, "Alex", 1735812000, "c1")
-    s.reset("Alex")
+    s.add(MSGS, "Alex Doe", 1735812000, "c1")
+    s.reset("Alex Doe")
     assert stored(s) == []
