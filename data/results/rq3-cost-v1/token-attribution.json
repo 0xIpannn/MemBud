@@ -15,7 +15,7 @@
   "model": "deepseek-flash",
   "temperature": 0.0
  },
- "deepseek_cache_attributed_keys": 10016,
+ "deepseek_cache_attributed_keys": 11167,
  "deepseek_cache_total": {
   "calls_expected": 12593,
   "calls_matched": 12593,
@@ -396,6 +396,105 @@
   }
  },
  "runs": {
+  "longmemeval_oracle": {
+   "benchmark_judge_eval_only": {
+    "calls_expected": 227,
+    "calls_matched": 227,
+    "est_usd_deepseek_offpeak_cache_miss": 0.0079683,
+    "est_usd_deepseek_peak_cache_miss": 0.0159366,
+    "input_tokens": 47674,
+    "json_retries": 0,
+    "match_rate": 1.0,
+    "output_tokens": 1362,
+    "per_call": {
+     "input_mean": 210.01762114537445,
+     "input_median": 194,
+     "latency_ms_median": 567.959,
+     "latency_ms_p90": 974.976,
+     "output_mean": 6.0,
+     "output_median": 6
+    },
+    "request_attempts": 227
+   },
+   "claim_judge": {
+    "calls_expected": 343,
+    "calls_matched": 343,
+    "est_usd_deepseek_offpeak_cache_miss": 0.23549984999999998,
+    "est_usd_deepseek_peak_cache_miss": 0.47099969999999997,
+    "input_tokens": 1235431,
+    "json_retries": 0,
+    "match_rate": 1.0,
+    "output_tokens": 83642,
+    "per_call": {
+     "input_mean": 3601.839650145773,
+     "input_median": 3700,
+     "latency_ms_median": 1300.394,
+     "latency_ms_p90": 1825.8838,
+     "output_mean": 243.85422740524783,
+     "output_median": 235
+    },
+    "request_attempts": 343
+   },
+   "host_extractor": {
+    "calls_expected": 324,
+    "calls_matched": 324,
+    "est_usd_deepseek_offpeak_cache_miss": 0.18553334999999999,
+    "est_usd_deepseek_peak_cache_miss": 0.37106669999999997,
+    "input_tokens": 1007581,
+    "json_retries": 0,
+    "match_rate": 1.0,
+    "output_tokens": 57327,
+    "per_call": {
+     "input_mean": 3109.817901234568,
+     "input_median": 3227.0,
+     "latency_ms_median": 1297.868,
+     "latency_ms_p90": 1992.9489999999998,
+     "output_mean": 176.9351851851852,
+     "output_median": 165.0
+    },
+    "request_attempts": 324
+   },
+   "questions": 200,
+   "reader_qa": {
+    "calls_expected": 234,
+    "calls_matched": 234,
+    "est_usd_deepseek_offpeak_cache_miss": 0.017932949999999996,
+    "est_usd_deepseek_peak_cache_miss": 0.03586589999999999,
+    "input_tokens": 92933,
+    "json_retries": 2,
+    "match_rate": 1.0,
+    "output_tokens": 6655,
+    "per_call": {
+     "input_mean": 397.14957264957263,
+     "input_median": 423.0,
+     "latency_ms_median": 714.09,
+     "latency_ms_p90": 1137.7949999999998,
+     "output_mean": 28.44017094017094,
+     "output_median": 13.0
+    },
+    "request_attempts": 236
+   },
+   "repair_extractor": {
+    "calls_expected": 23,
+    "calls_matched": 23,
+    "est_usd_deepseek_offpeak_cache_miss": 0.013233,
+    "est_usd_deepseek_peak_cache_miss": 0.026466,
+    "input_tokens": 71964,
+    "json_retries": 0,
+    "match_rate": 1.0,
+    "output_tokens": 4064,
+    "per_call": {
+     "input_mean": 3128.8695652173915,
+     "input_median": 3400,
+     "latency_ms_median": 1157.68,
+     "latency_ms_p90": 1844.8142,
+     "output_mean": 176.69565217391303,
+     "output_median": 171
+    },
+    "request_attempts": 23
+   },
+   "sessions": 324
+  },
   "mem0_deepseek_long": {
    "claim_judge_accepted": {
     "calls_expected": 27,

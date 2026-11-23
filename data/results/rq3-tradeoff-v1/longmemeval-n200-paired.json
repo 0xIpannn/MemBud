@@ -1,0 +1,90 @@
+{
+ "all200": {
+  "guard": {
+   "n": 200,
+   "diff": -0.065,
+   "ci": [
+    -0.1,
+    -0.035
+   ],
+   "cond_only": 0,
+   "ung_only": 13,
+   "p": 0.0002441406
+  },
+  "guard_repair": {
+   "n": 200,
+   "diff": -0.01,
+   "ci": [
+    -0.025,
+    0.0
+   ],
+   "cond_only": 0,
+   "ung_only": 2,
+   "p": 0.5
+  },
+  "held_sessions": 23,
+  "sessions": 324,
+  "claims_unsupported": 83,
+  "claims": 3286
+ },
+ "new170_excl_pilot": {
+  "guard": {
+   "n": 170,
+   "diff": -0.0647,
+   "ci": [
+    -0.1059,
+    -0.0294
+   ],
+   "cond_only": 0,
+   "ung_only": 11,
+   "p": 0.0009765625
+  },
+  "guard_repair": {
+   "n": 170,
+   "diff": -0.0118,
+   "ci": [
+    -0.0294,
+    0.0
+   ],
+   "cond_only": 0,
+   "ung_only": 2,
+   "p": 0.5
+  },
+  "held_sessions": 18,
+  "sessions": 272,
+  "claims_unsupported": 73,
+  "claims": 2785
+ },
+ "per_type_net_discordant": {
+  "single-session-user": {
+   "n": 34,
+   "guard": -2,
+   "guard_repair": 0
+  },
+  "single-session-assistant": {
+   "n": 34,
+   "guard": -3,
+   "guard_repair": -2
+  },
+  "single-session-preference": {
+   "n": 30,
+   "guard": -1,
+   "guard_repair": 0
+  },
+  "multi-session": {
+   "n": 34,
+   "guard": -2,
+   "guard_repair": 0
+  },
+  "temporal-reasoning": {
+   "n": 34,
+   "guard": -2,
+   "guard_repair": 0
+  },
+  "knowledge-update": {
+   "n": 34,
+   "guard": -3,
+   "guard_repair": 0
+  }
+ }
+}
