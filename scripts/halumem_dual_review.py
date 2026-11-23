@@ -27,9 +27,9 @@ spec = importlib.util.spec_from_file_location("claim_audit", ROOT / "scripts" / 
 ca = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ca)
 
-OUT = "claim-audit-dual"
+OUT = "claim-audit-dual"  # default; override with --out-name
 RUBRIC = ROOT / "docs" / "halumem-grounding-rubric.md"
-MANIFEST_ID = "halumem-claim-audit-dual-v1"
+MANIFEST_ID = "halumem-claim-audit-dual-v1"  # default; override with --manifest-id
 
 
 def sha(p: Path) -> str:
@@ -51,6 +51,8 @@ def build(a) -> None:
     run = Path(a.run_dir)
     seen = set()
     for d in ("claim-audit", "claim-audit-v2"):
+        if not (run / d / "claim-items.jsonl").exists():
+            continue  # a fresh run directory has no earlier audits
         for line in (run / d / "claim-items.jsonl").read_text().splitlines():
             i = json.loads(line)
             seen.add((i["case_id"], i["claim"]))
@@ -58,6 +60,8 @@ def build(a) -> None:
     fresh = [v for v in verdicts if (v["case_id"], v["claim"]) not in seen]
     flagged = [v for v in fresh if not v["judge_supported"]]
     rng = random.Random(a.seed)
+    if a.max_flagged is not None and len(flagged) > a.max_flagged:
+        flagged = rng.sample(flagged, a.max_flagged)  # seeded subsample; keeps the labelling load small
     supported = rng.sample([v for v in fresh if v["judge_supported"]], a.supported)
     chosen = flagged + supported
     users = {}
@@ -69,20 +73,20 @@ def build(a) -> None:
         pf = json.loads((run / "proposals" / f"{v['case_id']}.json").read_text())
         s = users[pf["user_uuid"]]["sessions"][pf["session_index"] - 1]
         before = [c for r in pf["transition"]["before"] for c in r["claims"]]
-        iid = hashlib.sha256(f"{MANIFEST_ID}|{v['case_id']}|{v['claim']}".encode()).hexdigest()[:12]
+        iid = hashlib.sha256(f"{a.manifest_id}|{v['case_id']}|{v['claim']}".encode()).hexdigest()[:12]
         items.append({"item_id": iid, "case_id": v["case_id"], "claim": v["claim"], "prior_memory": before,
                       "dialogue": [{"role": t["role"], "content": t["content"]} for t in s["dialogue"]]})
         keys.append({"item_id": iid, "case_id": v["case_id"], "judge": "SUPPORTED" if v["judge_supported"] else "UNSUPPORTED"})
     rng.shuffle(items)
-    out = run / OUT
+    out = run / a.out_name
     out.mkdir(parents=True, exist_ok=True)
     (out / "claim-items.jsonl").write_text("".join(json.dumps(i, ensure_ascii=False) + "\n" for i in items), encoding="utf-8")
     (out / "claim-judge-key.jsonl").write_text("".join(json.dumps(k) + "\n" for k in sorted(keys, key=lambda k: k["item_id"])), encoding="utf-8")
-    man = {"manifest_id": MANIFEST_ID, "seed": a.seed, "items": len(items), "items_sha256": sha(out / "claim-items.jsonl"),
+    man = {"manifest_id": a.manifest_id, "seed": a.seed, "items": len(items), "items_sha256": sha(out / "claim-items.jsonl"),
            "rubric_sha256": sha(RUBRIC), "judge_flagged": len(flagged), "judge_supported": len(supported),
            "excluded_already_labelled": len(seen)}
     (out / "claim-manifest.json").write_text(json.dumps(man, indent=2) + "\n")
-    html = ca._html(items, {"manifest_id": MANIFEST_ID, "items_sha256": man["items_sha256"]})
+    html = ca._html(items, {"manifest_id": a.manifest_id, "items_sha256": man["items_sha256"]})
     new_rules = (
         "<ul><li><b>SUPPORTED</b>: (1) the user's words state or clearly imply it (paraphrase and number/date format changes are fine; "
         "combining facts the user stated is fine); (2) the assistant introduced it and a later user turn <b>adopts that specific fact</b> "
@@ -99,7 +103,7 @@ def build(a) -> None:
 
 def grade(a) -> None:
     run = Path(a.run_dir)
-    out = run / OUT
+    out = run / a.out_name
     man = json.loads((out / "claim-manifest.json").read_text())
     key = {k["item_id"]: k["judge"] for k in map(json.loads, (out / "claim-judge-key.jsonl").read_text().splitlines())}
     rev = {}
@@ -141,10 +145,14 @@ def main() -> int:
     b.add_argument("--halumem-path", required=True)
     b.add_argument("--supported", type=int, default=28)
     b.add_argument("--seed", type=int, default=20261122)
+    b.add_argument("--max-flagged", type=int, default=None, help="seeded subsample of judge-flagged claims (default: all fresh)")
+    b.add_argument("--manifest-id", default=MANIFEST_ID)
+    b.add_argument("--out-name", default=OUT)
     g = sub.add_parser("grade")
     g.add_argument("--run-dir", required=True)
     g.add_argument("--reviewer1", required=True)
     g.add_argument("--reviewer2", required=True)
+    g.add_argument("--out-name", default=OUT)
     a = ap.parse_args()
     build(a) if a.cmd == "build" else grade(a)
     return 0
