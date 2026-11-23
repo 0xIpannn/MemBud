@@ -184,8 +184,11 @@ class Mem0System:
         meta = {"created_at": datetime.fromtimestamp(timestamp, timezone.utc).isoformat()}
         uid = self.store_id(user_id)
         if self.arm == "pure":
+            t0 = time.time()
             res = self.memory.add(messages, user_id=uid, metadata=meta)
-            return [r["memory"] for r in res.get("results", []) if r.get("memory")]
+            written = [r["memory"] for r in res.get("results", []) if r.get("memory")]
+            print(f"  {case_id[-12:]} pure written={len(written)} {time.time() - t0:.0f}s", file=sys.stderr, flush=True)
+            return written
         self.grounding.set_context(messages, self._live(user_id))
         out = self.stager.add(messages, user_id=uid, metadata=meta, case_id=case_id)
         entry = {"case_id": case_id, "decision": out.decision, "applied": out.applied, "reason": out.reason,
@@ -207,6 +210,8 @@ class Mem0System:
                     written = [p["memory"] for p in out2.proposals if p.get("event") == "ADD" and p.get("memory")]
         entry["written"] = len(written)
         self.log.append(entry)
+        print(f"  {case_id[-12:]} {entry['decision']} written={len(written)} unsupported="
+              f"{sum(not v for v in entry['verdicts'].values())}/{len(entry['verdicts'])}", file=sys.stderr, flush=True)
         return written
 
     def search(self, query, user_id, top_k):
@@ -268,6 +273,8 @@ def main() -> int:
     ap.add_argument("--extractor", choices=("deepseek", "openrouter"), default="deepseek")
     ap.add_argument("--extractor-model", default="meta-llama/llama-3.1-8b-instruct")
     ap.add_argument("--confirm-data-policy", action="store_true", help="required for --extractor openrouter")
+    ap.add_argument("--extractor-max-tokens", type=int, default=32768,
+                    help="OpenRouter extractor output budget; reasoning models need room for reasoning plus the JSON")
     ap.add_argument("--users", type=int, default=20)
     ap.add_argument("--sessions-per-user", type=int, default=5)
     ap.add_argument("--version", default=None, help="results/memzero-<version>; default <extractor>-<arm>-s<N>")
@@ -311,6 +318,7 @@ def main() -> int:
         pr = resolve_openrouter_model_pricing(a.extractor_model, fetch_openrouter_models())
         ext_in, ext_out = pr["prompt_price_per_token"], pr["completion_price_per_token"]
         ext_client = OpenAICompatibleChatClient.from_openrouter_env()
+        ext_client.extra_body["max_tokens"] = a.extractor_max_tokens
     spec = importlib.util.spec_from_file_location("run_halumem_mem0", ROOT / "scripts" / "run_halumem_mem0.py")
     rhm = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(rhm)
