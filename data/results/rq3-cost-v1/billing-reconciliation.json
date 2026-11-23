@@ -1,0 +1,92 @@
+{
+ "cache_coverage": {
+  "billed_input_tokens": 32801606,
+  "billed_output_tokens": 1865655,
+  "billed_requests": 16624,
+  "cache_input_tokens": 23020141,
+  "cache_output_tokens": 1376509,
+  "cache_peak_rule_over_billed": 2.033,
+  "cache_peak_rule_usd": 8.5579,
+  "cache_requests": 11628,
+  "input_coverage": 0.702,
+  "note": "The cache snapshot was taken before the RQ3 LongMemEval run (step 5) started on 2026-11-24; the billed 2026-11-24 row includes part of that run. Billed > cache because failed calls and calls outside membud.llm (live-run official evaluation.py judge/answer calls) are not cached.",
+  "output_coverage": 0.738
+ },
+ "models": [
+  "deepseek-flash"
+ ],
+ "per_day": {
+  "2026-11-21": {
+   "billed_usd": 0.071039,
+   "input_cache_hit_tokens": 733568.0,
+   "input_cache_miss_tokens": 221032.0,
+   "output_tokens": 59473.0,
+   "request_count": 97.0,
+   "usd_from_amount_x_price": 0.071039,
+   "usd_input_cache_hit_tokens": 0.002201,
+   "usd_input_cache_miss_tokens": 0.033155,
+   "usd_output_tokens": 0.035684
+  },
+  "2026-11-22": {
+   "billed_usd": 0.97901,
+   "input_cache_hit_tokens": 4489984.0,
+   "input_cache_miss_tokens": 4477576.0,
+   "output_tokens": 489840.0,
+   "request_count": 4077.0,
+   "usd_from_amount_x_price": 0.97901,
+   "usd_input_cache_hit_tokens": 0.01347,
+   "usd_input_cache_miss_tokens": 0.671636,
+   "usd_output_tokens": 0.293904
+  },
+  "2026-11-23": {
+   "billed_usd": 2.408934,
+   "input_cache_hit_tokens": 7920804.0,
+   "input_cache_miss_tokens": 7242657.0,
+   "output_tokens": 886126.0,
+   "request_count": 8484.0,
+   "usd_from_amount_x_price": 2.408934,
+   "usd_input_cache_hit_tokens": 0.037175,
+   "usd_input_cache_miss_tokens": 1.600277,
+   "usd_output_tokens": 0.771482
+  },
+  "2026-11-24": {
+   "billed_usd": 0.751431,
+   "input_cache_hit_tokens": 4517662.0,
+   "input_cache_miss_tokens": 3198323.0,
+   "output_tokens": 430216.0,
+   "request_count": 3966.0,
+   "usd_from_amount_x_price": 0.751431,
+   "usd_input_cache_hit_tokens": 0.013553,
+   "usd_input_cache_miss_tokens": 0.479748,
+   "usd_output_tokens": 0.25813
+  }
+ },
+ "price_basis_error_on_billed_tokens": {
+  "calibration_factor_billed_over_peak_rule": 0.3486,
+  "note": "same tokens, different price assumption: the difference is the price-basis error alone",
+  "offpeak_cache_miss_rule_usd": 6.0396,
+  "offpeak_rule_over_billed": 1.434,
+  "peak_cache_miss_rule_usd": 12.0793,
+  "peak_rule_over_billed": 2.869,
+  "peak_rule_relative_error": 1.869
+ },
+ "source": "DeepSeek platform usage export supplied by the project owner (amount and cost CSVs); aggregated here",
+ "totals": {
+  "billed_usd": 4.210415,
+  "cache_hit_share_of_input": 0.5384497941960524,
+  "input_cache_hit_tokens": 17662018,
+  "input_cache_miss_tokens": 15139588,
+  "output_tokens": 1865655,
+  "requests": 16624,
+  "usd_by_type": {
+   "input_cache_hit_tokens": 0.066399,
+   "input_cache_miss_tokens": 2.784817,
+   "output_tokens": 1.359199
+  },
+  "usd_from_amount_x_price": 4.210415
+ },
+ "window": [
+  "2026-11-21",
+  "2026-11-24"
+ ]
+}
