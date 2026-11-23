@@ -299,3 +299,25 @@ Reading:
 * This lowers confidence in the +0.0495 weighted-accuracy gain on the 31 flagged sessions: part of the repaired or dropped claims were not errors. The gain may still be real (the official judge also scored many flagged claims below 2), but it is not confirmed by human labels.
 * Intervals are wide (28 flagged claims, 8 unflagged). The 6 unsure items are excluded from the agreement figure.
 * `validated` stays false: precision is below what we would need, and the sample is small.
+
+## Weak-extractor run scored on all 100 sessions (pooled, not selected by flag)
+
+The official scoring now covers all 100 sessions (previously only the 31 with a judge-flagged claim). Same DeepSeek official judge, same paired session bootstrap (2,000 resamples).
+
+| Paired, 100 sessions | Repair minus unguarded (95% CI) | Claim drop minus unguarded (95% CI) |
+|---|---|---|
+| Weighted accuracy (all) | -0.0042 (-0.0146, 0.0054) | -0.0055 (-0.0161, 0.0037) |
+| Recall (all) | -0.0057 (-0.0106, -0.0011) | -0.0026 (-0.0125, 0.0084) |
+| Weighted recall (all) | -0.0080 (-0.0130, -0.0038) | -0.0057 (-0.0141, 0.0029) |
+| F1 | -0.0069 (-0.0131, -0.0013) | -0.0028 (-0.0153, 0.0109) |
+| Target precision (all) | +0.0038 (-0.0029, 0.0130) | +0.0053 (-0.0005, 0.0142) |
+
+* Over all 100 sessions there is **no measurable gain** in weighted accuracy (the interval includes 0 and the point estimate is slightly negative), and recall and F1 fall a little (repair: recall -0.6 points, F1 -0.7 points, intervals exclude 0). The +0.0495 reported above came from the 31 sessions chosen because they had a flag; on the full set it does not carry over.
+* I did not reconcile why the pooled estimate is slightly negative while the 31-session subset is +0.05: in the 69 unflagged sessions the guard changes nothing, so I expected a smaller positive number, not a negative one. The pooled "(all)" accuracy divides by every extracted memory (about 0.37), while the subset figure (0.79) is over memories that were judged; this denominator difference is the likely cause but is untested. Treat the pooled and subset numbers as not reconciled.
+* Pooled "(valid)" weighted accuracy (point estimates, no bootstrap): unguarded 0.821, claim drop 0.867, repair 0.863. These are not paired tests and the denominator changes when claims are dropped.
+* Combined with the reviewer check (only 39 to 48% of flags confirmed), the honest reading is that the weak-extractor result does not support a claim that the guard improves HaluMem accuracy on an unselected set of sessions.
+* Cost: official scoring of the remaining 69 sessions was run in several invocations, each with its own cap of $0.95. The script's spend counter resets per invocation and the last runs were stopped by a time limit before printing a total, so I cannot report an exact cumulative spend. The estimate before the run was $1.84 at peak list price for roughly 2,250 calls, and earlier runs billed about a fifth of the peak estimate. **I cannot confirm the $1.00 cap was respected; check the DeepSeek dashboard.**
+
+## What the reviewer labels say about the judge's false flags (descriptive, nothing tuned)
+
+Of the first 12 quiz claims examined, both reviewers agreed with the judge's UNSUPPORTED on invented or contradicted facts ("User's father is deceased", an income figure not in the dialogue, "prefers sports simulation games over actual sports"). Both reviewers accepted claims the judge flagged that are mild elaborations of what the user said ("emotional support from their family has been a source of strength", "experiences ... have enriched their perspectives", "$7,340 in savings after her salary increase"). The judge also missed one claim both reviewers called unsupported. This suggests the judge over-flags consequence or motive wording that the rubric tolerates. I did not change the prompt: any change needs a fresh, blind quiz, which was not run. (The listing stopped at 12 because a later item had no answer from one reviewer, so this is a partial read.)
