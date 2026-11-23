@@ -367,3 +367,25 @@ Runner `scripts/run_halumem_live.py` (official eval_memzero procedure on OSS Mem
 * **Pipeline issues found and fixed:**
   * OSS Mem0 rejects whitespace in `user_id`. The store id maps whitespace to `_`, while the context keeps the name.
   * OSS Mem0 rejects the hosted-only `timestamp` argument. The session time is passed as `metadata.created_at` instead.
+
+## Live HaluMem run: OSS Mem0 vs Mem0 + MemBud claim drop (10 users x 5 sessions, DeepSeek extractor)
+
+Runner `scripts/run_halumem_live.py` (official eval_memzero procedure on OSS Mem0 2.2.1 with the official `custom_instructions`; MemBud arm = `StagedMem0` with the DeepSeek claim judge as grounding policy and claim-drop partial commit), scored by the **unchanged official `evaluation.py`** (`scripts/run_halumem_official_eval.py`, DeepSeek judge instead of GPT-4o, thinking disabled). First 10 users of HaluMem-Medium, first 5 sessions each: 50 sessions, 57 update points, 98 questions. Hold arm not run (offline it cost 16 points of recall).
+
+* **Guard activity:** the claim judge flagged 4 of 643 claims (0.6%) in 3 of 50 sessions (2 users); the other 47 sessions were accepted unchanged. There was almost nothing to remove.
+
+| Official metric (all items) | Pure Mem0 | Mem0 + MemBud (claim drop) | Difference |
+|---|---|---|---|
+| Recall | 0.961 | 0.958 | -0.003 |
+| Weighted recall | 0.978 | 0.977 | -0.001 |
+| Target precision | 0.980 | 0.982 | +0.002 |
+| Weighted accuracy | 0.940 | 0.941 | +0.001 |
+| Extraction F1 | 0.970 | 0.970 | -0.000 |
+| Update: correct / hallucination / omission (57) | 0.614 / 0.070 / 0.316 | 0.596 / 0.035 / 0.351 | -0.018 / -0.035 / +0.035 |
+| QA: correct / hallucination / omission (98) | 0.939 / 0.041 / 0.010 | 0.939 / 0.020 / 0.041 | 0.000 / -0.020 / +0.031 |
+
+* **Reading: no measurable effect.** Extraction metrics move by at most 0.3 points. The update and QA differences are 1 to 4 items out of 57 and 98 and are not tested; no interval is claimed.
+* **Run-to-run noise is of the same size as the differences.** The two arms share a store only until the guard acts. Even for users the guard never touched, QA answers differ between the arms with identical retrieved context (the answer model is sampled), memory order within a session differs, and one session after a guard intervention was extracted differently (16 vs 22 memories) because Mem0 saw a different memory state. No repeat of the pure arm was run, so the noise level is not measured.
+* **Not an unselected-effect claim for the weak extractor:** this run used DeepSeek as extractor, where errors are rare. The weak-extractor live run was not completed (the free 1.7B model failed on long sessions; no budget for a paid weak model).
+* **Judge failures:** a few official judge replies failed the official JSON parser in both arms (counted in the "(all)" denominators by the official code).
+* **Cost (billed, from the DeepSeek balance):** about $0.56 in total for this round (the pilot, both live runs and both scorings). The peak-price estimate for the same work was about $2.6, so billing ran at roughly a fifth of the estimate.

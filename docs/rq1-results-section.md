@@ -154,15 +154,21 @@ The prompt was written to follow the frozen rubric and committed before any of i
 
 ## Relation to the official HaluMem Mem0 procedure
 
-None of the numbers above come from the official `eval/eval_memzero.py`. That script drives the hosted Mem0 platform (`MemoryClient`), which MemBud cannot stage. The runs here used:
+The offline numbers above do not come from the official `eval/eval_memzero.py`, which drives the hosted Mem0 platform (`MemoryClient`) that MemBud cannot stage. A live runner now follows the official per-user procedure on open-source Mem0 2.2.1 (`scripts/run_halumem_live.py`) and is scored by the unchanged official `evaluation.py` (`scripts/run_halumem_official_eval.py`). Deviations: OSS Mem0 instead of the hosted platform; DeepSeek as extractor, answer model and judge (not GPT-4o); local fastembed embedder; first 5 sessions of the first 10 users.
 
-- **Mem0 and its setup:** open-source `mem0.Memory` 2.2.1, with Mem0's default extraction prompt (no `custom_instructions`), no session timestamps, and a 96-dimension spaCy embedder.
-- **Sample:** only the first ≤5 sessions per user.
-- **Tasks and scoring:** extraction metrics only, scored by a re-implementation of the official aggregation with DeepSeek as judge.
+**Table 9. Live run, 10 users × 5 sessions (50 sessions, 57 update points, 98 questions).** MemBud uses the DeepSeek claim judge as its grounding policy (MemBud's default lexical grounding held every session, 97/97 and 100/100 in the recorded runs, so it cannot be used on HaluMem).
 
-So the unguarded rows are **not comparable to the Mem0 numbers in the HaluMem paper**, although the guarded vs unguarded comparison is valid within this setup. A live runner that follows the official per-user procedure on OSS Mem0 now exists (`scripts/run_halumem_live.py`, scored by the unchanged official `evaluation.py` through `scripts/run_halumem_official_eval.py`). A pilot (2 users × 5 sessions, all three arms, DeepSeek extractor) ran end to end for $0.39. The guard accepted every session, so the MemBud arms stored the same memories as pure Mem0. The full run (estimated $5 to $17 at peak price, depending on extractor and arms) was **not done**, because the token budget is exhausted.
+| Official metric | Pure Mem0 | Mem0 + MemBud (claim drop) |
+|---|---|---|
+| Recall / weighted recall | 0.961 / 0.978 | 0.958 / 0.977 |
+| Target precision / weighted accuracy | 0.980 / 0.940 | 0.982 / 0.941 |
+| Extraction F1 | 0.970 | 0.970 |
+| Update correct / hallucination / omission | 0.614 / 0.070 / 0.316 | 0.596 / 0.035 / 0.351 |
+| QA correct / hallucination / omission | 0.939 / 0.041 / 0.010 | 0.939 / 0.020 / 0.041 |
 
-**MemBud's shipped grounding policy cannot be used on HaluMem.** `StagedMem0`'s default `LexicalGrounding` requires every content word of a claim to appear in one user message. It produced no evidence and held every session in both recorded runs (97/97 and 100/100). Every guard number in this section therefore comes from an LLM claim-judge grounding policy, not from the default configuration.
+The guard flagged 4 of 643 claims (3 of 50 sessions), so the arms are nearly identical: **no measurable effect** on extraction, update or QA. Differences of 1 to 4 items in update (57) and QA (98) are within run-to-run noise: answers differ between arms even with identical context, and a guard intervention changes later extraction. No repeat run was done, so noise is unmeasured. A weak-extractor live run, where the guard would act, was **not completed**: the only free model tried (liquid/lfm-3-1.7b) failed on long sessions, and no budget remained for a paid weak model. A hold arm was not run. Billed cost of the live round was about $0.56.
+
+**MemBud's shipped grounding policy cannot be used on HaluMem.** `StagedMem0`'s default `LexicalGrounding` requires every content word of a claim to appear in one user message; it produced no evidence and held every session in both recorded runs. Every guard number in this document therefore comes from an LLM claim-judge grounding policy.
 
 ## Threats to validity
 
@@ -194,7 +200,7 @@ So the unguarded rows are **not comparable to the Mem0 numbers in the HaluMem pa
 - An independent official judge (GPT-4o or another model family) for the extraction metrics.
 - Reviewer labels for the 26 extra rubric-judge flags. A fresh quiz was designed (`scripts/halumem_dual_review.py build-compare`) but not run, by decision.
 - Claim drop rescored with the rubric-aligned judge's verdicts.
-- The full live run of OSS Mem0 vs Mem0 + MemBud under the official procedure, with update and QA metrics (built and piloted; token budget exhausted).
+- The live OSS Mem0 vs Mem0 + MemBud run with a weak extractor (where the guard acts), a hold arm, repeats to measure run-to-run noise, and the full 20 users (done only for 10 users with the DeepSeek extractor).
 - The 14.5% injected dose.
 - HaluMem update and QA metrics.
 - LongMemEval S/M with distractor sessions.
