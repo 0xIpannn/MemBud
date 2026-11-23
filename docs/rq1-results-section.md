@@ -6,7 +6,7 @@
 
 - **(b): no.** Graph and a fair text verifier make identical decisions on every tested case (0 discordant pairs on 6,093 cases), so there is no graph advantage under equal information.
 - **(a): conditional, not validated.**
-  - **Strong extractor:** with Mem0 on a strong model, natural errors are rare (1.1 to 1.6% of claims flagged). The guard has no measurable effect on the official metrics.
+  - **Strong extractor:** with Mem0 on a strong model, natural errors are rare (0.6 to 1.6% of claims flagged). The guard has no measurable effect on the official metrics, offline (97 sessions) or in a live run of Mem0 with and without MemBud under the official procedure (10 users, extraction, update and QA; Table 9).
   - **Errors present:** when errors exist, dropping the flagged claims raises HaluMem's official weighted accuracy. The gain is +0.7 to +4.7 points on injected faults, rising with the dose. It is +2.3 points (95% CI 1.3 to 3.3) on all 100 sessions of a naturally weaker extractor (Mem0 with Llama-3.1-8B), with no significant recall or F1 cost.
   - **Why this is not validated:**
     - Reviewers confirmed only 39 to 48% of the weak-extractor flags as unsupported.
@@ -25,6 +25,7 @@
 | Claim judge (guard flags) | DeepSeek, batch prompt, accepted-assistant-facts policy (`SYSTEM_ACCEPTED`) |
 | Official metric judge | DeepSeek with the official HaluMem prompts (deviation: the benchmark uses GPT-4o, no longer offered by the OpenAI API) |
 | Conditions | **Unguarded** (commit all); **Session hold** (hold a session if any claim is flagged); **Claim drop** (drop only flagged claims); **Guard + repair** (bounded repair loop, at most 2 retries, then re-verification) |
+| Live run | Open-source Mem0 2.2.1 following the official `eval_memzero.py` procedure (`scripts/run_halumem_live.py`), 10 users x 5 sessions, DeepSeek extractor; scored by the unchanged official `evaluation.py` (extraction, update, QA). MemBud arm: `StagedMem0` with the claim judge as grounding policy and claim-drop partial commit. Table 9 |
 | Statistics | Paired session-level bootstrap, 2,000 resamples, seed 20261122; Wilson 95% intervals for proportions; exact McNemar for paired accuracy |
 | Split | Users split by seeded hash into tuning and final halves; descriptive only, nothing was tuned on either |
 | Rubric | `docs/halumem-grounding-rubric.md`, frozen v1 (SHA-256 `9830c317...`), used by both reviewers |
@@ -175,9 +176,9 @@ The guard flagged 4 of 643 claims (3 of 50 sessions), so the arms are nearly ide
 1. **Same-family judges.** The claim judge chooses what to remove, and the official accuracy judge scores the result. Both are DeepSeek. The benchmark-standard GPT-4o could not be used.
 2. **Flags only partly human-confirmed.** The strong-extractor flags were confirmed at 1/8 and 0/8, the weak-extractor flags at 39 to 48%. These samples are small (8 and 28 flagged claims), with wide intervals.
 3. **Circular injected labels.** Tables 3 and Phase 1 show mechanism sensitivity only.
-4. **Which guard was tested.** It is the LLM claim-judge guard, evaluated offline on recorded proposals. It is not a per-session re-run of the structural verifier, and not a live memory system. Repair is close to deletion: on the strong extractor it made 21 removals and 1 rewrite.
+4. **Which guard was tested.** It is the LLM claim-judge guard, evaluated offline on recorded proposals. It is not a per-session re-run of the structural verifier. The live run (Table 9) does put MemBud's `StagedMem0` around a live Mem0, but with the claim judge as its grounding policy, because the default lexical grounding holds every HaluMem session. Repair is close to deletion: on the strong extractor it made 21 removals and 1 rewrite.
 5. **Scope.** One memory system (Mem0 2.2.1), first sessions of 20 HaluMem-Medium users. Mem0's `add()` emitted no UPDATE or DELETE events, so natural omission and corruption of prior records were not observed and could not be tested.
-6. **Metrics not computed.** HaluMem update and QA metrics were not computed, because retrieval and answers were not recorded. LongMemEval was a 30-question oracle pilot with no distractor sessions.
+6. **Update and QA metrics only in the live run.** They exist only for the live run (Table 9: 57 update points, 98 questions, DeepSeek extractor, 10 users), where the guard acted on 3 of 50 sessions; run-to-run noise there was not measured. LongMemEval was a 30-question oracle pilot with no distractor sessions.
 7. **The split is descriptive.** The weak-extractor gain is smaller on the final users (+0.7 points) than on the tuning users (+2.6 points).
 
 ## Claims the data supports
@@ -186,6 +187,7 @@ The guard flagged 4 of 643 claims (3 of 50 sessions), so the arms are nearly ide
 - The guard detects injected faults. On the official metric, its weighted-accuracy gain rises with the injected error rate.
 - On Mem0 with a strong model, the guard has no measurable effect on HaluMem's official extraction metrics. Holding whole sessions costs about 2 points of recall. Claim drop and repair are indistinguishable from unguarded.
 - On Mem0 with a weaker model (unselected, 100 sessions), dropping flagged claims raises the DeepSeek-judged weighted accuracy by +2.3 points (95% CI 1.3 to 3.3), with no significant recall or F1 cost (+2.8 on tuning users, +0.9 on final users). This is **not validated**: fewer than half of the removed claims were confirmed unsupported by reviewers, the metric judge shares a model family with the claim judge, and the metric judge agrees with the reviewers only 52 to 77% of the time depending on the score mapping.
+- In a live run of OSS Mem0 with and without MemBud claim drop (10 users, DeepSeek extractor, official extraction, update and QA metrics), the guard flagged 4 of 643 claims and changed no metric measurably (Table 9). The update and QA differences (1 to 4 items) are within unmeasured run-to-run noise.
 - Session-level holding is not a useful operating point: it costs 2 to 16 points of recall.
 - On MemoryAgentBench conflict resolution, an LLM conflict-hold guard lowered accuracy. Repair reduced the harm but did not remove it.
 
@@ -221,8 +223,10 @@ The guard flagged 4 of 643 claims (3 of 50 sessions), so the arms are nearly ide
   | Injected faults and dose-response | `scripts/run_halumem_inject.py`, `scripts/halumem_dose_response.py` |
   | Reviewer quizzes | `scripts/halumem_dual_review.py` |
   | MemoryAgentBench | `scripts/run_memagentbench.py` |
+  | Live Mem0 vs Mem0 + MemBud | `scripts/run_halumem_live.py`, `scripts/run_halumem_official_eval.py`, `scripts/halumem_official_shim.py`, `src/membud/adapters/claim_judge_grounding.py` |
   | LongMemEval | `scripts/run_longmemeval.py` |
 
+- **Live run data:** `data/halumem-live/` is gitignored (dialogue text). HaluMem prompts and `custom_instructions` are read from a local clone at run time and are not copied (CC BY-NC-ND).
 - **Seeds:** sample 20261121, bootstrap 20261122, injection and weak-extractor quiz 20261123.
 - **Run data:** run directories under `data/halumem-runs/` and `data/memagentbench-runs/` are gitignored. They contain dataset text and are not committed.
-- **Spend:** estimated from token counts at peak list price. Real billing has been about a fifth of that, which is unverified.
+- **Spend:** estimates use peak list price. Billed cost of the live round was about $0.56 against a peak estimate of about $2.6 (read from the DeepSeek balance), so billing ran at about a fifth of the estimate.
