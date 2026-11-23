@@ -1,0 +1,83 @@
+{
+  "claim": "Real free-model extraction (real graphiti-core on a real Neo4j) through BlackBoxStaged; synthetic dialogues incl. a contradiction.",
+  "grounding": "SpeakerNormalizedGrounding (deterministic, offline)",
+  "environment": {
+    "graphiti-core": "0.31.2",
+    "neo4j": "6.4.1",
+    "model": "nvidia/nemotron-3.5-lightning:free",
+    "neo4j_server": "community 5.26.0",
+    "embedder": "hash (offline)",
+    "structured_output_mode": "json_schema"
+  },
+  "pricing": {
+    "id": "nvidia/nemotron-3.5-lightning:free",
+    "is_free": true,
+    "prompt_per_mtok": 0.0,
+    "completion_per_mtok": 0.0
+  },
+  "caps": {
+    "max_requests": 40,
+    "max_tokens": 150000,
+    "cost_cap_usd": 0
+  },
+  "usage": {
+    "requests": 12,
+    "tokens": 74258,
+    "errors": []
+  },
+  "sessions": [
+    {
+      "session": 0,
+      "input": "I adopted a dog named Biscuit.",
+      "decision": "ACCEPT",
+      "applied": true,
+      "reason": "verification accepted the candidate; candidate persisted exactly",
+      "error_type": "",
+      "changes": []
+    },
+    {
+      "session": 1,
+      "input": "I live in Berlin.",
+      "decision": "ACCEPT",
+      "applied": true,
+      "reason": "verification accepted the candidate; candidate persisted exactly",
+      "error_type": "",
+      "changes": []
+    },
+    {
+      "session": 2,
+      "input": "I moved to Lisbon and I no longer live in Berlin.",
+      "decision": "ACCEPT",
+      "applied": true,
+      "reason": "verification accepted the candidate; candidate persisted exactly",
+      "error_type": "",
+      "changes": [
+        [
+          "add",
+          null,
+          "moved from Berlin to Lisbon"
+        ]
+      ]
+    },
+    {
+      "session": 3,
+      "input": "I am allergic to peanuts.",
+      "decision": "ACCEPT",
+      "applied": true,
+      "reason": "verification accepted the candidate; candidate persisted exactly",
+      "error_type": "",
+      "changes": []
+    }
+  ],
+  "final_live_facts": [
+    [
+      "moved from Berlin to Lisbon",
+      {
+        "relation": "MOVED_FROM",
+        "src": "Lisbon",
+        "dst": "Berlin",
+        "expired": false
+      }
+    ]
+  ]
+}

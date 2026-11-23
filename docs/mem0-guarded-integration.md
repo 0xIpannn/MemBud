@@ -229,3 +229,8 @@ git-ignored `.neo4j/` with `dbms.security.auth_enabled=false`, bound to 127.0.0.
 `GRAPHITI_TELEMETRY_ENABLED=false`. LLM and embedder are offline fakes; only the database is real. Tests skip when no
 Neo4j listens on 7687. The accepted write keeps the facts but drops the episode node and MENTIONS edges (see
 `data/adapter-contract.md`); a real-model Graphiti run was not done.
+
+Real-model Graphiti run (`scripts/run_graphiti_realmodel.py`, free `nvidia/nemotron-3.5-lightning:free`, `json_schema`
+mode, 12 requests, 74,258 tokens, $0): 4 sessions, 4 ACCEPT, but 3 of the 4 were empty (the model extracted no facts),
+so they verify nothing; "moved from Berlin to Lisbon" was persisted. The Berlin to Lisbon contradiction was not
+exercised. An earlier `json_object` attempt made the model echo the JSON schema. See `docs/rq2-modularity-results.md`.

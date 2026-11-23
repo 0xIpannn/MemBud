@@ -209,11 +209,20 @@ def graphiti_ops(
         records, _, _ = run(driver.execute_query("MATCH (n) WHERE n.group_id IS NOT NULL RETURN DISTINCT n.group_id AS g"))
         return sorted(r["g"] for r in records if scope_of(r["g"]) is not None)
 
+    def fetch(cls: Any, group: str) -> list[Any]:
+        # Graphiti raises ``Groups*NotFoundError`` for an empty partition instead of returning []
+        from graphiti_core.errors import GroupsEdgesNotFoundError, GroupsNodesNotFoundError
+
+        try:
+            return list(run(cls.get_by_group_ids(driver, [group])))
+        except (GroupsEdgesNotFoundError, GroupsNodesNotFoundError):
+            return []
+
     def list_(scope: Mapping[str, str] | None) -> list[dict[str, Any]]:
         out: list[dict[str, Any]] = []
         for group in groups(scope):
-            names = {n.uuid: n.name for n in run(EntityNode.get_by_group_ids(driver, [group]))}
-            for e in run(EntityEdge.get_by_group_ids(driver, [group])):
+            names = {n.uuid: n.name for n in fetch(EntityNode, group)}
+            for e in fetch(EntityEdge, group):
                 out.append(
                     {
                         "id": e.uuid,
@@ -230,7 +239,7 @@ def graphiti_ops(
         return out
 
     def node(group: str, node_name: str) -> Any:
-        for n in run(EntityNode.get_by_group_ids(driver, [group])):
+        for n in fetch(EntityNode, group):
             if n.name == node_name:
                 return n
         n = EntityNode(name=node_name, group_id=group, labels=["Entity"], summary="")

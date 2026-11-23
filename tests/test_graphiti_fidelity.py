@@ -40,3 +40,9 @@ def test_guarded_accept_keeps_the_facts_but_drops_episodes_and_mentions(h):
     # ... but the episode (provenance) and its MENTIONS edges exist only on the unguarded path
     assert native_nodes.get("Episodic") == 1 and native_rels.get("MENTIONS") == 3
     assert "Episodic" not in live_nodes and "MENTIONS" not in live_rels
+
+
+def test_an_empty_partition_lists_as_empty_not_as_an_error(h):
+    """Graphiti raises GroupsEdgesNotFoundError for a partition with no edges; the ops must report []."""
+    assert h._ops("").list(SCOPE) == []
+    assert h._ops("").list(None) == []
