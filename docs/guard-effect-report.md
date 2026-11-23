@@ -228,3 +228,45 @@ Why (checked from the cached run, no new calls):
 * The 11 failed repairs: after the nearest stale record is superseded, the verifier's top-5 related-fact window surfaces further older conflicting facts on the same subject (several older values per subject), so two retries are not enough; in one inspected case the verifier kept reporting a pair the repair step would not supersede. The verifier also produces false positives (for example reporting "Narendra Modi is a citizen of Australia" against "Joe Hockey is a citizen of Australia", which is not a contradiction). These are limits of this verifier and window, not of the idea; a larger window or more retries was not tried (settings were fixed in advance).
 
 What this does and does not show: it shows that an LLM conflict-hold guard added to an append-only store does not improve a strong reader on this task and costs accuracy. It does not show that MemBud's structural verifier would do the same (this verifier is an LLM prompt, not MemBud's), and it does not test the longer variants (32k, 64k, 262k) where retrieval gets harder. Spend (estimated from token counts): about $0.13 of the $0.60 cap. Not done: 32k/64k/262k variants, other competencies (accurate retrieval, long-range understanding, test-time learning), a larger verifier window or more retries, validation of the verifier's detections.
+
+## Dose-response of the guard on injected faults (97 sessions)
+
+`scripts/halumem_dose_response.py` (offline, cached scores only). Injection is seeded and nested, so each dose is a subset of the next: at dose t, sessions with seeded u < t use their injected version (two faults each: one corrupted claim, one fabricated claim) and the rest use the recorded Mem0 output. Paired bootstrap over the same 97 sessions, 1,000 resamples. Faults are synthetic and the injected labels are circular; official-metric judge is DeepSeek, unvalidated. The 14.5% dose (all 97 sessions injected) was **not run**: its official scoring did not fit the budget.
+
+| Injected claim rate | Sessions injected | Guard+repair: weighted accuracy (95% CI) | Guard+repair: recall | Claim drop: weighted accuracy | Claim drop: recall |
+|---|---|---|---|---|---|
+| 0 (Mem0 natural, 1.6% judge-flagged) | 0 | +0.0019 (-0.0003, 0.0058) | -0.0011 (-0.0041, 0.0018) | +0.0019 | -0.0011 |
+| 1.1% | 7 | +0.0072 (0.0027, 0.0126) | -0.0021 (-0.0052, 0.0006) | +0.0071 (0.0027, 0.0125) | -0.0059 (-0.0117, -0.0014) |
+| 4.1% | 27 | +0.0279 (0.0189, 0.0371) | -0.0081 (-0.0160, -0.0017) | +0.0267 (0.0180, 0.0354) | -0.0193 (-0.0309, -0.0098) |
+| 7.1% | 47 | +0.0469 (0.0369, 0.0576) | -0.0075 (-0.0165, -0.0005) | +0.0450 (0.0359, 0.0551) | -0.0274 (-0.0418, -0.0153) |
+
+The weighted-accuracy gain rises about 0.65 points per point of injected rate (0.7, 2.8, 4.7 at 1.1%, 4.1%, 7.1%), and the recall cost of repair stays under 1 point. There is no break-even rate in this range: the gain exceeds zero from the lowest dose, because the judge catches the injected faults easily (47/47 fabricated, 31/47 corrupted). Natural Mem0 output, whose judge flags are mostly not confirmed by reviewers (1/8 and 0/8), sits at the no-effect end. This says the guard pays whenever the judge's flags are real errors; it cannot say how often they are.
+
+## A naturally weaker extractor: Mem0 with Llama-3.1-8B (100 sessions, same sample)
+
+The prompt tricks in the earlier extractor attempts did not raise the error rate, so Mem0 itself was run with a weaker model: `meta-llama/llama-3.1-8b-instruct` through OpenRouter (paid, about $0.02 per million input tokens; data-policy confirmed by the project owner), same 20 users x 5 sessions sample and seed as the Medium Mem0 run (100 sessions, 1,265 claims). Judged with the same DeepSeek batch claim judge and policy (`scripts/run_halumem_claim_judge.py`; no reply-context quote check).
+
+| Extractor | Claims | Judge-flagged | Rate (Wilson 95%) | Sessions with a flag |
+|---|---|---|---|---|
+| Mem0 + DeepSeek (recorded) | 1,286 | 20 | 1.6% (1.0%, 2.4%) | 14/97 |
+| Mem0 + Llama-3.1-8B | 1,259 | 68 | **5.4% (4.3%, 6.8%)** | 31/100 |
+
+The flagged claims are mostly elaborated reasons or consequences the user never stated ("User dislikes parrots because the constant noise ... "). This is a natural, higher error rate, 3.5 times the DeepSeek rate.
+
+Official metrics were scored only on the 31 sessions with a flagged claim (the guard changes nothing elsewhere; the other 69 sessions were not scored, so no pooled number is given). Repair recovered 31 of 31 held sessions (33 attempts). Paired bootstrap, 31 sessions from 17 users, 2,000 resamples:
+
+| (31 flagged sessions) | Unguarded | Claim drop | Guard + repair | Repair minus unguarded (95% CI) |
+|---|---|---|---|---|
+| Weighted accuracy (all) | 0.7905 | 0.8456 | 0.8400 | **+0.0495 (0.0239, 0.0818)** |
+| Recall (all) | 0.6011 | 0.5916 | 0.5802 | -0.0210 (-0.0408, -0.0058) |
+| Weighted recall (all) | 0.7118 | 0.6908 | 0.6823 | -0.0296 (-0.0449, -0.0171) |
+| Target precision (all) | 0.9807 | 0.9882 | 0.9860 | +0.0054 (-0.0043, 0.0182) |
+| F1 | 0.7454 | 0.7401 | 0.7305 | -0.0149 (-0.0322, -0.0028) |
+
+Claim drop minus unguarded: weighted accuracy +0.0551 (0.0363, 0.0766), recall -0.0095 (-0.0484, 0.0298), F1 -0.0053 (-0.0361, 0.0245). User split (descriptive; nothing tuned): repair weighted-accuracy gain +0.0517 (0.0228, 0.0895) on 26 tuning-half sessions and +0.0419 (0.0168, 0.0637) on 5 final-half sessions (too few to conclude anything on its own).
+
+Reading:
+* On a naturally weaker extractor the guard improved weighted accuracy by about 5 points in the sessions it acted on, at a recall cost of about 1 to 2 points: the first natural-error result in this study that points toward a benefit. It is consistent with the dose-response.
+* **Selection and independence caveats:** sessions were chosen because the DeepSeek claim judge flagged them, and the official accuracy judge is also DeepSeek, so the two are not independent measures. Reviewers did not confirm the DeepSeek flags on Mem0-DeepSeek output (1/8 and 0/8) and nobody labelled these new flags, so this is not a validated result. The pooled effect over all 100 sessions is smaller than the number above (the guard acts on 31 of them).
+* The weak extractor's baseline recall is only 0.60 (0.94 for the DeepSeek-extractor run): most of its loss is omission, which this guard does not address.
+* Spend (estimated from token counts): Mem0 $0.03, claim judge $0.12, repair $0.10, official scoring $1.25; about $1.50 for this round. The 14.5% dose and any reviewer labelling of the new flags were not done.

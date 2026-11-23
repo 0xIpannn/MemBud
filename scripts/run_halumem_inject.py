@@ -38,17 +38,22 @@ SYSTEM_ACCEPTED = _llm.SYSTEM_ACCEPTED
 
 SRC = ROOT / "data" / "halumem-runs" / "phase2-deepseek"
 SEED = 20261123
-RATE = 0.5
+RATE = 0.5  # defaults; --rate / --band-from select sessions with band_from <= u < rate (u = seeded hash in [0,1))
+BAND_FROM = 0.0
 
 
 def fmt(dialogue) -> str:
     return "\n".join(f"[{i}] [{t['role']}] {t['content']}" for i, t in enumerate(dialogue))
 
 
-def inject(case_id: str, claims: list[str], dialogue, prior: list[str]):
+def session_u(case_id: str) -> float:
+    return (int(hashlib.sha256(f"{SEED}|{case_id}".encode()).hexdigest(), 16) % 1000) / 1000
+
+
+def inject(case_id: str, claims: list[str], dialogue, prior: list[str], rate: float = RATE, band_from: float = BAND_FROM):
     """Return (new_claims, injected_records) or (claims, []) when this session is not selected."""
     h = int(hashlib.sha256(f"{SEED}|{case_id}".encode()).hexdigest(), 16)
-    if (h % 1000) / 1000 >= RATE or not claims:
+    if not (band_from <= (h % 1000) / 1000 < rate) or not claims:
         return claims, []
     rng = random.Random(h)
     tokens = hm._content_tokens(" ".join(t["content"] for t in dialogue))
@@ -68,6 +73,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--halumem-path", default=str(Path.home() / "Repositories/HaluMem/HaluMem-Medium.jsonl"))
     ap.add_argument("--out-name", default="phase3-injected")
+    ap.add_argument("--rate", type=float, default=RATE, help="inject sessions with u < rate (nested: larger rate = superset)")
+    ap.add_argument("--band-from", type=float, default=BAND_FROM, help="inject only sessions with u >= this (to add a new band)")
     mode = ap.add_mutually_exclusive_group(required=True)
     mode.add_argument("--estimate", action="store_true")
     mode.add_argument("--run", action="store_true")
@@ -93,7 +100,7 @@ def main() -> int:
         s = users[d["user_uuid"]]["sessions"][d["session_index"] - 1]
         prior = [c for r in d["transition"]["before"] for c in r["claims"]]
         adds = [p["memory"] for p in d["mem0_proposals"] if p.get("event") == "ADD"]
-        new, rec = inject(d["case_id"], adds, s["dialogue"], prior)
+        new, rec = inject(d["case_id"], adds, s["dialogue"], prior, a.rate, a.band_from)
         plan.append((d, s, prior, new, rec))
     touched = [p for p in plan if p[4]]
 

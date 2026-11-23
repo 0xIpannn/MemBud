@@ -299,6 +299,8 @@ def main() -> int:
     mode.add_argument("--score", action="store_true")
     ap.add_argument("--only-injected", action="store_true",
                     help="score only sessions into which run_halumem_inject.py injected faults")
+    ap.add_argument("--only-flagged", action="store_true",
+                    help="score only sessions with at least one judge-flagged claim (the guard acts only there)")
     ap.add_argument("--allow-paid", action="store_true")
     ap.add_argument("--max-spend-usd", type=float)
     a = ap.parse_args()
@@ -309,6 +311,8 @@ def main() -> int:
     cache_path = out_dir / "judge-results.jsonl"
     prompts = load_prompts(Path(a.reference_repo))
     items = build_items(run, Path(a.halumem_path))
+    if a.only_flagged:
+        items = [i for i in items if i["drop_kept"] is not None]
     if a.only_injected:
         items = [i for i in items if i["injected"]]
     job_list = list(jobs(items, prompts)) + list(repair_jobs(items, prompts)) + list(drop_jobs(items, prompts))
