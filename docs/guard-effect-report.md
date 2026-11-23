@@ -195,3 +195,16 @@ Reading:
 Spend (estimated from token counts): injection and judging $0.06, repair $0.12, official scoring $0.85; with step 2 and the extractor attempts (about $0.45) the total is about $1.5 of the $2.00 cap.
 
 Not done: 16/47 injected corruptions were not flagged by the judge and the 12 that survive repair were not examined individually; injected-fault results were not run through LongMemEval; no reviewer labels exist for injected claims (the injector's label is the only label).
+
+## HaluMem-Long: Mem0 flagged-claim rate (30 sessions)
+
+Question: do longer sessions raise Mem0's error rate enough for a guard to matter? Real Mem0 2.2.1 on DeepSeek `deepseek-flash`, HaluMem-Long, seed 20261121, 10 users x first 3 sessions (30 sessions; Long sessions are about 2.4x longer than Medium, median 33k vs 14k characters), then the same batch claim judge and policy as on Medium (`scripts/run_halumem_claim_judge.py`; the reply-context quote check was not applied). Official metrics were **not** run on Long: the official accuracy judge sends the whole dialogue per claim, which exceeded the budget.
+
+| | Claims | Judge-flagged unsupported | Rate (Wilson 95%) | Sessions with a flag |
+|---|---|---|---|---|
+| Mem0, Medium (97 sessions) | 1,286 | 20 | 1.6% | 14/97 |
+| Mem0, Long (30 sessions) | 443 | 5 | 1.1% (0.5%, 2.6%) | 2/30 |
+
+Longer sessions did **not** raise the flagged rate: 1.1% is within the Medium rate's range. The flagged claims are mostly "the assistant told the user X" summaries of the assistant's own answers, the same type as on Medium. The same caveats apply: the judge is DeepSeek, unvalidated, and reviewers confirmed only 1/8 and 0/8 of its Medium flags. With about 1% flagged, a guard has almost nothing to act on here either, so HaluMem-Long does not provide the higher-error condition RQ1(a) needs.
+
+Spend (estimated from token counts): Mem0 extraction $0.18, claim judge $0.09; about $0.27 of the $0.50 cap. Not done: official metrics, guard and repair on Long, and a larger Long sample. This 30-session sample is the first three sessions of 10 users, not a random sample of sessions; sessions later in a user's history were not tested.
