@@ -270,3 +270,14 @@ Reading:
 * **Selection and independence caveats:** sessions were chosen because the DeepSeek claim judge flagged them, and the official accuracy judge is also DeepSeek, so the two are not independent measures. Reviewers did not confirm the DeepSeek flags on Mem0-DeepSeek output (1/8 and 0/8) and nobody labelled these new flags, so this is not a validated result. The pooled effect over all 100 sessions is smaller than the number above (the guard acts on 31 of them).
 * The weak extractor's baseline recall is only 0.60 (0.94 for the DeepSeek-extractor run): most of its loss is omission, which this guard does not address.
 * Spend (estimated from token counts): Mem0 $0.03, claim judge $0.12, repair $0.10, official scoring $1.25; about $1.50 for this round. The 14.5% dose and any reviewer labelling of the new flags were not done.
+
+## Do the claim judge's flags agree with the official accuracy judge? (offline check)
+
+For every extracted claim the official accuracy judge (DeepSeek, official prompt, sees the dialogue and HaluMem's gold memories) gave a score; 2 means accurate. Share of claims scored below 2, split by whether the batch claim judge had flagged them:
+
+| Extractor | Flagged claims scored below 2 (Wilson 95%) | Unflagged claims scored below 2 |
+|---|---|---|
+| Mem0 + Llama-3.1-8B (31 scored sessions) | 49/68 = 72% (60%, 81%) | 83/395 = 21% (17%, 25%) |
+| Mem0 + DeepSeek (97 sessions) | 4/20 = 20% (8%, 42%) | 68/1,266 = 5.4% (4.3%, 6.8%) |
+
+On the weaker extractor the claim judge's flags line up well with a differently prompted, gold-anchored judgment; on the strong extractor they mostly do not (consistent with the reviewers confirming 1/8 and 0/8). This is **not** an independent validation: both judges are DeepSeek, and "below 2" includes partially accurate claims. It supports, but does not replace, reviewer labels. GPT-4o is no longer available through the OpenAI API, so the official-judge substitution cannot be replaced by the original model; it remains a stated deviation.
