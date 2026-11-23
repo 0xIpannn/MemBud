@@ -94,14 +94,14 @@ FMR is omitted. Under the reference rule, removing claims makes more interferenc
 | | Claim drop | **+0.0226 (0.0133, 0.0332)** | -0.0026 (-0.0125, 0.0084) | -0.0011 (-0.0080, 0.0064) |
 | | Guard + repair | **+0.0204 (0.0096, 0.0339)** | -0.0057 (-0.0106, -0.0011) | -0.0034 (-0.0069, -0.0004) |
 
-User split for guard + repair, weak extractor (descriptive, nothing tuned):
+User split, weak extractor (descriptive, nothing tuned):
 
-| | Weighted accuracy | Recall |
-|---|---|---|
-| Tuning users (70 sessions) | +0.026 (0.011, 0.045) | -0.008 (-0.015, -0.002) |
-| Final users (30 sessions) | +0.007 (0.001, 0.015) | 0.000 (-0.006, 0.004) |
+| | Claim drop: weighted accuracy | Claim drop: recall | Guard + repair: weighted accuracy | Guard + repair: recall |
+|---|---|---|---|---|
+| Tuning users (14 users, 70 sessions) | +0.028 (0.016, 0.042) | -0.003 (-0.017, 0.013) | +0.026 (0.011, 0.045) | -0.008 (-0.015, -0.002) |
+| Final users (6 users, 30 sessions) | +0.009 (0.002, 0.018) | -0.002 (-0.006, 0.000) | +0.007 (0.001, 0.015) | 0.000 (-0.006, 0.004) |
 
-Both halves are positive, but the size depends on the users. The split was not computed for claim drop.
+Both halves are positive for both conditions, and claim drop costs no measurable recall in either. The effect is about three times smaller on the final users. Strong extractor, claim drop: +0.000 (-0.001, 0.001) on tuning users and +0.006 (-0.000, 0.019) on final users.
 
 **Why session hold costs recall.** In the strong-extractor run, the hold removed 230 claims, of which only 20 (8.7%) were flagged. Each held session writes nothing, which cost 41 recalled gold points (2.2% of 1,862). Claim drop keeps the unflagged claims and loses only 2 of those. Any guard that decides per session behaves this way. On the weak extractor, the hold's larger accuracy gain comes only from discarding 31 whole sessions.
 
@@ -112,6 +112,17 @@ Both halves are positive, but the size depends on the users. The split was not c
 | Mem0 + DeepSeek, 36 claims | 8 | 1/8 = 12.5% (2, 47) | 0/8 = 0% (0, 32) | 0/28 and 1/28 | 34/36, kappa -0.03 |
 | Mem0 + Llama-3.1-8B, 36 claims | 28 | 13/27 = 48% (31, 66) | 9/23 = 39% (22, 59) | 1/8 and 1/8 | 30/30 decisive, kappa 1.0 (6 unsure or blank) |
 | Second claim judge (particle-1), Mem0 + DeepSeek sample | 6 | 0/6 | 0/6 | - | - |
+
+**Does the official accuracy judge agree with the reviewers?** This matters because the +2.3 point gain is measured by that judge. On the 36 weak-extractor quiz claims (all have an official accuracy score):
+
+| Mapping of the official score (0/1/2) | ifan | nabhan |
+|---|---|---|
+| Unsupported = score below 2 | 20/35 = 57% (41, 72) | 16/31 = 52% (35, 68) |
+| Unsupported = score 0 only | 27/35 = 77% (61, 88) | 24/31 = 77% (60, 89) |
+| Reviewer SUPPORTED claims scored 1 ("partially accurate") | 8 of 21 | 8 of 21 |
+| Judge-flagged claims the reviewer called SUPPORTED that the official judge scored below 2 | 9 of 14 | 9 of 14 |
+
+The official judge often gives partial credit (score 1) to claims the reviewers accept. Weighted accuracy counts score 1 as half credit, so removing such claims raises it. Of the claim judge's flags that reviewers rejected, 9 of 14 still scored below 2 under the official judge. Part of the gain therefore comes from removing claims the official judge marks down but people accept. Neither mapping was pre-registered, so both are reported.
 
 Agreement between the claim judge and the official accuracy judge: the official judge scored 72% of the claim judge's flags on the weak extractor below 2 (60, 81), against 21% of unflagged claims. On the strong extractor the figures are 20% (8, 42) against 5.4%. Both judges are DeepSeek, so this agreement is not independent validation.
 
@@ -149,7 +160,7 @@ None of the numbers above come from the official `eval/eval_memzero.py`. That sc
 - **Sample:** only the first ≤5 sessions per user.
 - **Tasks and scoring:** extraction metrics only, scored by a re-implementation of the official aggregation with DeepSeek as judge.
 
-So the unguarded rows are **not comparable to the Mem0 numbers in the HaluMem paper**, although the guarded vs unguarded comparison is valid within this setup. A live runner that follows the official per-user procedure on OSS Mem0 now exists (`scripts/run_halumem_live.py`, scored by the unchanged official `evaluation.py` through `scripts/run_halumem_official_eval.py`). It has not been run yet.
+So the unguarded rows are **not comparable to the Mem0 numbers in the HaluMem paper**, although the guarded vs unguarded comparison is valid within this setup. A live runner that follows the official per-user procedure on OSS Mem0 now exists (`scripts/run_halumem_live.py`, scored by the unchanged official `evaluation.py` through `scripts/run_halumem_official_eval.py`). A pilot (2 users × 5 sessions, all three arms, DeepSeek extractor) ran end to end for $0.39. The guard accepted every session, so the MemBud arms stored the same memories as pure Mem0. The full run (estimated $5 to $17 at peak price, depending on extractor and arms) was **not done**, because the token budget is exhausted.
 
 **MemBud's shipped grounding policy cannot be used on HaluMem.** `StagedMem0`'s default `LexicalGrounding` requires every content word of a claim to appear in one user message. It produced no evidence and held every session in both recorded runs (97/97 and 100/100). Every guard number in this section therefore comes from an LLM claim-judge grounding policy, not from the default configuration.
 
@@ -168,7 +179,7 @@ So the unguarded rows are **not comparable to the Mem0 numbers in the HaluMem pa
 - Graph verification gives no advantage over a fair text verifier on any tested case.
 - The guard detects injected faults. On the official metric, its weighted-accuracy gain rises with the injected error rate.
 - On Mem0 with a strong model, the guard has no measurable effect on HaluMem's official extraction metrics. Holding whole sessions costs about 2 points of recall. Claim drop and repair are indistinguishable from unguarded.
-- On Mem0 with a weaker model (unselected, 100 sessions), dropping flagged claims raises the DeepSeek-judged weighted accuracy by +2.3 points (95% CI 1.3 to 3.3), with no significant recall or F1 cost. This is **not validated**: fewer than half of the removed claims were confirmed unsupported by reviewers, and the metric judge shares a model family with the claim judge.
+- On Mem0 with a weaker model (unselected, 100 sessions), dropping flagged claims raises the DeepSeek-judged weighted accuracy by +2.3 points (95% CI 1.3 to 3.3), with no significant recall or F1 cost (+2.8 on tuning users, +0.9 on final users). This is **not validated**: fewer than half of the removed claims were confirmed unsupported by reviewers, the metric judge shares a model family with the claim judge, and the metric judge agrees with the reviewers only 52 to 77% of the time depending on the score mapping.
 - Session-level holding is not a useful operating point: it costs 2 to 16 points of recall.
 - On MemoryAgentBench conflict resolution, an LLM conflict-hold guard lowered accuracy. Repair reduced the harm but did not remove it.
 
@@ -183,6 +194,7 @@ So the unguarded rows are **not comparable to the Mem0 numbers in the HaluMem pa
 - An independent official judge (GPT-4o or another model family) for the extraction metrics.
 - Reviewer labels for the 26 extra rubric-judge flags. A fresh quiz was designed (`scripts/halumem_dual_review.py build-compare`) but not run, by decision.
 - Claim drop rescored with the rubric-aligned judge's verdicts.
+- The full live run of OSS Mem0 vs Mem0 + MemBud under the official procedure, with update and QA metrics (built and piloted; token budget exhausted).
 - The 14.5% injected dose.
 - HaluMem update and QA metrics.
 - LongMemEval S/M with distractor sessions.

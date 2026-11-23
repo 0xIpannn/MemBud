@@ -425,6 +425,7 @@ def main() -> int:
             "guard_minus_unguarded": paired_bootstrap(sub, cache),
             "guard_repair_minus_unguarded": paired_bootstrap(sub, cache, other="guard_repair"),
             "guard_repair_minus_guard": paired_bootstrap(sub, cache, base="guard_judge_claims", other="guard_repair"),
+            "guard_claim_drop_minus_unguarded": paired_bootstrap(sub, cache, other="guard_claim_drop"),
         }
     (out_dir / "official-metrics.json").write_text(json.dumps(res, indent=2, sort_keys=True) + "\n")
     print(json.dumps(res, indent=2, sort_keys=True))
