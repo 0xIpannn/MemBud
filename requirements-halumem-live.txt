@@ -1,0 +1,8 @@
+# Extra packages for the live HaluMem run (scripts/run_halumem_live.py, scripts/run_halumem_official_eval.py),
+# installed on top of requirements-mem0.txt in .venv-mem0:
+#   VIRTUAL_ENV=$PWD/.venv-mem0 uv pip install -r requirements-mem0.txt -r requirements-halumem-live.txt
+# fastembed: local ONNX embedder (BAAI/bge-small-en-v1.5, downloaded once from Hugging Face; no dialogue text leaves the machine).
+# tenacity, python-dotenv: imported by the official HaluMem eval/llms.py (loaded from a local clone, not vendored).
+fastembed==0.7.3
+tenacity==9.1.2
+python-dotenv==1.1.1

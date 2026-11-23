@@ -141,6 +141,18 @@ On MemoryAgentBench, the reader already resolves conflicts using the facts' seri
 
 The prompt was written to follow the frozen rubric and committed before any of its outputs existed (commit `6adcf12`). It did not reduce false flags. The 26 extra flags are mostly speculative claims; they have not been reviewer-labelled. No further prompt change was made, because iterating on prompts after seeing their outputs would be tuning on data that include final-split users.
 
+## Relation to the official HaluMem Mem0 procedure
+
+None of the numbers above come from the official `eval/eval_memzero.py`. That script drives the hosted Mem0 platform (`MemoryClient`), which MemBud cannot stage. The runs here used:
+
+- **Mem0 and its setup:** open-source `mem0.Memory` 2.2.1, with Mem0's default extraction prompt (no `custom_instructions`), no session timestamps, and a 96-dimension spaCy embedder.
+- **Sample:** only the first ≤5 sessions per user.
+- **Tasks and scoring:** extraction metrics only, scored by a re-implementation of the official aggregation with DeepSeek as judge.
+
+So the unguarded rows are **not comparable to the Mem0 numbers in the HaluMem paper**, although the guarded vs unguarded comparison is valid within this setup. A live runner that follows the official per-user procedure on OSS Mem0 now exists (`scripts/run_halumem_live.py`, scored by the unchanged official `evaluation.py` through `scripts/run_halumem_official_eval.py`). It has not been run yet.
+
+**MemBud's shipped grounding policy cannot be used on HaluMem.** `StagedMem0`'s default `LexicalGrounding` requires every content word of a claim to appear in one user message. It produced no evidence and held every session in both recorded runs (97/97 and 100/100). Every guard number in this section therefore comes from an LLM claim-judge grounding policy, not from the default configuration.
+
 ## Threats to validity
 
 1. **Same-family judges.** The claim judge chooses what to remove, and the official accuracy judge scores the result. Both are DeepSeek. The benchmark-standard GPT-4o could not be used.
