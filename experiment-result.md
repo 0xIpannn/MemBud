@@ -672,7 +672,7 @@ Setup: HaluMem official metrics, 97 sessions, nested injected doses, paired boot
 Sources:
 
 - `data/results/rq3-tradeoff-v1/longmemeval-n200-paired.json`;
-- `MemBud-rq3/data/longmemeval-runs/n200/report.json`;
+- `data/longmemeval-runs/n200/report.json`;
 - the live-run files.
 
 | Benchmark | Questions | Unguarded | Session hold | Claim drop | Guard + repair |
@@ -743,7 +743,7 @@ LongMemEval oracle has only 500 questions, so a 2-point QA effect cannot be reso
 
 Seeds: sample 20261121; RQ1 bootstrap 20261122; injection and weak quiz 20261123; RQ3 benchmark and bootstrap 20261124.
 
-The run directories hold dataset text (HaluMem is CC BY-NC-ND) and are gitignored. The LongMemEval n = 200 run directory exists only in the `MemBud-rq3` worktree.
+The run directories hold dataset text (HaluMem is CC BY-NC-ND) and are gitignored. The LongMemEval n = 200 run directory is `data/longmemeval-runs/n200/` (moved from the former `MemBud-rq3` worktree).
 
 ---
 
@@ -1425,7 +1425,7 @@ Pengaturan: metrik resmi HaluMem, 97 sesi, dosis injeksi bersarang, *bootstrap* 
 Sumber:
 
 - `data/results/rq3-tradeoff-v1/longmemeval-n200-paired.json`;
-- `MemBud-rq3/data/longmemeval-runs/n200/report.json`;
+- `data/longmemeval-runs/n200/report.json`;
 - berkas *live run*.
 
 | *Benchmark* | Pertanyaan | *Unguarded* | *Session hold* | *Claim drop* | *Guard + repair* |
@@ -1489,4 +1489,4 @@ Skrip, berkas keluaran dan *seed* sama dengan Bagian A6:
 - injeksi dan kuis *extractor* lemah 20261123;
 - *benchmark* dan *bootstrap* RQ3 20261124.
 
-Direktori eksekusi berisi teks *dataset* (HaluMem berlisensi CC BY-NC-ND) dan diabaikan oleh git. Direktori eksekusi LongMemEval n = 200 hanya ada di *worktree* `MemBud-rq3`.
+Direktori eksekusi berisi teks *dataset* (HaluMem berlisensi CC BY-NC-ND) dan diabaikan oleh git. Direktori eksekusi LongMemEval n = 200 berada di `data/longmemeval-runs/n200/` (dipindahkan dari *worktree* `MemBud-rq3` yang sudah dihapus).

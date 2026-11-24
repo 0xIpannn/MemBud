@@ -713,7 +713,7 @@ The 13 holds with no unsupported claim are the verifier's lexical quote check (`
 
 Remaining flagged claims reviewer 2 called supported (9 in audit v3): by inspection of the dialogue, about 4 have a user reply that adopts the specific fact ("the increased income certainly helps" after the assistant's income figure; "excited about this raise"), so the judge is stricter than the written policy there. About 5 have only generic engagement ("thank you for the encouragement", a reply that does not touch the specific friend, hobby or diagnosis); those are ambiguous: "accepts" needs a definition (explicit agreement or adoption of the specific fact vs any non-rejection).
 
-### Prototype: opt-in reply-context quote check (branch `feature/halumem-quote-check`, worktree `../MemBud-quote-check`; 2026-11-22; unvalidated)
+### Prototype: opt-in reply-context quote check (branch `feature/halumem-quote-check`, since merged into `main`; 2026-11-22; unvalidated)
 
 `verify_transcript_grounding(..., allow_reply_context=True)` (default off) accepts an evidence claim that shares no content token with its cited **user** turn when the claim does overlap the assistant turn that the user turn directly replies to. The quote must still be a verbatim user turn and the role rules are unchanged; the verifier only checks that the citation is adjacent to an assistant turn carrying the claim. Whether the user actually accepted the fact is the grounder's (LLM judge's) judgement, not verified. In the evaluation script, a judge citation of an assistant turn is mapped to the user turn that replies to it (`--reply-context`). 0 new API requests (cached judge responses).
 
